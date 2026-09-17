@@ -60,7 +60,7 @@ jobs:
           fi
           python3 patches/snow_cover.py "$DEPLOY"
 
-          # Rebuild approved covers from repository-safe source chunks.
+          # Rebuild only fully qualified approved covers from repository-safe source chunks.
           mkdir -p "$DEPLOY/assets/covers"
           cat \
             cover-source/the-listening-tide.001.b64 \
@@ -78,14 +78,8 @@ jobs:
             cover-source/verdant-ascension.005.b64 \
             | tr -d '\n\r' | base64 --decode > "$DEPLOY/assets/covers/verdant-ascension.webp"
 
-          # Use a new filename so browsers/CDNs cannot keep serving the previous Snowblind artwork.
-          rm -f "$DEPLOY/assets/covers/the-snowblind-protocol.webp"
-          cat cover-source/what-the-snow-remembers.b64 \
-            | tr -d '\n\r' | base64 --decode > "$DEPLOY/assets/covers/what-the-snow-remembers.webp"
-
           test "$(sha256sum "$DEPLOY/assets/covers/the-listening-tide.webp" | cut -d' ' -f1)" = "3f8c2aa844be30e5f3ae4979e9ca39baebbc5afd48ddf67373353f42fdec72ea"
           test "$(sha256sum "$DEPLOY/assets/covers/verdant-ascension.webp" | cut -d' ' -f1)" = "f377afa6d458e53af07a3a8ce1f423ecf0827f1ab2b68f6b4977e93430e264da"
-          test "$(sha256sum "$DEPLOY/assets/covers/what-the-snow-remembers.webp" | cut -d' ' -f1)" = "f57f1dbc294b6902c2d7ec6d4e16664a926cb2345f184f9f51bd61bb497531f6"
 
           printf '%s\n' "Frederick Samuel Author Website — automated production release" > "$DEPLOY/VERSION.txt"
 
@@ -118,11 +112,23 @@ jobs:
           if '.avif' in open(os.path.join(root,'index.html'),encoding='utf-8').read():
               raise SystemExit('AVIF reference remained in homepage')
           homepage=open(os.path.join(root,'index.html'),encoding='utf-8').read()
-          if 'assets/covers/the-snowblind-protocol.webp' in homepage:
-              raise SystemExit('Legacy Snowblind cover URL remained in homepage')
-          if 'assets/covers/what-the-snow-remembers.webp' not in homepage:
-              raise SystemExit('New What The Snow Remembers cover URL missing from homepage')
-          print(f'QUALIFIED: {len(books)} book pages, {len(covers)} covers, all local references resolved')
+          if 'assets/covers/the-snowblind-protocol.webp' not in homepage:
+              raise SystemExit('Qualified current Snow cover URL missing from homepage')
+          if 'assets/covers/what-the-snow-remembers.webp' in homepage:
+              raise SystemExit('Unqualified replacement Snow cover URL reached release')
+          if 'What The Snow Remembers' not in homepage:
+              raise SystemExit('What The Snow Remembers title missing from homepage')
+          # Mobile release contract: every page must contain the responsive layer and safe viewport.
+          html_pages=[os.path.join(root,'index.html')]+books
+          for hp in html_pages:
+              text=open(hp,encoding='utf-8').read()
+              if '/* MOBILE-V6 responsive qualification */' not in text:
+                  raise SystemExit(f'Mobile responsive layer missing: {os.path.relpath(hp,root)}')
+              if 'viewport-fit=cover' not in text:
+                  raise SystemExit(f'Mobile viewport contract missing: {os.path.relpath(hp,root)}')
+          if 'aria-controls="mobileNav"' not in homepage or 'aria-expanded="false"' not in homepage:
+              raise SystemExit('Accessible mobile navigation contract missing')
+          print(f'QUALIFIED V6.0 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
           PY
 
       - name: Publish production branch
