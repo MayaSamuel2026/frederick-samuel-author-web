@@ -61,9 +61,22 @@ jobs:
 
           # Rebuild the two approved Hadal Cycle covers from repository-safe source chunks.
           mkdir -p "$DEPLOY/assets/covers"
-          for slug in the-listening-tide verdant-ascension; do
-            cat cover-source/"$slug".*.b64 | tr -d '\n\r' | base64 --decode > "$DEPLOY/assets/covers/$slug.webp"
-          done
+          cat \
+            cover-source/the-listening-tide.001.b64 \
+            cover-source/the-listening-tide.002.b64 \
+            cover-source/the-listening-tide.003a.b64 \
+            cover-source/the-listening-tide.003b.b64 \
+            cover-source/the-listening-tide.004.b64 \
+            | tr -d '\n\r' | base64 --decode > "$DEPLOY/assets/covers/the-listening-tide.webp"
+
+          cat \
+            cover-source/verdant-ascension.001.b64 \
+            cover-source/verdant-ascension.002.b64 \
+            cover-source/verdant-ascension.003.b64 \
+            cover-source/verdant-ascension.004.b64 \
+            cover-source/verdant-ascension.005.b64 \
+            | tr -d '\n\r' | base64 --decode > "$DEPLOY/assets/covers/verdant-ascension.webp"
+
           test "$(sha256sum "$DEPLOY/assets/covers/the-listening-tide.webp" | cut -d' ' -f1)" = "3f8c2aa844be30e5f3ae4979e9ca39baebbc5afd48ddf67373353f42fdec72ea"
           test "$(sha256sum "$DEPLOY/assets/covers/verdant-ascension.webp" | cut -d' ' -f1)" = "f377afa6d458e53af07a3a8ce1f423ecf0827f1ab2b68f6b4977e93430e264da"
 
