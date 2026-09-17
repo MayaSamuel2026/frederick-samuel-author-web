@@ -88,7 +88,7 @@ jobs:
 
           test "$(sha256sum "$DEPLOY/assets/covers/the-listening-tide.webp" | cut -d' ' -f1)" = "3f8c2aa844be30e5f3ae4979e9ca39baebbc5afd48ddf67373353f42fdec72ea"
           test "$(sha256sum "$DEPLOY/assets/covers/verdant-ascension.webp" | cut -d' ' -f1)" = "f377afa6d458e53af07a3a8ce1f423ecf0827f1ab2b68f6b4977e93430e264da"
-          test "$(sha256sum "$DEPLOY/assets/covers/the-snowblind-protocol.webp" | cut -d' ' -f1)" = "71ab554e0115bac4906f04784b130a9dadb6d5a3aaa755392c7e61d4eae0bd13"
+          test "$(sha256sum "$DEPLOY/assets/covers/the-snowblind-protocol.webp" | cut -d' ' -f1)" = "64ef060db818360e0c11252951b2a00e7771bd7531fdb26f561aa2b2cd05a0c4"
 
           printf '%s\n' "Frederick Samuel Author Website — automated production release" > "$DEPLOY/VERSION.txt"
 
