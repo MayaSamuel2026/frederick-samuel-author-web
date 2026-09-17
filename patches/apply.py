@@ -16,6 +16,8 @@ for path in html_files:
     s = s.replace('Frederick Samuel Author Website V5.8', 'Frederick Samuel Author Website V5.9')
     s = s.replace('Frederick Samuel Author Website V5.7', 'Frederick Samuel Author Website V5.9')
     s = s.replace('Frederick Samuel Author Website V5.6', 'Frederick Samuel Author Website V5.9')
+    # Canonical title rename: update visible headings, cards, metadata, page title and alt text.
+    s = s.replace('The Snowblind Protocol', 'What The Snow Remembers')
     path.write_text(s, encoding='utf-8')
 
 index = root / 'index.html'
