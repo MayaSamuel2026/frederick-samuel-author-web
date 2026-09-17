@@ -1,0 +1,107 @@
+name: Qualify and publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: frederick-samuel-production
+  cancel-in-progress: true
+
+jobs:
+  qualify-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble release
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY="$RUNNER_TEMP/deploy"
+          rm -rf "$DEPLOY"
+          mkdir -p "$DEPLOY"
+
+          # Reuse the last qualified release after the first deployment.
+          if git ls-remote --exit-code --heads origin production >/dev/null 2>&1; then
+            git fetch origin production:refs/remotes/origin/production
+            git archive origin/production | tar -x -C "$DEPLOY"
+          else
+            # One-time bootstrap from the site that is already live on Hostinger.
+            mkdir -p "$DEPLOY/books" "$DEPLOY/assets/covers"
+            curl --fail --location --retry 3 --silent --show-error \
+              "https://fredericksamuel.com/index.html" -o "$DEPLOY/index.html"
+            books=(
+              a-thread-of-stars before-the-tides by-blood-ink-and-salt crashing-waves
+              crimson-horizons crimson-maelstrom emergent-tides storms-of-dominion
+              surging-currents the-gustav-sonata the-hadal-horizons the-listening-tide
+              the-quiet-blade the-silent-protocol the-snowblind-protocol the-weavers-debt
+              thrindle verdant-ascension
+            )
+            for slug in "${books[@]}"; do
+              curl --fail --location --retry 3 --silent --show-error \
+                "https://fredericksamuel.com/books/$slug.html" -o "$DEPLOY/books/$slug.html"
+              curl --fail --location --retry 3 --silent --show-error \
+                "https://fredericksamuel.com/assets/covers/$slug.webp" -o "$DEPLOY/assets/covers/$slug.webp"
+            done
+          fi
+
+          # Apply repository-controlled refinements and changed/new assets.
+          python3 patches/apply.py "$DEPLOY"
+          if [ -d site ]; then
+            cp -a site/. "$DEPLOY/"
+          fi
+          printf '%s\n' "Frederick Samuel Author Website — automated production release" > "$DEPLOY/VERSION.txt"
+
+      - name: Qualify static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY="$RUNNER_TEMP/deploy"
+          python3 - "$DEPLOY" <<'PY'
+          import glob, os, re, sys
+          root=sys.argv[1]
+          for p in ['index.html','books','assets/covers']:
+              if not os.path.exists(os.path.join(root,p)):
+                  raise SystemExit(f'Missing required path: {p}')
+          books=glob.glob(os.path.join(root,'books','*.html'))
+          covers=glob.glob(os.path.join(root,'assets','covers','*.webp'))
+          if len(books)!=18: raise SystemExit(f'Expected 18 book pages, found {len(books)}')
+          if len(covers)!=18: raise SystemExit(f'Expected 18 WebP covers, found {len(covers)}')
+          missing=[]
+          for hp in [os.path.join(root,'index.html')]+books:
+              text=open(hp,encoding='utf-8').read()
+              base=os.path.dirname(hp)
+              for ref in re.findall(r'(?:src|href)="([^"]+)"', text):
+                  if ref.startswith(('http://','https://','#','mailto:','javascript:')): continue
+                  clean=ref.split('#',1)[0].split('?',1)[0]
+                  if not clean: continue
+                  target=os.path.normpath(os.path.join(base,clean))
+                  if not os.path.exists(target): missing.append((os.path.relpath(hp,root),ref))
+          if missing: raise SystemExit('Broken local references: '+repr(missing[:20]))
+          if '.avif' in open(os.path.join(root,'index.html'),encoding='utf-8').read():
+              raise SystemExit('AVIF reference remained in homepage')
+          print(f'QUALIFIED: {len(books)} book pages, {len(covers)} covers, all local references resolved')
+          PY
+
+      - name: Publish production branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEPLOY="$RUNNER_TEMP/deploy"
+          cd "$DEPLOY"
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git add -A
+          git commit -qm "Production deploy ${GITHUB_SHA}"
+          git branch -M production
+          git push --force origin production
