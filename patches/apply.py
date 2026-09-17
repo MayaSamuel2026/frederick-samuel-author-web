@@ -4,6 +4,177 @@ import re, sys
 root = Path(sys.argv[1])
 html_files = [root / 'index.html', *sorted((root / 'books').glob('*.html'))]
 
+MOBILE_CSS = r'''
+/* MOBILE-V6 responsive qualification */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0}
+img{height:auto}
+a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+section[id]{scroll-margin-top:92px}
+.menu:focus-visible,.mobile a:focus-visible,.btn:focus-visible,.contact-submit:focus-visible,.cycle-nav a:focus-visible,.navrow a:focus-visible,.back:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+ .reveal{opacity:1!important;transform:none!important}
+ .track{animation:none!important}
+}
+
+@media(max-width:920px){
+ .home .shell{width:calc(100% - 40px)}
+ .home .topline{height:auto;min-height:30px;padding:7px 20px;line-height:1.4;font-size:8px;letter-spacing:.13em;text-align:center}
+ .home .nav{height:68px}
+ .home .nav .shell{width:calc(100% - 32px)}
+ .home .navlinks{display:none}
+ .home .brand{font-size:18px;letter-spacing:.12em;white-space:nowrap}
+ .home .brand small{display:none}
+ .home .menu{display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:0;cursor:pointer;line-height:1}
+ .home .mobile{padding:6px 20px 14px;background:rgba(13,16,16,.98);border-bottom:1px solid var(--line);box-shadow:0 18px 30px rgba(0,0,0,.2)}
+ .home .mobile.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+ .home .mobile a{display:flex;align-items:center;min-height:48px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.08);font-size:10px;line-height:1.35}
+ .home .hero{min-height:auto}
+ .home .hero-inner{grid-template-columns:1fr!important;gap:40px!important;padding-top:56px!important;padding-bottom:60px!important}
+ .home .hero h1{font-size:clamp(52px,12vw,78px)!important;line-height:.88;margin:22px 0 24px}
+ .home .hero .lead{font-size:clamp(20px,4vw,24px);line-height:1.45}
+ .home .hero-library{justify-self:stretch!important;max-width:720px!important;width:100%;padding-left:0}
+ .home .hero-library-head{margin-bottom:20px}
+ .home .hero-library-head strong{font-size:24px}
+ .home .hero-covers{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;max-width:720px}
+ .home .hero-book-meta b{font-size:18px}
+ .home .actions{gap:12px;margin-top:26px}
+ .home .btn{min-height:48px;padding:0 18px}
+ .home .section{padding:72px 0}
+ .home .section-head{margin-bottom:40px}
+ .home .section-head p{font-size:18px;line-height:1.55}
+ .home .published-card{min-height:auto;padding:30px}
+ .home .published-card p{font-size:14px;line-height:1.7}
+ .home .card-meta p{font-size:13px;line-height:1.6}
+ .home .hadal-intro{gap:28px;margin-bottom:42px;padding-bottom:34px}
+ .home .hadal-intro p{font-size:22px;line-height:1.48}
+ .home .about-grid,.home .rep-grid{gap:42px}
+ .home .about-copy{font-size:15px;line-height:1.8}
+ .home .rep-copy{font-size:21px;line-height:1.5}
+ .home .rep-row{min-height:44px;align-items:center}
+ .home .contact-section{padding:78px 0 84px}
+ .home .contact-grid{gap:44px}
+ .home .contact-intro p{font-size:19px}
+ .home .contact-field label{font-size:9px}
+ .home .contact-submit{min-height:50px}
+ .home .footer{padding:32px 0 38px}
+ .home .footer .shell{align-items:flex-start}
+ .home .book-modal{overscroll-behavior:contain}
+ .home .modal-close{width:48px;height:48px;right:14px;top:14px;font-size:24px}
+ .home .modal-shell{width:calc(100% - 36px);grid-template-columns:1fr!important;gap:32px!important;align-items:start;margin:0 auto;padding:76px 0 46px;min-height:auto}
+ .home .modal-cover{max-width:260px;margin:auto}
+ .home .modal-copy h2{font-size:clamp(46px,12vw,62px);line-height:.92}
+ .home .modal-copy .tag{font-size:22px}
+ .home .modal-copy .sum{font-size:17px;line-height:1.65}
+
+ .book-detail .shell{width:calc(100% - 36px)}
+ .book-detail .nav{height:68px}
+ .book-detail .nav .shell{gap:14px}
+ .book-detail .brand{font-size:16px;letter-spacing:.1em;white-space:nowrap}
+ .book-detail .back{display:flex;align-items:center;justify-content:flex-end;min-height:44px;font-size:9px;line-height:1.3;text-align:right}
+ .book-detail .hero{padding:34px 0 54px}
+ .book-detail .grid{grid-template-columns:1fr;gap:34px}
+ .book-detail .cover{width:min(78vw,320px);max-width:320px;margin:0 auto}
+ .book-detail .copy h1{font-size:clamp(46px,13vw,64px);line-height:.9;margin:18px 0 20px;overflow-wrap:normal}
+ .book-detail .tag{font-size:22px;line-height:1.4;margin-bottom:24px}
+ .book-detail .summary{font-size:18px;line-height:1.65}
+ .book-detail .summary p{margin-bottom:20px}
+ .book-detail .themes{gap:8px;margin-top:24px}
+ .book-detail .theme{display:inline-flex;align-items:center;min-height:36px;padding:8px 11px}
+ .book-detail .context{padding:54px 0 58px}
+ .book-detail .context-grid{grid-template-columns:1fr;gap:24px}
+ .book-detail .context h2{font-size:38px;line-height:1.05}
+ .book-detail .context p{font-size:18px;line-height:1.65}
+ .book-detail .navrow{display:grid;grid-template-columns:1fr;gap:0;margin-top:32px;padding-top:12px}
+ .book-detail .navrow a{display:flex;align-items:center;min-height:48px;padding:10px 0;border-bottom:1px solid rgba(20,20,20,.11);line-height:1.35}
+ .book-detail .navrow a:last-child{justify-content:flex-end;text-align:right}
+ .book-detail .footer{padding:28px 0}
+}
+
+@media(max-width:620px){
+ .home .shell{width:calc(100% - 32px)}
+ .home .nav .shell{width:calc(100% - 28px)}
+ .home .mobile{padding-left:16px;padding-right:16px}
+ .home .mobile.open{grid-template-columns:1fr}
+ .home .hero-inner{padding-top:46px!important;padding-bottom:50px!important;gap:32px!important}
+ .home .hero h1{font-size:clamp(48px,15vw,64px)!important}
+ .home .hero .lead{font-size:20px}
+ .home .hero-library-head{grid-template-columns:1fr;gap:7px}
+ .home .hero-library-head strong{text-align:left}
+ .home .section{padding:62px 0}
+ .home .section h2{font-size:clamp(43px,12vw,54px);line-height:.95}
+ .home .book-grid,.home .hadal-grid{grid-template-columns:1fr;gap:42px}
+ .home .published-card{padding:26px}
+ .home .published-card h3{font-size:clamp(43px,12vw,54px)}
+ .home .cover-wrap:after{display:none}
+ .home .card-meta{padding-top:16px}
+ .home .card-meta h3,.home .hadal-grid .card-meta h3{font-size:29px;line-height:1.02}
+ .home .hadal-mark{width:58px;height:58px;font-size:32px}
+ .home .hadal-intro p{font-size:20px}
+ .home .about-big{font-size:clamp(34px,10vw,48px)}
+ .home .about-copy .pull{font-size:22px}
+ .home .rep-grid .big{font-size:clamp(43px,12vw,58px)}
+ .home .rep-row{display:block;padding:14px 0}
+ .home .rep-row span{display:block}
+ .home .rep-row span:last-child{text-align:left;margin-top:7px}
+ .home .contact-section{padding:66px 0 72px}
+ .home .contact-intro h2{font-size:clamp(48px,14vw,60px)}
+ .home .contact-actions{display:block}
+ .home .contact-submit{width:100%;margin-top:20px}
+ .home .footer .shell{display:block}
+ .home .footer p{text-align:left;margin-top:12px;line-height:1.6}
+ .home .modal-cover{max-width:230px}
+ .home .modal-copy h2{font-size:clamp(43px,13vw,54px)}
+
+ .book-detail .shell{width:calc(100% - 30px)}
+ .book-detail .hero{padding-top:28px}
+ .book-detail .cover{width:min(82vw,290px)}
+ .book-detail .copy h1{font-size:clamp(44px,14vw,58px)}
+ .book-detail .tag{font-size:21px}
+ .book-detail .summary,.book-detail .context p{font-size:17px}
+ .book-detail .context h2{font-size:35px}
+}
+
+@media(max-width:440px){
+ .home .topline{font-size:7px;letter-spacing:.1em}
+ .home .brand{font-size:16px;letter-spacing:.1em}
+ .home .hero-covers{grid-template-columns:1fr!important;gap:28px!important}
+ .home .hero-book{max-width:300px}
+ .home .actions{display:grid;grid-template-columns:1fr}
+ .home .btn{width:100%}
+ .home .section-head{margin-bottom:34px}
+ .home .published-card{padding:24px}
+ .home .contact-email{font-size:18px;overflow-wrap:anywhere}
+ .home .contact-field input,.home .contact-field select,.home .contact-field textarea{font-size:18px}
+
+ .book-detail .brand{font-size:14px;letter-spacing:.08em}
+ .book-detail .back{font-size:8px;letter-spacing:.11em;max-width:112px}
+ .book-detail .copy h1{font-size:clamp(42px,14vw,54px)}
+}
+'''
+
+MOBILE_JS = r'''
+<script id="mobileNavController">
+(function(){
+  const menu=document.querySelector('.menu');
+  const mobile=document.getElementById('mobileNav');
+  if(!menu||!mobile) return;
+  const setOpen=(open)=>{
+    mobile.classList.toggle('open',open);
+    menu.setAttribute('aria-expanded',String(open));
+    menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');
+  };
+  menu.addEventListener('click',()=>setOpen(!mobile.classList.contains('open')));
+  mobile.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setOpen(false)));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')setOpen(false)});
+  window.addEventListener('resize',()=>{if(window.innerWidth>920)setOpen(false)},{passive:true});
+})();
+</script>
+'''
+
 for path in html_files:
     if not path.exists():
         continue
@@ -13,11 +184,22 @@ for path in html_files:
     s = s.replace('<source id="modalSourceAvif" type="image/avif"/>', '')
     s = s.replace("  document.getElementById('modalSourceAvif').srcset=b.image.avif;\n", '')
     s = re.sub(r'"image":\{"avif":"[^"]+\.avif","webp":', '"image":{"webp":', s)
-    s = s.replace('Frederick Samuel Author Website V5.8', 'Frederick Samuel Author Website V5.9')
-    s = s.replace('Frederick Samuel Author Website V5.7', 'Frederick Samuel Author Website V5.9')
-    s = s.replace('Frederick Samuel Author Website V5.6', 'Frederick Samuel Author Website V5.9')
+    s = s.replace('Frederick Samuel Author Website V5.9', 'Frederick Samuel Author Website V6.0')
+    s = s.replace('Frederick Samuel Author Website V5.8', 'Frederick Samuel Author Website V6.0')
+    s = s.replace('Frederick Samuel Author Website V5.7', 'Frederick Samuel Author Website V6.0')
+    s = s.replace('Frederick Samuel Author Website V5.6', 'Frederick Samuel Author Website V6.0')
     # Canonical title rename: update visible headings, cards, metadata, page title and alt text.
     s = s.replace('The Snowblind Protocol', 'What The Snow Remembers')
+    # Mobile viewport + page scope. Do not prevent user zoom.
+    s = s.replace('content="width=device-width,initial-scale=1"', 'content="width=device-width,initial-scale=1,viewport-fit=cover"')
+    if path == root / 'index.html':
+        if '<body class="home">' not in s:
+            s = s.replace('<body>', '<body class="home">', 1)
+    else:
+        if '<body class="book-detail">' not in s:
+            s = s.replace('<body>', '<body class="book-detail">', 1)
+    if '/* MOBILE-V6 responsive qualification */' not in s:
+        s = s.replace('</style>', MOBILE_CSS + '\n</style>', 1)
     path.write_text(s, encoding='utf-8')
 
 index = root / 'index.html'
@@ -119,5 +301,35 @@ contact_html = r'''
 if 'id="contact"' not in s:
     s = s.replace('</main>', contact_html + '\n</main>', 1)
 
+# Accessible, stateful mobile navigation. Remove legacy inline toggle so one click has one state transition.
+s = re.sub(r'\s+onclick="document\.querySelector\(\'\.mobile\'\)\.classList\.toggle\(\'open\'\)"', '', s)
+if 'aria-controls="mobileNav"' not in s:
+    s = s.replace('<button aria-label="Open navigation" class="menu">☰</button>', '<button type="button" aria-label="Open navigation" aria-controls="mobileNav" aria-expanded="false" class="menu">☰</button>', 1)
+if 'id="mobileNav"' not in s:
+    s = s.replace('<div class="mobile">', '<div class="mobile" id="mobileNav" role="navigation" aria-label="Mobile navigation">', 1)
+if 'id="mobileNavController"' not in s:
+    s = s.replace('</body>', MOBILE_JS + '\n</body>', 1)
+
 index.write_text(s, encoding='utf-8')
-print('Applied V5.9 release patch with contact form')
+
+# Fail the build immediately if any mobile contract regresses.
+for path in html_files:
+    text = path.read_text(encoding='utf-8')
+    if 'viewport-fit=cover' not in text:
+        raise SystemExit(f'Mobile QA failed: viewport-fit missing in {path.name}')
+    if '/* MOBILE-V6 responsive qualification */' not in text:
+        raise SystemExit(f'Mobile QA failed: responsive layer missing in {path.name}')
+    if path == index:
+        if '<body class="home">' not in text:
+            raise SystemExit('Mobile QA failed: homepage scope missing')
+    elif '<body class="book-detail">' not in text:
+        raise SystemExit(f'Mobile QA failed: book-detail scope missing in {path.name}')
+
+homepage = index.read_text(encoding='utf-8')
+for required in ['aria-controls="mobileNav"', 'aria-expanded="false"', 'id="mobileNav"', 'id="mobileNavController"']:
+    if required not in homepage:
+        raise SystemExit(f'Mobile QA failed: homepage navigation contract missing {required}')
+if "classList.toggle('open')\">☰" in homepage:
+    raise SystemExit('Mobile QA failed: legacy inline mobile toggle remained')
+
+print(f'Applied V6.0 mobile optimization and qualified {len(html_files)} HTML pages')
