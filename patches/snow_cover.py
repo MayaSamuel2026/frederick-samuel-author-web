@@ -13,4 +13,13 @@ for path in [root / 'index.html', *sorted((root / 'books').glob('*.html'))]:
     text = text.replace('The Snowblind Protocol', 'What The Snow Remembers')
     path.write_text(text, encoding='utf-8')
 
-print('Applied canonical What The Snow Remembers title and cache-busting cover path')
+# The canonical cover is stored as a complete, valid Base64 source in .001.
+# A previous intermediate file was truncated; make the release assembler consume
+# the canonical source and let the workflow checksum guard the exact artwork.
+source = Path('cover-source/what-the-snow-remembers.001.b64')
+target = Path('cover-source/what-the-snow-remembers.b64')
+if not source.exists():
+    raise SystemExit('Canonical What The Snow Remembers cover source is missing')
+target.write_bytes(source.read_bytes())
+
+print('Applied canonical What The Snow Remembers title, cover path and release source')
