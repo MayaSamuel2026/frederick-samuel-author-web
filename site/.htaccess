@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Keep one public hostname. Google and users should always land on the
+# canonical non-www origin used by the sitemap and rel=canonical tags.
+RewriteCond %{HTTP_HOST} ^www\.fredericksamuel\.com$ [NC]
+RewriteRule ^ https://fredericksamuel.com%{REQUEST_URI} [R=301,L,NE]
