@@ -100,48 +100,52 @@ def cache_bust(text, filename):
     return re.sub(pat, filename + '?v=' + CACHE_TAG, text)
 
 def normalise_img(text, filename, width, height):
-    pattern = re.compile(r'<img\b[^>]*?src="[^"]*' + re.escape(filename) + r'(?:\?v=[^"]*)?"[^>]*>', re.I)
+    pattern = re.compile(
+        r'<img\b[^>]*?src="[^"]*' + re.escape(filename) + r'(?:\?v=[^"]*)?"[^>]*>',
+        re.I
+    )
+
     def repl(match):
         tag = match.group(0)
-        tag = re.sub(r'\s(?:width|height|loading|fetchpriority)="[^"]*"', '', tag, flags=re.I)
-        tag = re.sub(r'\s*/?>
+        tag = re.sub(
+            r'\s(?:width|height|loading|fetchpriority)="[^"]*"',
+            '',
+            tag,
+            flags=re.I
+        )
+        tag = re.sub(r'\s*/?>$', '', tag)
+        return (
+            tag
+            + f' width="{width}" height="{height}"'
+            + ' loading="eager" fetchpriority="auto"/>'
+        )
+
     return pattern.sub(repl, text)
 
 pages = [root / 'index.html', *sorted((root / 'books').glob('*.html'))]
+
 for path in pages:
     if not path.exists():
         continue
+
     text = path.read_text(encoding='utf-8')
+
     if MARKER not in text:
         if '</style>' not in text:
             raise SystemExit(f'No style block found in {path}')
         text = text.replace('</style>', CSS + '\n</style>', 1)
-    text = text.replace('Frederick Samuel Author Website V6.0', 'Frederick Samuel Author Website V6.1')
+
+    text = text.replace(
+        'Frederick Samuel Author Website V6.0',
+        'Frederick Samuel Author Website V6.1'
+    )
+
     text = cache_bust(text, 'the-listening-tide.webp')
     text = cache_bust(text, 'verdant-ascension.webp')
+
     text = normalise_img(text, 'the-listening-tide.webp', 400, 640)
     text = normalise_img(text, 'verdant-ascension.webp', 400, 600)
-    path.write_text(text, encoding='utf-8')
 
-print(f'Applied V6.1 mobile corrective pass to {len(pages)} HTML pages')
-, '', tag)
-        return tag + f' width="{width}" height="{height}" loading="eager" fetchpriority="auto"/>'
-    return pattern.sub(repl, text)
-
-pages = [root / 'index.html', *sorted((root / 'books').glob('*.html'))]
-for path in pages:
-    if not path.exists():
-        continue
-    text = path.read_text(encoding='utf-8')
-    if MARKER not in text:
-        if '</style>' not in text:
-            raise SystemExit(f'No style block found in {path}')
-        text = text.replace('</style>', CSS + '\n</style>', 1)
-    text = text.replace('Frederick Samuel Author Website V6.0', 'Frederick Samuel Author Website V6.1')
-    text = cache_bust(text, 'the-listening-tide.webp')
-    text = cache_bust(text, 'verdant-ascension.webp')
-    text = normalise_img(text, 'the-listening-tide.webp', 400, 640)
-    text = normalise_img(text, 'verdant-ascension.webp', 400, 600)
     path.write_text(text, encoding='utf-8')
 
 print(f'Applied V6.1 mobile corrective pass to {len(pages)} HTML pages')
