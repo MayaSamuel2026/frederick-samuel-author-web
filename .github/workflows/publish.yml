@@ -112,10 +112,10 @@ jobs:
           if '.avif' in open(os.path.join(root,'index.html'),encoding='utf-8').read():
               raise SystemExit('AVIF reference remained in homepage')
           homepage=open(os.path.join(root,'index.html'),encoding='utf-8').read()
-          if 'assets/covers/the-snowblind-protocol.webp' not in homepage:
-              raise SystemExit('Qualified current Snow cover URL missing from homepage')
-          if 'assets/covers/what-the-snow-remembers.webp' in homepage:
-              raise SystemExit('Unqualified replacement Snow cover URL reached release')
+          if 'assets/covers/the-snowblind-protocol.webp' in homepage:
+              raise SystemExit('Legacy Snowblind cover URL remained in homepage')
+          if 'assets/covers/what-the-snow-remembers.webp' not in homepage:
+              raise SystemExit('What The Snow Remembers cover URL missing from homepage')
           if 'What The Snow Remembers' not in homepage:
               raise SystemExit('What The Snow Remembers title missing from homepage')
           # Mobile release contract: every page must contain the responsive layer and safe viewport.
