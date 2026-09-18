@@ -15,6 +15,9 @@ concurrency:
 jobs:
   qualify-publish:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
+      GA4_MEASUREMENT_ID: ${{ secrets.GA4_MEASUREMENT_ID }}
     steps:
       - name: Checkout release source
         uses: actions/checkout@v4
