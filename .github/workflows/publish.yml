@@ -84,7 +84,7 @@ jobs:
           # Apply final responsive corrections after all approved cover assets exist.
           python3 patches/mobile_fix.py "$DEPLOY"
 
-          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.1" > "$DEPLOY/VERSION.txt"
+          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.2" > "$DEPLOY/VERSION.txt"
 
       - name: Qualify static site
         shell: bash
@@ -150,7 +150,7 @@ jobs:
               raise SystemExit('V6.1 generator marker missing')
           if '"/ width=' in homepage or '"/ height=' in homepage:
               raise SystemExit('Malformed responsive image tag detected')
-          print(f'QUALIFIED V6.1 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
+          print(f'QUALIFIED V6.2 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
           PY
 
       - name: Publish production branch
