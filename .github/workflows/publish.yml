@@ -148,6 +148,8 @@ jobs:
               raise SystemExit('Verdant Ascension cache-busted asset reference missing')
           if 'Frederick Samuel Author Website V6.1' not in homepage:
               raise SystemExit('V6.1 generator marker missing')
+          if '"/ width=' in homepage or '"/ height=' in homepage:
+              raise SystemExit('Malformed responsive image tag detected')
           print(f'QUALIFIED V6.1 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
           PY
 
