@@ -81,7 +81,10 @@ jobs:
           test "$(sha256sum "$DEPLOY/assets/covers/the-listening-tide.webp" | cut -d' ' -f1)" = "3f8c2aa844be30e5f3ae4979e9ca39baebbc5afd48ddf67373353f42fdec72ea"
           test "$(sha256sum "$DEPLOY/assets/covers/verdant-ascension.webp" | cut -d' ' -f1)" = "f377afa6d458e53af07a3a8ce1f423ecf0827f1ab2b68f6b4977e93430e264da"
 
-          printf '%s\n' "Frederick Samuel Author Website — automated production release" > "$DEPLOY/VERSION.txt"
+          # Apply final responsive corrections after all approved cover assets exist.
+          python3 patches/mobile_fix.py "$DEPLOY"
+
+          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.1" > "$DEPLOY/VERSION.txt"
 
       - name: Qualify static site
         shell: bash
@@ -124,11 +127,28 @@ jobs:
               text=open(hp,encoding='utf-8').read()
               if '/* MOBILE-V6 responsive qualification */' not in text:
                   raise SystemExit(f'Mobile responsive layer missing: {os.path.relpath(hp,root)}')
+              if '/* MOBILE-V6.1 corrective pass */' not in text:
+                  raise SystemExit(f'Mobile V6.1 corrective layer missing: {os.path.relpath(hp,root)}')
               if 'viewport-fit=cover' not in text:
                   raise SystemExit(f'Mobile viewport contract missing: {os.path.relpath(hp,root)}')
           if 'aria-controls="mobileNav"' not in homepage or 'aria-expanded="false"' not in homepage:
               raise SystemExit('Accessible mobile navigation contract missing')
-          print(f'QUALIFIED V6.0 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
+          required_mobile_rules=[
+              '.home .published-book:nth-child(even){',
+              'grid-template-columns:minmax(0,1fr) !important;',
+              '.home .hadal-latest-cover{',
+              'width:min(100%,300px) !important;',
+          ]
+          for rule in required_mobile_rules:
+              if rule not in homepage:
+                  raise SystemExit(f'Mobile V6.1 regression guard missing: {rule}')
+          if 'the-listening-tide.webp?v=mobile61-20260918' not in homepage:
+              raise SystemExit('Listening Tide cache-busted asset reference missing')
+          if 'verdant-ascension.webp?v=mobile61-20260918' not in homepage:
+              raise SystemExit('Verdant Ascension cache-busted asset reference missing')
+          if 'Frederick Samuel Author Website V6.1' not in homepage:
+              raise SystemExit('V6.1 generator marker missing')
+          print(f'QUALIFIED V6.1 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
           PY
 
       - name: Publish production branch
