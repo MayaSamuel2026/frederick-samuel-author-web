@@ -228,6 +228,7 @@ def enhance(path):
         raise SystemExit(f"No </head> in {path}")
     text = text.replace("</head>", seo + "</head>", 1)
     text = text.replace("Frederick Samuel Author Website V6.2", "Frederick Samuel Author Website V6.4")
+    text = text.replace("Frederick Samuel Author Website V6.3", "Frederick Samuel Author Website V6.4")
     path.write_text(text, encoding="utf-8")
 
 agent_html = r'''<!DOCTYPE html>
