@@ -3,7 +3,7 @@ import re
 import sys
 
 root = Path(sys.argv[1])
-MARKER = "/* MOBILE-V6.1 corrective pass */"
+MARKER = "/* MOBILE-V6.2 mobile Hadal sequence correction */"
 CACHE_TAG = "mobile61-20260918"
 
 CSS = r'''
@@ -140,7 +140,7 @@ for path in pages:
         'Frederick Samuel Author Website V6.1'
     )
 
-    text = cache_bust(text, 'the-listening-tide.webp')
+    text = text.replace('Frederick Samuel Author Website V6.1', 'Frederick Samuel Author Website V6.2')\n\n    text = cache_bust(text, 'the-listening-tide.webp')
     text = cache_bust(text, 'verdant-ascension.webp')
 
     text = normalise_img(text, 'the-listening-tide.webp', 400, 640)
@@ -148,4 +148,4 @@ for path in pages:
 
     path.write_text(text, encoding='utf-8')
 
-print(f'Applied V6.1 mobile corrective pass to {len(pages)} HTML pages')
+print(f'Applied V6.2 mobile corrective pass to {len(pages)} HTML pages')
