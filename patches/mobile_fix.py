@@ -7,6 +7,10 @@ MARKER = "/* MOBILE-V6.2 mobile Hadal sequence correction */"
 CACHE_TAG = "mobile61-20260918"
 
 CSS = r'''
+/* MOBILE-V6.2 mobile Hadal sequence correction */
+@media(max-width:920px){
+  .home .hadal-latest{display:none !important;}
+}
 /* MOBILE-V6.1 corrective pass */
 @media(max-width:680px){
   .home .published-book,
@@ -45,33 +49,6 @@ CSS = r'''
   }
 }
 @media(max-width:620px){
-  .home .hadal-latest-book{
-    grid-template-columns:minmax(0,1fr) !important;
-    gap:22px !important;
-  }
-  .home .hadal-latest-cover{
-    display:block !important;
-    width:min(100%,300px) !important;
-    max-width:300px !important;
-    margin:0 auto 4px !important;
-    aspect-ratio:2/3 !important;
-    overflow:hidden !important;
-    background:#111 !important;
-  }
-  .home .hadal-latest-cover picture{
-    display:block !important;
-    width:100% !important;
-    height:100% !important;
-  }
-  .home .hadal-latest-cover img{
-    display:block !important;
-    width:100% !important;
-    height:100% !important;
-    max-width:none !important;
-    aspect-ratio:auto !important;
-    object-fit:cover !important;
-    object-position:center center !important;
-  }
   .home .hadal-grid .cover-wrap{
     aspect-ratio:2/3 !important;
     overflow:hidden !important;
@@ -135,12 +112,10 @@ for path in pages:
             raise SystemExit(f'No style block found in {path}')
         text = text.replace('</style>', CSS + '\n</style>', 1)
 
-    text = text.replace(
-        'Frederick Samuel Author Website V6.0',
-        'Frederick Samuel Author Website V6.1'
-    )
+    text = text.replace('Frederick Samuel Author Website V6.0', 'Frederick Samuel Author Website V6.2')
+    text = text.replace('Frederick Samuel Author Website V6.1', 'Frederick Samuel Author Website V6.2')
 
-    text = text.replace('Frederick Samuel Author Website V6.1', 'Frederick Samuel Author Website V6.2')\n\n    text = cache_bust(text, 'the-listening-tide.webp')
+    text = cache_bust(text, 'the-listening-tide.webp')
     text = cache_bust(text, 'verdant-ascension.webp')
 
     text = normalise_img(text, 'the-listening-tide.webp', 400, 640)
