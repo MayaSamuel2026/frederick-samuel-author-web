@@ -13,7 +13,7 @@ SEO_START = "<!-- SEO-V6.3 START -->"
 SEO_END = "<!-- SEO-V6.3 END -->"
 TODAY = date.today().isoformat()
 GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "").strip()
-GA4_MEASUREMENT_ID = os.getenv("GA4_MEASUREMENT_ID", "").strip()
+GA4_MEASUREMENT_ID = os.getenv("GA4_MEASUREMENT_ID", "").strip() or "G-NB2P64CP00"
 
 def clean_text(value):
     value = re.sub(r"<[^>]+>", " ", value or "")
@@ -227,7 +227,7 @@ def enhance(path):
     if "</head>" not in text:
         raise SystemExit(f"No </head> in {path}")
     text = text.replace("</head>", seo + "</head>", 1)
-    text = text.replace("Frederick Samuel Author Website V6.2", "Frederick Samuel Author Website V6.3")
+    text = text.replace("Frederick Samuel Author Website V6.2", "Frederick Samuel Author Website V6.4")
     path.write_text(text, encoding="utf-8")
 
 agent_html = r'''<!DOCTYPE html>
@@ -236,7 +236,7 @@ agent_html = r'''<!DOCTYPE html>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="description" content="For literary agents and publishers: selected fiction projects, published work and representation contact for novelist Frederick Samuel."/>
-<meta name="generator" content="Frederick Samuel Author Website V6.3"/>
+<meta name="generator" content="Frederick Samuel Author Website V6.4"/>
 <title>For Agents &amp; Publishers — Frederick Samuel</title>
 <style>
 :root{--ink:#0b0d0e;--paper:#f1ede5;--muted:#969a96;--line:rgba(255,255,255,.13);--rust:#9c3b31;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Baskerville,Georgia,serif;--sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
