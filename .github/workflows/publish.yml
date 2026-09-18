@@ -84,7 +84,10 @@ jobs:
           # Apply final responsive corrections after all approved cover assets exist.
           python3 patches/mobile_fix.py "$DEPLOY"
 
-          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.2" > "$DEPLOY/VERSION.txt"
+          # Add technical SEO, crawl discovery and agent-facing visibility assets.
+          python3 patches/seo_visibility.py "$DEPLOY"
+
+          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.3" > "$DEPLOY/VERSION.txt"
 
       - name: Qualify static site
         shell: bash
@@ -94,7 +97,7 @@ jobs:
           python3 - "$DEPLOY" <<'PY'
           import glob, os, re, sys
           root=sys.argv[1]
-          for p in ['index.html','books','assets/covers']:
+          for p in ['index.html','books','assets/covers','for-agents.html','robots.txt','sitemap.xml']:
               if not os.path.exists(os.path.join(root,p)):
                   raise SystemExit(f'Missing required path: {p}')
           books=glob.glob(os.path.join(root,'books','*.html'))
@@ -122,7 +125,7 @@ jobs:
           if 'What The Snow Remembers' not in homepage:
               raise SystemExit('What The Snow Remembers title missing from homepage')
           # Mobile release contract: every page must contain the responsive layer and safe viewport.
-          html_pages=[os.path.join(root,'index.html')]+books
+          html_pages=[os.path.join(root,'index.html'),os.path.join(root,'for-agents.html')]+books
           for hp in html_pages:
               text=open(hp,encoding='utf-8').read()
               if '/* MOBILE-V6 responsive qualification */' not in text:
@@ -148,13 +151,36 @@ jobs:
               raise SystemExit('Listening Tide cache-busted asset reference missing')
           if 'verdant-ascension.webp?v=mobile61-20260918' not in homepage:
               raise SystemExit('Verdant Ascension cache-busted asset reference missing')
-          if 'Frederick Samuel Author Website V6.2' not in homepage:
-              raise SystemExit('V6.2 generator marker missing')
+          if 'Frederick Samuel Author Website V6.3' not in homepage:
+              raise SystemExit('V6.3 generator marker missing')
           if '.home .hadal-latest{display:none !important;}' not in homepage:
               raise SystemExit('Mobile Hadal duplicate feature is not suppressed')
           if '"/ width=' in homepage or '"/ height=' in homepage:
               raise SystemExit('Malformed responsive image tag detected')
-          print(f'QUALIFIED V6.2 MOBILE: {len(books)} book pages, {len(covers)} covers, all local references resolved')
+          # SEO / Google discovery qualification.
+          for hp in html_pages:
+              text=open(hp,encoding='utf-8').read()
+              rel=os.path.relpath(hp,root)
+              for required in ['rel="canonical"','property="og:title"','name="twitter:card"','application/ld+json','name="robots"']:
+                  if required not in text:
+                      raise SystemExit(f'SEO marker {required} missing: {rel}')
+          agents=open(os.path.join(root,'for-agents.html'),encoding='utf-8').read()
+          if 'For agents &amp; publishers' not in agents or 'frederick@fredericksamuel.com' not in agents:
+              raise SystemExit('Agent-facing page incomplete')
+          if 'href="for-agents.html"' not in homepage:
+              raise SystemExit('Homepage does not link to agent-facing page')
+          robots=open(os.path.join(root,'robots.txt'),encoding='utf-8').read()
+          if 'Sitemap: https://fredericksamuel.com/sitemap.xml' not in robots:
+              raise SystemExit('robots.txt sitemap discovery missing')
+          sitemap=open(os.path.join(root,'sitemap.xml'),encoding='utf-8').read()
+          expected_urls=2+len(books)
+          actual_urls=sitemap.count('<url>')
+          if actual_urls != expected_urls:
+              raise SystemExit(f'Sitemap expected {expected_urls} URLs, found {actual_urls}')
+          for required_url in ['https://fredericksamuel.com/','https://fredericksamuel.com/for-agents.html','https://fredericksamuel.com/books/by-blood-ink-and-salt.html']:
+              if f'<loc>{required_url}</loc>' not in sitemap:
+                  raise SystemExit(f'Sitemap URL missing: {required_url}')
+          print(f'QUALIFIED V6.3 VISIBILITY: {len(books)} book pages, {len(covers)} covers, SEO metadata, sitemap, robots and agent page passed')
           PY
 
       - name: Publish production branch
