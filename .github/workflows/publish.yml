@@ -90,7 +90,7 @@ jobs:
           # Add technical SEO, crawl discovery and agent-facing visibility assets.
           python3 patches/seo_visibility.py "$DEPLOY"
 
-          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.3" > "$DEPLOY/VERSION.txt"
+          printf '%s\n' "Frederick Samuel Author Website — automated production release V6.4" > "$DEPLOY/VERSION.txt"
 
       - name: Qualify static site
         shell: bash
@@ -154,7 +154,7 @@ jobs:
               raise SystemExit('Listening Tide cache-busted asset reference missing')
           if 'verdant-ascension.webp?v=mobile61-20260918' not in homepage:
               raise SystemExit('Verdant Ascension cache-busted asset reference missing')
-          if 'Frederick Samuel Author Website V6.3' not in homepage:
+          if 'Frederick Samuel Author Website V6.4' not in homepage:
               raise SystemExit('V6.3 generator marker missing')
           if '.home .hadal-latest{display:none !important;}' not in homepage:
               raise SystemExit('Mobile Hadal duplicate feature is not suppressed')
@@ -174,6 +174,8 @@ jobs:
                   raise SystemExit(f'Agent-facing page incomplete: {required}')
           if 'href="for-agents.html"' not in homepage:
               raise SystemExit('Homepage does not link to agent-facing page')
+          if 'G-NB2P64CP00' not in homepage or 'fsGoogleAnalyticsConsent' not in homepage:
+              raise SystemExit('GA4 consent-controlled installation missing from homepage')
           robots=open(os.path.join(root,'robots.txt'),encoding='utf-8').read()
           if 'Sitemap: https://fredericksamuel.com/sitemap.xml' not in robots:
               raise SystemExit('robots.txt sitemap discovery missing')
@@ -185,7 +187,7 @@ jobs:
           for required_url in ['https://fredericksamuel.com/','https://fredericksamuel.com/for-agents.html','https://fredericksamuel.com/books/by-blood-ink-and-salt.html']:
               if f'<loc>{required_url}</loc>' not in sitemap:
                   raise SystemExit(f'Sitemap URL missing: {required_url}')
-          print(f'QUALIFIED V6.3 VISIBILITY: {len(books)} book pages, {len(covers)} covers, SEO metadata, sitemap, robots and agent page passed')
+          print(f'QUALIFIED V6.4 VISIBILITY: {len(books)} book pages, {len(covers)} covers, SEO metadata, sitemap, robots and agent page passed')
           PY
 
       - name: Publish production branch
