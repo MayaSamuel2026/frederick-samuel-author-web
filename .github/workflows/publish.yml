@@ -166,8 +166,9 @@ jobs:
                   if required not in text:
                       raise SystemExit(f'SEO marker {required} missing: {rel}')
           agents=open(os.path.join(root,'for-agents.html'),encoding='utf-8').read()
-          if 'For agents &amp; publishers' not in agents or 'frederick@fredericksamuel.com' not in agents:
-              raise SystemExit('Agent-facing page incomplete')
+          for required in ['Representation enquiry','id="projects"','frederick@fredericksamuel.com']:
+              if required not in agents:
+                  raise SystemExit(f'Agent-facing page incomplete: {required}')
           if 'href="for-agents.html"' not in homepage:
               raise SystemExit('Homepage does not link to agent-facing page')
           robots=open(os.path.join(root,'robots.txt'),encoding='utf-8').read()
