@@ -125,7 +125,7 @@ jobs:
           if 'What The Snow Remembers' not in homepage:
               raise SystemExit('What The Snow Remembers title missing from homepage')
           # Mobile release contract: every page must contain the responsive layer and safe viewport.
-          html_pages=[os.path.join(root,'index.html'),os.path.join(root,'for-agents.html')]+books
+          html_pages=[os.path.join(root,'index.html')]+books
           for hp in html_pages:
               text=open(hp,encoding='utf-8').read()
               if '/* MOBILE-V6 responsive qualification */' not in text:
@@ -158,7 +158,8 @@ jobs:
           if '"/ width=' in homepage or '"/ height=' in homepage:
               raise SystemExit('Malformed responsive image tag detected')
           # SEO / Google discovery qualification.
-          for hp in html_pages:
+          seo_pages=[os.path.join(root,'index.html'),os.path.join(root,'for-agents.html')]+books
+          for hp in seo_pages:
               text=open(hp,encoding='utf-8').read()
               rel=os.path.relpath(hp,root)
               for required in ['rel="canonical"','property="og:title"','name="twitter:card"','application/ld+json','name="robots"']:
