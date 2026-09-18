@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from datetime import date
 import html
 import json
+import os
 import re
 import sys
 
@@ -11,6 +12,8 @@ BASE = "https://fredericksamuel.com/"
 SEO_START = "<!-- SEO-V6.3 START -->"
 SEO_END = "<!-- SEO-V6.3 END -->"
 TODAY = date.today().isoformat()
+GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "").strip()
+GA4_MEASUREMENT_ID = os.getenv("GA4_MEASUREMENT_ID", "").strip()
 
 def clean_text(value):
     value = re.sub(r"<[^>]+>", " ", value or "")
@@ -178,6 +181,47 @@ def enhance(path):
             + json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
             + "</script>"
         )
+    if path.name == "index.html" and GOOGLE_SITE_VERIFICATION:
+        block.append(
+            f'<meta name="google-site-verification" content="{html.escape(GOOGLE_SITE_VERIFICATION, quote=True)}"/>'
+        )
+    if GA4_MEASUREMENT_ID:
+        ga_id = html.escape(GA4_MEASUREMENT_ID, quote=True)
+        block.append(f'''<script id="fsGoogleAnalyticsConsent">
+(function(){{
+  const GA_ID="{ga_id}";
+  const KEY="fs_analytics_consent";
+  function loadGA(){{
+    if(document.getElementById("fs-ga4-script")) return;
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){{dataLayer.push(arguments);}};
+    gtag("js",new Date());
+    gtag("config",GA_ID,{{anonymize_ip:true}});
+    const s=document.createElement("script");
+    s.id="fs-ga4-script"; s.async=true;
+    s.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(GA_ID);
+    document.head.appendChild(s);
+  }}
+  function removeBanner(){{
+    const b=document.getElementById("fsAnalyticsConsent"); if(b) b.remove();
+  }}
+  function grant(){{localStorage.setItem(KEY,"granted");removeBanner();loadGA();}}
+  function deny(){{localStorage.setItem(KEY,"denied");removeBanner();}}
+  if(localStorage.getItem(KEY)==="granted"){{loadGA();return;}}
+  if(localStorage.getItem(KEY)==="denied") return;
+  window.addEventListener("DOMContentLoaded",function(){{
+    const b=document.createElement("div");
+    b.id="fsAnalyticsConsent";
+    b.setAttribute("role","dialog");
+    b.setAttribute("aria-label","Analytics consent");
+    b.style.cssText="position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:720px;margin:auto;background:#111516;color:#f1ede5;border:1px solid rgba(255,255,255,.18);padding:16px 18px;font:14px/1.5 system-ui,-apple-system,sans-serif;box-shadow:0 16px 45px rgba(0,0,0,.35)";
+    b.innerHTML='<div style="margin-bottom:12px">Optional analytics help improve this site. No analytics are loaded unless you accept.</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button id="fsAcceptAnalytics" type="button" style="min-height:42px;padding:0 16px;border:1px solid #f1ede5;background:#f1ede5;color:#111516">Accept analytics</button><button id="fsDeclineAnalytics" type="button" style="min-height:42px;padding:0 16px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#f1ede5">Decline</button></div>';
+    document.body.appendChild(b);
+    document.getElementById("fsAcceptAnalytics").addEventListener("click",grant);
+    document.getElementById("fsDeclineAnalytics").addEventListener("click",deny);
+  }});
+}})();
+</script>''')
     block.append(SEO_END)
     seo = "\n".join(block) + "\n"
     if "</head>" not in text:
