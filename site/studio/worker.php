@@ -115,6 +115,7 @@ worker_respond([
     'pov'=>$job['pov']??'Use book canon',
     'tense'=>$job['tense']??'Use book canon',
     'style_source'=>$job['style_source']??'Use approved book style profile',
+    'style_influences'=>$job['style_influences']??[],
     'research_policy'=>$job['research_policy']??'Respect verified facts; flag unknowns',
     'instructions'=>$job['instructions']??'',
     'scene_mode'=>$job['scene_mode']??'ordinary',
