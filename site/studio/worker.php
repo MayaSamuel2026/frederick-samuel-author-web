@@ -40,6 +40,15 @@ function worker_latest_passages(array $state, int $max=12): array {
     }
     return array_reverse($rows);
 }
+function worker_recent_prose(array $state, int $max=8): string {
+    $parts=[];
+    foreach(worker_latest_passages($state,$max) as $p){
+        $text=trim((string)($p['content']??''));
+        if($text!=='') $parts[]=$text;
+    }
+    $joined=implode("\n\n",$parts);
+    return mb_substr($joined,max(0,mb_strlen($joined)-24000));
+}
 
 $kind=strtolower(trim((string)($_GET['kind']??'')));
 $id=(int)($_GET['id']??0);
@@ -82,6 +91,9 @@ $job=worker_find($state['write_jobs']??[],$id);
 if(!$job || !worker_match_token($job['worker_token_hash']??null,$token)){
     worker_respond(['ok'=>false,'error'=>'worker_authorization_failed'],401);
 }
+$projectId=(int)($job['project_id']??1);
+$literaryByProject=is_array($state['literary_intelligence_by_project']??null)?$state['literary_intelligence_by_project']:[];
+$literary=is_array($literaryByProject[(string)$projectId]??null)?$literaryByProject[(string)$projectId]:[];
 $canonical=[
     'project'=>$state['project']??[],
     'characters'=>$state['characters']??[],
@@ -90,10 +102,12 @@ $canonical=[
     'story_edges'=>$state['story_edges']??[],
     'research_claims'=>$state['research']??[],
     'recent_manuscript'=>worker_latest_passages($state,12),
+    'recent_prose'=>worker_recent_prose($state,8),
+    'literary_intelligence'=>$literary,
 ];
 worker_respond([
     'kind'=>'write',
-    'project_id'=>(int)($job['project_id']??1),
+    'project_id'=>$projectId,
     'write_job_id'=>$id,
     'chapter_id'=>$job['chapter_id']??null,
     'target_words'=>$job['target_words']??2500,
@@ -103,6 +117,13 @@ worker_respond([
     'style_source'=>$job['style_source']??'Use approved book style profile',
     'research_policy'=>$job['research_policy']??'Respect verified facts; flag unknowns',
     'instructions'=>$job['instructions']??'',
+    'scene_mode'=>$job['scene_mode']??'ordinary',
+    'style_control'=>$job['style_control']??($literary['style_control']??[]),
+    'author_style_memory'=>$literary['author_style_memory']??[],
+    'editorial_feedback'=>$job['editorial_feedback']??[],
+    'recent_patterns'=>$literary['recent_patterns']??[],
+    'protected_motifs'=>$literary['protected_motifs']??[],
+    'recent_prose'=>$canonical['recent_prose'],
     'context_flags'=>$job['context_flags']??[],
     'guardrails'=>$job['guardrails']??[],
     'canonical_context'=>$canonical,
