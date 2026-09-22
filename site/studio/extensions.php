@@ -373,6 +373,36 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         respond(['ok'=>true,'import'=>$ii>=0?$s['imports'][$ii]:$rec,'analysis_job'=>$s['analysis_jobs'][count($s['analysis_jobs'])-1]]);
     }
 
+    if($method==='GET'&&preg_match('#^imports/(\d+)/original-file$#',$path,$m)){
+        $id=(int)$m[1];
+        $ii=ba_find_index($s['imports'],$id);
+        if($ii<0) respond(['error'=>'import_not_found'],404);
+        $import=$s['imports'][$ii];
+        $pid=(int)($import['project_id']??1);
+        $stored=basename((string)($import['stored_name']??''));
+        if($stored==='') respond(['error'=>'original_file_unavailable'],404);
+        $file=rtrim($dataDir,'/').'/imports/project_'.$pid.'/'.$stored;
+        if(!is_file($file) || !is_readable($file)) respond(['error'=>'original_file_unavailable'],404);
+        $ext=strtolower((string)($import['extension']??pathinfo($stored,PATHINFO_EXTENSION)));
+        $types=[
+            'pdf'=>'application/pdf',
+            'docx'=>'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'odt'=>'application/vnd.oasis.opendocument.text',
+            'epub'=>'application/epub+zip',
+            'txt'=>'text/plain; charset=UTF-8',
+            'md'=>'text/markdown; charset=UTF-8',
+            'markdown'=>'text/markdown; charset=UTF-8',
+            'html'=>'text/html; charset=UTF-8',
+            'htm'=>'text/html; charset=UTF-8',
+        ];
+        header('Content-Type: '.($types[$ext]??'application/octet-stream'));
+        header('Content-Length: '.(string)filesize($file));
+        header('Content-Disposition: inline; filename="'.addcslashes((string)($import['original_name']??$stored),"\\\"").'"');
+        header('Cache-Control: private, no-store, max-age=0');
+        readfile($file);
+        exit;
+    }
+
     if($method==='POST'&&preg_match('#^imports/(\d+)/extracted-text$#',$path,$m)){
         $id=(int)$m[1];
         $ii=ba_find_index($s['imports'],$id);
