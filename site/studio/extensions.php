@@ -325,6 +325,8 @@ function ba_sync_core_jobs(array &$s,string $stateFile): void {
                     $projectLi=is_array($s['literary_intelligence_by_project'][$key]??null)?$s['literary_intelligence_by_project'][$key]:[];
                     if(is_array($li['author_style_memory_next']??null)) $projectLi['author_style_memory']=$li['author_style_memory_next'];
                     if(is_array($li['style_control']??null)) $projectLi['style_control']=$li['style_control'];
+                    if(is_array($li['recent_patterns_next']??null)) $projectLi['recent_patterns']=array_slice(array_values($li['recent_patterns_next']),-30);
+                    if(is_array($li['protected_motifs']??null)) $projectLi['protected_motifs']=array_slice(array_values($li['protected_motifs']),-30);
                     if(is_array($li['learning_event']??null)){
                         $events=is_array($projectLi['learning_events']??null)?$projectLi['learning_events']:[];
                         $event=$li['learning_event']; $event['recorded_at']=nowIso(); $event['write_job_id']=(int)($job['id']??0);
