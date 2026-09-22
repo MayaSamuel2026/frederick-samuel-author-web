@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<meta content="Frederick Samuel — novelist. Published fiction, standalone novels and the ten-volume Hadal Cycle." name="description"/><meta content="Frederick Samuel Author Website V6.4" name="generator"/>
+<title>Frederick Samuel — Novelist</title><style>
+:root{
+ --ink:#0b0d0e;--ink2:#111516;--paper:#f1ede5;--paper2:#e8e1d6;--white:#f7f5ef;
+ --muted:#9b9c98;--line:rgba(255,255,255,.13);--line-dark:rgba(14,16,16,.16);
+ --rust:#9c3b31;--gold:#b7a07a;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Baskerville,Georgia,serif;
+ --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--ink);color:var(--white);font-family:var(--sans);overflow-x:hidden}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}button{font:inherit}.shell{width:min(1480px,90vw);margin:auto}
+.topline{height:30px;display:flex;align-items:center;justify-content:center;background:#151818;border-bottom:1px solid rgba(255,255,255,.06);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#b9bbb7}
+.nav{position:sticky;top:0;z-index:60;height:78px;background:rgba(10,12,13,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav .shell{height:100%;display:flex;align-items:center;justify-content:space-between}.brand{font-family:var(--serif);font-size:21px;letter-spacing:.16em}.brand small{font:500 8px var(--sans);letter-spacing:.28em;color:#929692;margin-left:10px}
+.navlinks{display:flex;gap:27px;align-items:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#c6c8c4}.navlinks a{padding:10px 0;border-bottom:1px solid transparent}.navlinks a:hover{border-color:#ddd}
+.menu{display:none;background:none;border:0;color:#fff;font-size:22px}.mobile{display:none;padding:22px 5vw;background:#0d1010;border-bottom:1px solid var(--line)}.mobile.open{display:grid;gap:14px}.mobile a{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#ddd}
+.hero{position:relative;min-height:78vh;display:grid;align-items:end;overflow:hidden;background:linear-gradient(112deg,#0b0d0e 0%,#101414 58%,#0b0d0e 100%)}
+ .hero:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 49.9%,rgba(255,255,255,.04) 50%,transparent 50.1%),repeating-linear-gradient(90deg,transparent 0 150px,rgba(255,255,255,.012) 151px,transparent 152px);opacity:.38}
+.hero-inner{position:relative;z-index:2;padding:8vw 0 6.5vw;display:grid;grid-template-columns:1.05fr .95fr;gap:6vw;align-items:end}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:#a2a5a1}.eyebrow:before{content:"";width:31px;height:1px;background:var(--rust)}
+h1,h2,h3,p{margin-top:0}.hero h1{font:400 clamp(58px,8.2vw,126px)/.82 var(--serif);letter-spacing:-.035em;margin:28px 0 30px;max-width:1000px}.hero h1 em{font-weight:400;color:#b8b1a5}
+.hero .lead{font:400 clamp(19px,2vw,28px)/1.43 var(--serif);color:#d1cec6;max-width:720px}.hero-side{padding-bottom:8px;border-left:1px solid var(--line);padding-left:34px}.hero-side .mini{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#888c88;margin-bottom:14px}.hero-side strong{display:block;font:400 34px/1.05 var(--serif);margin-bottom:16px}.hero-side p{font-size:12px;line-height:1.75;color:#989b97}
+
+.hero-library{align-self:end;padding-left:2vw}
+.hero-library-head{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:end;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.hero-library-head span{font-size:8px;letter-spacing:.21em;text-transform:uppercase;color:#8f9390}
+.hero-library-head strong{font:400 22px/1.12 var(--serif);color:#d7d3ca;text-align:right}
+.hero-covers{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:end}
+.hero-book{display:block;min-width:0}
+.hero-book img{width:100%;aspect-ratio:2/3;object-fit:cover;box-shadow:0 24px 55px rgba(0,0,0,.48);transition:transform .35s ease}
+.hero-book:hover img{transform:translateY(-4px)}
+.hero-book-meta{padding-top:12px}
+.hero-book-meta small{display:block;font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#7f837f;margin-bottom:6px}
+.hero-book-meta b{display:block;font:400 19px/1.05 var(--serif);color:#efebe4}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}.btn{min-height:49px;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:10px;border:1px solid rgba(255,255,255,.23);font-size:9px;letter-spacing:.16em;text-transform:uppercase;transition:.25s}.btn:hover{transform:translateY(-2px);border-color:#fff}.btn.light{background:#f4f0e8;color:#111;border-color:#f4f0e8}.btn.dark{background:#111;color:white;border-color:#111}
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#0e1111;overflow:hidden;padding:15px 0}.track{width:max-content;display:flex;gap:45px;animation:scroll 30s linear infinite;font:400 17px var(--serif);color:#8f928f}.track b{font-weight:400;color:#ece8df}.dot{color:var(--rust)}@keyframes scroll{to{transform:translateX(-50%)}}
+.section{padding:108px 0}.section.paper{background:var(--paper);color:#151716}.section.soft{background:#101313}.section-head{display:grid;grid-template-columns:.27fr 1.3fr .5fr;gap:35px;align-items:end;margin-bottom:60px}.sec-no{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#7f827f}.section h2{font:400 clamp(43px,5.7vw,82px)/.93 var(--serif);letter-spacing:-.02em;margin:0}.section h2 em{font-weight:400;color:#8f8e88}.section-head p{font:400 18px/1.45 var(--serif);color:#8d908c;margin:0}
+.published-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-dark);background:#ebe5da}.published-card{min-height:460px;padding:42px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--line-dark);position:relative;overflow:hidden}.published-card:last-child{border-right:0}.published-card:after{content:"";position:absolute;right:-80px;bottom:-120px;width:330px;height:330px;border:1px solid rgba(20,20,20,.08);border-radius:50%;box-shadow:0 0 0 55px rgba(20,20,20,.025)}
+.published-card .status{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#725f51}.published-card h3{font:400 clamp(45px,5.2vw,73px)/.9 var(--serif);margin:0 0 20px;max-width:560px}.published-card p{max-width:570px;color:#52514d;line-height:1.7;font-size:13px}.published-card .meta{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#78736a;margin-bottom:20px}
+.book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:44px 28px}.cover-card{display:block}.cover-wrap{position:relative;overflow:hidden;background:#171b1b;aspect-ratio:2/3;box-shadow:0 20px 42px rgba(0,0,0,.32)}.cover-wrap img{width:100%;height:100%;object-fit:cover;transition:.55s cubic-bezier(.2,.75,.2,1)}.cover-wrap:after{content:"View novel";position:absolute;inset:auto 16px 16px;transform:translateY(12px);opacity:0;transition:.3s;background:rgba(9,11,11,.78);backdrop-filter:blur(8px);padding:11px 13px;text-align:center;font-size:8px;letter-spacing:.18em;text-transform:uppercase;border:1px solid rgba(255,255,255,.18)}.cover-card:hover .cover-wrap img{transform:scale(1.025)}.cover-card:hover .cover-wrap:after{opacity:1;transform:none}
+.card-meta{padding-top:18px}.card-meta .small{font-size:8px;letter-spacing:.17em;text-transform:uppercase;color:#787b78;margin-bottom:9px}.card-meta h3{font:400 30px/1.0 var(--serif);margin:0 0 8px}.card-meta p{font-size:11px;line-height:1.65;color:#8e918d;margin:0}.paper .card-meta .small{color:#847e74}.paper .card-meta p{color:#706d66}
+.hadal-intro{display:grid;grid-template-columns:.85fr 1.15fr;gap:7vw;margin-bottom:55px;padding-bottom:42px;border-bottom:1px solid var(--line)}.hadal-mark{width:70px;height:70px;border:1px solid rgba(255,255,255,.28);border-radius:50%;display:grid;place-items:center;font:400 38px var(--serif);color:#d7d8d5}.hadal-intro p{font:400 25px/1.45 var(--serif);color:#c8cbc7;margin:0}.hadal-intro small{display:block;margin-top:22px;font:500 9px var(--sans);text-transform:uppercase;letter-spacing:.18em;color:#717571}
+.hadal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:34px 22px}.hadal-grid .card-meta h3{font-size:26px}
+.about-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:8vw}.about-big{font:400 clamp(34px,4.2vw,60px)/1.04 var(--serif);color:#e6e2da}.about-copy{font-size:13px;line-height:1.9;color:#a1a4a0}.about-copy .pull{font:italic 24px/1.4 var(--serif);color:#dad7cf;border-top:1px solid var(--line);padding-top:27px;margin-top:30px}
+.rep-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:8vw}.rep-grid .big{font:400 clamp(43px,5.5vw,78px)/.95 var(--serif)}.rep-copy{font:400 23px/1.45 var(--serif);color:#4e4d48}.rep-list{margin-top:30px;border-top:1px solid #c9c1b5}.rep-row{padding:15px 0;border-bottom:1px solid #c9c1b5;display:flex;justify-content:space-between;gap:30px;font-size:9px;text-transform:uppercase;letter-spacing:.12em}.rep-row span:last-child{color:#706c65;text-align:right}
+.footer{border-top:1px solid var(--line);padding:38px 0 44px;background:#090b0c}.footer .shell{display:flex;align-items:flex-end;justify-content:space-between;gap:25px}.footer-brand{font:400 22px var(--serif);letter-spacing:.13em}.footer p{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#717571;margin:0;text-align:right}
+.reveal{opacity:0;transform:translateY(24px);transition:.8s cubic-bezier(.2,.7,.2,1)}.reveal.visible{opacity:1;transform:none}
+
+/* detail */
+.detail-hero{min-height:calc(100vh - 108px);padding:70px 0 90px;background:
+ radial-gradient(circle at 80% 12%,rgba(138,55,46,.17),transparent 28%),
+ linear-gradient(130deg,#0b0d0e,#111515 62%,#090b0c)}
+.detail-grid{display:grid;grid-template-columns:minmax(280px,430px) 1fr;gap:8vw;align-items:center}.detail-cover{box-shadow:0 35px 70px rgba(0,0,0,.5);position:relative}.detail-cover img{width:100%}.detail-copy .series{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8f9390}.detail-copy h1{font:400 clamp(56px,7vw,105px)/.86 var(--serif);letter-spacing:-.035em;margin:22px 0 25px}.detail-copy .tagline{font:italic 27px/1.35 var(--serif);color:#cbc6bc;margin-bottom:29px}.detail-copy .summary{font:400 21px/1.55 var(--serif);color:#c8cbc7;max-width:850px}.theme-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}.theme{padding:8px 10px;border:1px solid rgba(255,255,255,.16);font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:#a9aca8}
+.cycle-nav{display:flex;justify-content:space-between;gap:15px;margin-top:34px;padding-top:25px;border-top:1px solid var(--line)}.cycle-nav a{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#b9bcb8}.cycle-nav a:hover{color:white}
+.text-page{min-height:calc(100vh - 108px);padding:105px 0 120px;background:var(--paper);color:#141616}.text-page .inner{max-width:1000px}.text-page .status{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#856e5b}.text-page h1{font:400 clamp(65px,9vw,128px)/.83 var(--serif);letter-spacing:-.04em;margin:26px 0 30px}.text-page .desc{font:400 27px/1.5 var(--serif);color:#454641;max-width:830px}.text-page .meta{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#77746d;margin-top:25px}
+@media(max-width:1050px){.book-grid{grid-template-columns:repeat(2,1fr)}.hadal-grid{grid-template-columns:repeat(2,1fr)}.section-head{grid-template-columns:.25fr 1fr}.section-head p{grid-column:2}.hero-inner{grid-template-columns:1fr}.hero-side{max-width:620px}.detail-grid{grid-template-columns:minmax(240px,340px) 1fr;gap:6vw}}
+@media(max-width:780px){.navlinks{display:none}.menu{display:block}.brand small{display:none}.hero-inner{padding:100px 0 70px}.hero{min-height:auto}.hero h1{font-size:62px}.section{padding:78px 0}.section-head{display:block}.sec-no{margin-bottom:18px}.section-head h2{margin-bottom:18px}.published-grid,.about-grid,.rep-grid,.hadal-intro,.detail-grid{grid-template-columns:1fr}.published-card{border-right:0;border-bottom:1px solid var(--line-dark);min-height:390px}.published-card:last-child{border-bottom:0}.detail-cover{max-width:330px;margin:auto}.detail-copy h1{font-size:62px}.detail-hero{padding-top:55px}.footer .shell{display:block}.footer p{text-align:left;margin-top:12px}.rep-row{display:block}.rep-row span{display:block}.rep-row span:last-child{text-align:left;margin-top:7px}}
+@media(max-width:520px){.book-grid,.hadal-grid{grid-template-columns:1fr;gap:40px}.section h2{font-size:47px}.hero h1{font-size:54px}.published-card{padding:28px}.published-card h3{font-size:48px}.detail-copy .summary{font-size:19px}.shell{width:88vw}}
+
+/* V5.1 single-file local preview */
+body.modal-open{overflow:hidden}
+.book-modal{position:fixed;inset:0;z-index:200;background:rgba(3,5,6,.92);backdrop-filter:blur(14px);display:none;overflow:auto}
+.book-modal.open{display:block}
+.modal-shell{width:min(1180px,90vw);margin:5vh auto;display:grid;grid-template-columns:minmax(250px,380px) 1fr;gap:7vw;align-items:center;min-height:90vh;padding:35px 0}
+.modal-cover img{width:100%;box-shadow:0 30px 70px rgba(0,0,0,.55)}
+.modal-copy .series{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#90948f}
+.modal-copy h2{font:400 clamp(48px,6vw,88px)/.9 var(--serif);margin:20px 0 20px}
+.modal-copy .tag{font:italic 25px/1.4 var(--serif);color:#cbc7be;margin-bottom:24px}
+.modal-copy .sum{font:400 20px/1.55 var(--serif);color:#c7cac6}.modal-copy .sum p{margin:0 0 18px}.modal-copy .sum p:last-child{margin-bottom:0}
+.modal-close{position:fixed;right:24px;top:20px;z-index:210;border:1px solid rgba(255,255,255,.25);background:#101313;color:white;width:42px;height:42px;border-radius:50%;font-size:22px;cursor:pointer}
+.cover-card{cursor:pointer}
+@media(max-width:780px){
+ .topline{font-size:7px;letter-spacing:.12em;padding:0 12px;text-align:center}
+ .nav{height:66px}.brand{font-size:17px;letter-spacing:.12em}
+ .hero-inner{padding-top:70px}.hero-side{padding-left:22px}
+ .modal-shell{grid-template-columns:1fr;align-items:start;margin:0 auto;padding:78px 0 50px;min-height:100vh}
+ .modal-cover{max-width:280px;margin:auto}
+ .modal-copy h2{font-size:50px}.modal-copy .sum{font-size:18px}
+}
+
+/* V5.2 — published covers */
+.published-books{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:42px;
+}
+.published-book{
+  border:1px solid var(--line-dark);
+  background:#ebe5da;
+  display:grid;
+  grid-template-columns:minmax(300px, 390px) 1fr;
+  min-height:620px;
+  overflow:hidden;
+}
+.published-cover{
+  position:relative;
+  min-height:100%;
+  background:#171818;
+  overflow:hidden;
+}
+.published-cover img{
+  width:100%;
+  height:100%;
+  min-height:620px;
+  object-fit:cover;
+  display:block;
+  transition:transform .55s cubic-bezier(.2,.75,.2,1);
+}
+.published-cover:after{
+  content:"Published";
+  position:absolute;
+  left:16px;
+  bottom:16px;
+  padding:8px 10px;
+  background:rgba(8,10,10,.74);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.18);
+  font-size:8px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  backdrop-filter:blur(8px);
+}
+.published-book:hover .published-cover img{transform:scale(1.018)}
+.published-copy{
+  padding:52px 54px 44px;
+  display:flex;
+  flex-direction:column;
+}
+.published-copy .status{
+  font-size:8px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#75695d;
+}
+.published-copy h3{
+  font:400 clamp(39px,4.3vw,66px)/.9 var(--serif);
+  margin:22px 0 22px;
+  color:#171918;
+  letter-spacing:-.025em;
+}
+.published-copy p{
+  color:#55524c;
+  line-height:1.75;
+  font-size:14px;
+  margin:0;
+}
+.published-bottom{
+  margin-top:auto;
+  padding-top:30px;
+}
+.published-bottom .meta{
+  margin-bottom:18px;
+  font-size:8px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:#7a756d;
+}
+@media(max-width:1180px){
+  .published-books{grid-template-columns:1fr}
+  .published-book{grid-template-columns:minmax(240px,.65fr) 1fr}
+}
+@media(max-width:680px){
+  .published-books{gap:22px}
+  .published-book{grid-template-columns:1fr;min-height:auto}
+  .published-cover{min-height:auto}
+  .published-cover img{
+    width:100%;
+    height:auto;
+    min-height:0;
+    aspect-ratio:auto;
+    object-fit:contain;
+    background:#111;
+  }
+  .published-copy{padding:28px 26px 30px}
+  .published-copy h3{font-size:48px}
+}
+
+
+
+.published-book:nth-child(even){grid-template-columns:1fr minmax(300px,390px)}
+.published-book:nth-child(even) .published-cover{order:2}
+.published-book:nth-child(even) .published-copy{order:1}
+.published-copy p span{display:block}
+.published-copy p span+span{margin-top:16px}
+
+/* V5.7 — published distribution and review */
+.review-note{
+  margin-top:24px;
+  padding:20px 0 0;
+  border-top:1px solid rgba(20,20,20,.14);
+}
+.review-stars{
+  font-size:10px;
+  letter-spacing:.12em;
+  color:#7b5d38;
+  margin-bottom:10px;
+}
+.review-stars span{
+  margin-left:9px;
+  color:#777168;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-size:8px;
+}
+.review-note blockquote{
+  margin:0 0 8px;
+  padding:0;
+  border:0;
+  font:italic 18px/1.45 var(--serif);
+  color:#353532;
+}
+.review-credit{
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:#7b776f;
+}
+.retailer-label{
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  color:#6f6b64;
+  margin-bottom:9px;
+}
+.retailer-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-bottom:13px;
+}
+.retailer-links a,
+.review-link{
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid rgba(20,20,20,.18);
+  background:rgba(255,255,255,.22);
+  color:#232421;
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.11em;
+}
+.retailer-links a:hover,
+.review-link:hover{
+  background:#161817;
+  color:white;
+  border-color:#161817;
+}
+.review-link{margin-top:2px}
+@media(max-width:680px){
+  .retailer-links{display:grid;grid-template-columns:1fr 1fr}
+  .retailer-links a,.review-link{justify-content:center}
+  .review-link{width:100%}
+}
+
+
+
+.published-cover picture, .cover-wrap picture, .modal-cover picture{display:block;width:100%;height:100%;}
+
+
+/* V5.5 — visual refinement, full published covers, richer book detail */
+.hero:after{display:none !important;}
+
+.published-cover{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#ded7cb;
+}
+.published-cover picture{
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+}
+.published-cover img{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:transparent;
+}
+.published-book:hover .published-cover img{transform:none !important;}
+
+.modal-copy .sum{
+  max-width:760px;
+  font-size:18px;
+  line-height:1.68;
+  white-space:pre-line;
+  color:#c7cac6;
+}
+.modal-shell{
+  grid-template-columns:minmax(270px,360px) minmax(0,720px);
+  gap:6vw;
+  justify-content:center;
+}
+@media(max-width:780px){
+  .modal-shell{grid-template-columns:1fr;gap:34px;}
+  .modal-copy .sum{font-size:17px;line-height:1.65;}
+}
+
+
+/* V5.8 hero refinement */
+.hero{min-height:min(900px,82vh);background:radial-gradient(circle at 84% 16%,rgba(126,42,35,.11),transparent 26%),linear-gradient(115deg,#0b0d0e 0%,#101414 54%,#090b0c 100%)}
+.hero-inner{grid-template-columns:minmax(0,1.15fr) minmax(370px,460px);gap:clamp(36px,5vw,84px);align-items:center;padding-top:clamp(84px,8.5vw,132px);padding-bottom:clamp(62px,6.5vw,108px)}
+.hero h1{max-width:760px;font-size:clamp(72px,8.4vw,134px)}
+.hero .lead{max-width:690px}
+.hero-library{width:100%;max-width:460px;justify-self:end;padding-left:0;align-self:center}
+.hero-library-head{margin-bottom:26px}
+.hero-library-head strong{font-size:28px;line-height:1.06;text-align:left}
+.hero-covers{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.hero-book{display:block}
+.hero-book picture{display:block}
+.hero-book img{width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;border:1px solid rgba(255,255,255,.08);box-shadow:0 26px 56px rgba(0,0,0,.5)}
+.hero-book-meta{padding-top:14px}
+.hero-book-meta b{font-size:20px}
+.hero-side{align-self:center}
+.published-copy p span{display:block}
+.published-copy p .published-more{margin-top:16px;color:#3f3d38}
+.published-detail-link{display:inline-block;margin-top:16px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#171918;border-bottom:1px solid #7c7469;padding-bottom:3px}
+.card-read{display:inline-block;margin-top:12px;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#b0b2ae;border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:3px}
+.paper .card-read,.soft .card-read{color:#6f716d;border-color:rgba(0,0,0,.16)}
+.hadal-grid{grid-template-columns:repeat(5,1fr);gap:38px 20px}
+.hadal-grid .cover-wrap{aspect-ratio:2/3}
+@media(max-width:1400px){.hadal-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:1050px){.hadal-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:780px){.hadal-grid{grid-template-columns:repeat(2,1fr);gap:30px 16px}}
+@media(max-width:520px){.hadal-grid{grid-template-columns:1fr}}
+
+
+@media(max-width:1100px){
+ .hero-inner{grid-template-columns:1fr;gap:34px;padding-top:88px}
+ .hero-library{justify-self:start;max-width:720px}
+ .hero-covers{grid-template-columns:repeat(2,minmax(220px,1fr));max-width:720px}
+ .hero-library-head strong{text-align:left}
+}
+@media(max-width:640px){
+ .hero h1{font-size:54px}
+ .hero-covers{gap:14px;grid-template-columns:1fr 1fr}
+ .hero-library-head{grid-template-columns:1fr}
+ .hero-library-head strong{font-size:20px}
+}
+@media(max-width:480px){
+ .hero-covers{grid-template-columns:1fr}
+}
+
+
+.hadal-latest{margin:0 0 70px;padding:28px 0 54px;border-bottom:1px solid var(--line)}
+.hadal-latest-kicker{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#8b8f8b;margin-bottom:24px}
+.hadal-latest-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.hadal-latest-book{display:grid;grid-template-columns:180px 1fr;gap:28px;padding:24px;border:1px solid rgba(255,255,255,.12);background:#0c0f0f;align-items:start}
+.hadal-latest-cover img{width:100%;aspect-ratio:2/3;object-fit:cover;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.hadal-latest-book .small{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#7e827f;margin-bottom:10px}
+.hadal-latest-book h3{font:400 36px/1 var(--serif);margin:0 0 17px}
+.hadal-latest-book p{font-size:12px;line-height:1.75;color:#a8aba7;margin:0 0 13px}
+@media(max-width:1100px){.hadal-latest-grid{grid-template-columns:1fr}.hadal-latest-book{grid-template-columns:200px 1fr}}
+@media(max-width:620px){.hadal-latest-book{grid-template-columns:1fr}.hadal-latest-cover{max-width:260px}.hadal-latest-book h3{font-size:32px}}
+
+
+/* V5.9 contact */
+.contact-section{position:relative;padding:118px 0 124px;background:radial-gradient(circle at 88% 12%,rgba(156,59,49,.11),transparent 28%),#0c0f10;border-top:1px solid rgba(255,255,255,.08);overflow:hidden}
+.contact-section:after{content:"";position:absolute;right:-170px;bottom:-280px;width:620px;height:620px;border:1px solid rgba(255,255,255,.045);border-radius:50%;box-shadow:0 0 0 85px rgba(255,255,255,.014),0 0 0 170px rgba(255,255,255,.008);pointer-events:none}
+.contact-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(300px,.82fr) minmax(420px,1.18fr);gap:clamp(55px,8vw,125px);align-items:start}
+.contact-intro h2{font:400 clamp(54px,6.4vw,94px)/.9 var(--serif);letter-spacing:-.03em;margin:24px 0 28px;max-width:650px}.contact-intro h2 em{font-weight:400;color:#aaa69d}
+.contact-intro p{max-width:520px;font:400 20px/1.55 var(--serif);color:#a8aba7;margin-bottom:30px}.contact-email{display:inline-block;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.28);font:400 clamp(18px,1.8vw,25px)/1.2 var(--serif);color:#eee9df;transition:.25s}.contact-email:hover{color:#fff;border-color:#fff}
+.contact-form{border-top:1px solid rgba(255,255,255,.18);padding-top:8px}.contact-fields{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}.contact-field{position:relative;padding:25px 0 18px;border-bottom:1px solid rgba(255,255,255,.15)}.contact-field.full{grid-column:1/-1}.contact-field label{display:block;margin-bottom:12px;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#777d79}.contact-field input,.contact-field select,.contact-field textarea{width:100%;border:0;outline:0;background:transparent;color:#f1ede5;font:400 20px/1.4 var(--serif);padding:0;border-radius:0}.contact-field input::placeholder,.contact-field textarea::placeholder{color:#656a67}.contact-field select{appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,#858985 50%),linear-gradient(135deg,#858985 50%,transparent 50%);background-position:calc(100% - 12px) 48%,calc(100% - 7px) 48%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px}.contact-field select option{background:#111516;color:#f1ede5}.contact-field textarea{min-height:145px;resize:vertical}.contact-field:focus-within{border-color:#d8d4ca}.contact-field:focus-within label{color:#c6c3bb}
+.contact-honey{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+.contact-actions{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:25px}.contact-note{max-width:430px;font-size:9px;line-height:1.6;letter-spacing:.04em;color:#717571}.contact-submit{min-height:52px;padding:0 24px;border:1px solid #eee9df;background:#eee9df;color:#101313;font-size:9px;letter-spacing:.17em;text-transform:uppercase;cursor:pointer;transition:.25s}.contact-submit:hover{background:#fff;border-color:#fff;transform:translateY(-2px)}
+@media(max-width:920px){.navlinks{display:none}.menu{display:block}.contact-grid{grid-template-columns:1fr;gap:50px}.contact-intro{max-width:720px}}
+@media(max-width:620px){.contact-section{padding:82px 0 88px}.contact-fields{grid-template-columns:1fr}.contact-field{grid-column:1/-1}.contact-actions{display:block}.contact-submit{width:100%;margin-top:20px}.contact-intro h2{font-size:52px}.contact-intro p{font-size:18px}}
+
+
+/* MOBILE-V6 responsive qualification */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0}
+img{height:auto}
+a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+section[id]{scroll-margin-top:92px}
+.menu:focus-visible,.mobile a:focus-visible,.btn:focus-visible,.contact-submit:focus-visible,.cycle-nav a:focus-visible,.navrow a:focus-visible,.back:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+ .reveal{opacity:1!important;transform:none!important}
+ .track{animation:none!important}
+}
+
+@media(max-width:920px){
+ .home .shell{width:calc(100% - 40px)}
+ .home .topline{height:auto;min-height:30px;padding:7px 20px;line-height:1.4;font-size:8px;letter-spacing:.13em;text-align:center}
+ .home .nav{height:68px}
+ .home .nav .shell{width:calc(100% - 32px)}
+ .home .navlinks{display:none}
+ .home .brand{font-size:18px;letter-spacing:.12em;white-space:nowrap}
+ .home .brand small{display:none}
+ .home .menu{display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:0;cursor:pointer;line-height:1}
+ .home .mobile{padding:6px 20px 14px;background:rgba(13,16,16,.98);border-bottom:1px solid var(--line);box-shadow:0 18px 30px rgba(0,0,0,.2)}
+ .home .mobile.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+ .home .mobile a{display:flex;align-items:center;min-height:48px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.08);font-size:10px;line-height:1.35}
+ .home .hero{min-height:auto}
+ .home .hero-inner{grid-template-columns:1fr!important;gap:40px!important;padding-top:56px!important;padding-bottom:60px!important}
+ .home .hero h1{font-size:clamp(52px,12vw,78px)!important;line-height:.88;margin:22px 0 24px}
+ .home .hero .lead{font-size:clamp(20px,4vw,24px);line-height:1.45}
+ .home .hero-library{justify-self:stretch!important;max-width:720px!important;width:100%;padding-left:0}
+ .home .hero-library-head{margin-bottom:20px}
+ .home .hero-library-head strong{font-size:24px}
+ .home .hero-covers{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;max-width:720px}
+ .home .hero-book-meta b{font-size:18px}
+ .home .actions{gap:12px;margin-top:26px}
+ .home .btn{min-height:48px;padding:0 18px}
+ .home .section{padding:72px 0}
+ .home .section-head{margin-bottom:40px}
+ .home .section-head p{font-size:18px;line-height:1.55}
+ .home .published-card{min-height:auto;padding:30px}
+ .home .published-card p{font-size:14px;line-height:1.7}
+ .home .card-meta p{font-size:13px;line-height:1.6}
+ .home .hadal-intro{gap:28px;margin-bottom:42px;padding-bottom:34px}
+ .home .hadal-intro p{font-size:22px;line-height:1.48}
+ .home .about-grid,.home .rep-grid{gap:42px}
+ .home .about-copy{font-size:15px;line-height:1.8}
+ .home .rep-copy{font-size:21px;line-height:1.5}
+ .home .rep-row{min-height:44px;align-items:center}
+ .home .contact-section{padding:78px 0 84px}
+ .home .contact-grid{gap:44px}
+ .home .contact-intro p{font-size:19px}
+ .home .contact-field label{font-size:9px}
+ .home .contact-submit{min-height:50px}
+ .home .footer{padding:32px 0 38px}
+ .home .footer .shell{align-items:flex-start}
+ .home .book-modal{overscroll-behavior:contain}
+ .home .modal-close{width:48px;height:48px;right:14px;top:14px;font-size:24px}
+ .home .modal-shell{width:calc(100% - 36px);grid-template-columns:1fr!important;gap:32px!important;align-items:start;margin:0 auto;padding:76px 0 46px;min-height:auto}
+ .home .modal-cover{max-width:260px;margin:auto}
+ .home .modal-copy h2{font-size:clamp(46px,12vw,62px);line-height:.92}
+ .home .modal-copy .tag{font-size:22px}
+ .home .modal-copy .sum{font-size:17px;line-height:1.65}
+
+ .book-detail .shell{width:calc(100% - 36px)}
+ .book-detail .nav{height:68px}
+ .book-detail .nav .shell{gap:14px}
+ .book-detail .brand{font-size:16px;letter-spacing:.1em;white-space:nowrap}
+ .book-detail .back{display:flex;align-items:center;justify-content:flex-end;min-height:44px;font-size:9px;line-height:1.3;text-align:right}
+ .book-detail .hero{padding:34px 0 54px}
+ .book-detail .grid{grid-template-columns:1fr;gap:34px}
+ .book-detail .cover{width:min(78vw,320px);max-width:320px;margin:0 auto}
+ .book-detail .copy h1{font-size:clamp(46px,13vw,64px);line-height:.9;margin:18px 0 20px;overflow-wrap:normal}
+ .book-detail .tag{font-size:22px;line-height:1.4;margin-bottom:24px}
+ .book-detail .summary{font-size:18px;line-height:1.65}
+ .book-detail .summary p{margin-bottom:20px}
+ .book-detail .themes{gap:8px;margin-top:24px}
+ .book-detail .theme{display:inline-flex;align-items:center;min-height:36px;padding:8px 11px}
+ .book-detail .context{padding:54px 0 58px}
+ .book-detail .context-grid{grid-template-columns:1fr;gap:24px}
+ .book-detail .context h2{font-size:38px;line-height:1.05}
+ .book-detail .context p{font-size:18px;line-height:1.65}
+ .book-detail .navrow{display:grid;grid-template-columns:1fr;gap:0;margin-top:32px;padding-top:12px}
+ .book-detail .navrow a{display:flex;align-items:center;min-height:48px;padding:10px 0;border-bottom:1px solid rgba(20,20,20,.11);line-height:1.35}
+ .book-detail .navrow a:last-child{justify-content:flex-end;text-align:right}
+ .book-detail .footer{padding:28px 0}
+}
+
+@media(max-width:620px){
+ .home .shell{width:calc(100% - 32px)}
+ .home .nav .shell{width:calc(100% - 28px)}
+ .home .mobile{padding-left:16px;padding-right:16px}
+ .home .mobile.open{grid-template-columns:1fr}
+ .home .hero-inner{padding-top:46px!important;padding-bottom:50px!important;gap:32px!important}
+ .home .hero h1{font-size:clamp(48px,15vw,64px)!important}
+ .home .hero .lead{font-size:20px}
+ .home .hero-library-head{grid-template-columns:1fr;gap:7px}
+ .home .hero-library-head strong{text-align:left}
+ .home .section{padding:62px 0}
+ .home .section h2{font-size:clamp(43px,12vw,54px);line-height:.95}
+ .home .book-grid,.home .hadal-grid{grid-template-columns:1fr;gap:42px}
+ .home .published-card{padding:26px}
+ .home .published-card h3{font-size:clamp(43px,12vw,54px)}
+ .home .cover-wrap:after{display:none}
+ .home .card-meta{padding-top:16px}
+ .home .card-meta h3,.home .hadal-grid .card-meta h3{font-size:29px;line-height:1.02}
+ .home .hadal-mark{width:58px;height:58px;font-size:32px}
+ .home .hadal-intro p{font-size:20px}
+ .home .about-big{font-size:clamp(34px,10vw,48px)}
+ .home .about-copy .pull{font-size:22px}
+ .home .rep-grid .big{font-size:clamp(43px,12vw,58px)}
+ .home .rep-row{display:block;padding:14px 0}
+ .home .rep-row span{display:block}
+ .home .rep-row span:last-child{text-align:left;margin-top:7px}
+ .home .contact-section{padding:66px 0 72px}
+ .home .contact-intro h2{font-size:clamp(48px,14vw,60px)}
+ .home .contact-actions{display:block}
+ .home .contact-submit{width:100%;margin-top:20px}
+ .home .footer .shell{display:block}
+ .home .footer p{text-align:left;margin-top:12px;line-height:1.6}
+ .home .modal-cover{max-width:230px}
+ .home .modal-copy h2{font-size:clamp(43px,13vw,54px)}
+
+ .book-detail .shell{width:calc(100% - 30px)}
+ .book-detail .hero{padding-top:28px}
+ .book-detail .cover{width:min(82vw,290px)}
+ .book-detail .copy h1{font-size:clamp(44px,14vw,58px)}
+ .book-detail .tag{font-size:21px}
+ .book-detail .summary,.book-detail .context p{font-size:17px}
+ .book-detail .context h2{font-size:35px}
+}
+
+@media(max-width:440px){
+ .home .topline{font-size:7px;letter-spacing:.1em}
+ .home .brand{font-size:16px;letter-spacing:.1em}
+ .home .hero-covers{grid-template-columns:1fr!important;gap:28px!important}
+ .home .hero-book{max-width:300px}
+ .home .actions{display:grid;grid-template-columns:1fr}
+ .home .btn{width:100%}
+ .home .section-head{margin-bottom:34px}
+ .home .published-card{padding:24px}
+ .home .contact-email{font-size:18px;overflow-wrap:anywhere}
+ .home .contact-field input,.home .contact-field select,.home .contact-field textarea{font-size:18px}
+
+ .book-detail .brand{font-size:14px;letter-spacing:.08em}
+ .book-detail .back{font-size:8px;letter-spacing:.11em;max-width:112px}
+ .book-detail .copy h1{font-size:clamp(42px,14vw,54px)}
+}
+
+
+/* MOBILE-V6.1 corrective pass */
+@media(max-width:680px){
+  .home .published-book,
+  .home .published-book:nth-child(even){
+    grid-template-columns:minmax(0,1fr) !important;
+    min-height:0 !important;
+    width:100% !important;
+  }
+  .home .published-book:nth-child(even) .published-cover,
+  .home .published-book:nth-child(even) .published-copy{
+    order:initial !important;
+  }
+  .home .published-cover{
+    width:100% !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    height:auto !important;
+  }
+  .home .published-cover picture{
+    display:block !important;
+    width:100% !important;
+    height:auto !important;
+  }
+  .home .published-cover img{
+    display:block !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-width:100% !important;
+    object-fit:contain !important;
+    object-position:center !important;
+  }
+  .home .published-copy{
+    width:100% !important;
+    min-width:0 !important;
+  }
+}
+@media(max-width:620px){
+  .home .hadal-latest-book{
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:22px !important;
+  }
+  .home .hadal-latest-cover{
+    display:block !important;
+    width:min(100%,300px) !important;
+    max-width:300px !important;
+    margin:0 auto 4px !important;
+    aspect-ratio:2/3 !important;
+    overflow:hidden !important;
+    background:#111 !important;
+  }
+  .home .hadal-latest-cover picture{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+  }
+  .home .hadal-latest-cover img{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:none !important;
+    aspect-ratio:auto !important;
+    object-fit:cover !important;
+    object-position:center center !important;
+  }
+  .home .hadal-grid .cover-wrap{
+    aspect-ratio:2/3 !important;
+    overflow:hidden !important;
+    background:#111 !important;
+  }
+  .home .hadal-grid .cover-wrap picture{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+  }
+  .home .hadal-grid .cover-wrap img{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:none !important;
+    object-fit:cover !important;
+    object-position:center center !important;
+  }
+  .home .contact-field label{font-size:11px !important;}
+  .home .contact-submit{font-size:11px !important;letter-spacing:.14em !important;}
+}
+
+
+/* MOBILE-V6.2 mobile Hadal sequence correction */
+@media(max-width:920px){
+  .home .hadal-latest{display:none !important;}
+}
+/* MOBILE-V6.1 corrective pass */
+@media(max-width:680px){
+  .home .published-book,
+  .home .published-book:nth-child(even){
+    grid-template-columns:minmax(0,1fr) !important;
+    min-height:0 !important;
+    width:100% !important;
+  }
+  .home .published-book:nth-child(even) .published-cover,
+  .home .published-book:nth-child(even) .published-copy{
+    order:initial !important;
+  }
+  .home .published-cover{
+    width:100% !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    height:auto !important;
+  }
+  .home .published-cover picture{
+    display:block !important;
+    width:100% !important;
+    height:auto !important;
+  }
+  .home .published-cover img{
+    display:block !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-width:100% !important;
+    object-fit:contain !important;
+    object-position:center !important;
+  }
+  .home .published-copy{
+    width:100% !important;
+    min-width:0 !important;
+  }
+}
+@media(max-width:620px){
+  .home .hadal-grid .cover-wrap{
+    aspect-ratio:2/3 !important;
+    overflow:hidden !important;
+    background:#111 !important;
+  }
+  .home .hadal-grid .cover-wrap picture{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+  }
+  .home .hadal-grid .cover-wrap img{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:none !important;
+    object-fit:cover !important;
+    object-position:center center !important;
+  }
+  .home .contact-field label{font-size:11px !important;}
+  .home .contact-submit{font-size:11px !important;letter-spacing:.14em !important;}
+}
+
+</style><!-- SEO-V6.3 START -->
+<link rel="canonical" href="https://fredericksamuel.com/"/>
+<meta name="author" content="Frederick Samuel"/>
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
+<meta name="googlebot" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Frederick Samuel"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:title" content="Frederick Samuel — Novelist"/>
+<meta property="og:description" content="Frederick Samuel — novelist. Published fiction, standalone novels and the ten-volume Hadal Cycle."/>
+<meta property="og:url" content="https://fredericksamuel.com/"/>
+<meta property="og:image" content="https://fredericksamuel.com/assets/covers/the-weavers-debt.webp"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Frederick Samuel — Novelist"/>
+<meta name="twitter:description" content="Frederick Samuel — novelist. Published fiction, standalone novels and the ten-volume Hadal Cycle."/>
+<meta name="twitter:image" content="https://fredericksamuel.com/assets/covers/the-weavers-debt.webp"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","@id":"https://fredericksamuel.com/#frederick-samuel","name":"Frederick Samuel","url":"https://fredericksamuel.com/","jobTitle":"Novelist","description":"Frederick Samuel — novelist. Published fiction, standalone novels and the ten-volume Hadal Cycle.","knowsAbout":["historical fiction","literary fiction","speculative fiction","science fiction","fantasy"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"https://fredericksamuel.com/#website","url":"https://fredericksamuel.com/","name":"Frederick Samuel","description":"Frederick Samuel — novelist. Published fiction, standalone novels and the ten-volume Hadal Cycle.","inLanguage":"en","publisher":{"@id":"https://fredericksamuel.com/#frederick-samuel"}}</script>
+<script id="fsGoogleAnalyticsConsent">
+(function(){
+  const GA_ID="G-NB2P64CP00";
+  const KEY="fs_analytics_consent";
+  function loadGA(){
+    if(document.getElementById("fs-ga4-script")) return;
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){dataLayer.push(arguments);};
+    gtag("js",new Date());
+    gtag("config",GA_ID,{anonymize_ip:true});
+    const s=document.createElement("script");
+    s.id="fs-ga4-script"; s.async=true;
+    s.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(GA_ID);
+    document.head.appendChild(s);
+  }
+  function removeBanner(){
+    const b=document.getElementById("fsAnalyticsConsent"); if(b) b.remove();
+  }
+  function grant(){localStorage.setItem(KEY,"granted");removeBanner();loadGA();}
+  function deny(){localStorage.setItem(KEY,"denied");removeBanner();}
+  if(localStorage.getItem(KEY)==="granted"){loadGA();return;}
+  if(localStorage.getItem(KEY)==="denied") return;
+  window.addEventListener("DOMContentLoaded",function(){
+    const b=document.createElement("div");
+    b.id="fsAnalyticsConsent";
+    b.setAttribute("role","dialog");
+    b.setAttribute("aria-label","Analytics consent");
+    b.style.cssText="position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:720px;margin:auto;background:#111516;color:#f1ede5;border:1px solid rgba(255,255,255,.18);padding:16px 18px;font:14px/1.5 system-ui,-apple-system,sans-serif;box-shadow:0 16px 45px rgba(0,0,0,.35)";
+    b.innerHTML='<div style="margin-bottom:12px">Optional analytics help improve this site. No analytics are loaded unless you accept.</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button id="fsAcceptAnalytics" type="button" style="min-height:42px;padding:0 16px;border:1px solid #f1ede5;background:#f1ede5;color:#111516">Accept analytics</button><button id="fsDeclineAnalytics" type="button" style="min-height:42px;padding:0 16px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#f1ede5">Decline</button></div>';
+    document.body.appendChild(b);
+    document.getElementById("fsAcceptAnalytics").addEventListener("click",grant);
+    document.getElementById("fsDeclineAnalytics").addEventListener("click",deny);
+  });
+})();
+</script>
+<!-- SEO-V6.3 END -->
+</head><body class="home">
+<div class="topline">Frederick Samuel · Novelist · Literary · Historical · Speculative</div>
+<nav class="nav">
+<div class="shell">
+<a class="brand" href="index.html">FREDERICK SAMUEL <small>AUTHOR</small></a>
+<div class="navlinks">
+<a href="index.html#published">Published</a><a href="index.html#novels">Novels</a>
+<a href="index.html#hadal">The Hadal Cycle</a><a href="index.html#about">About</a>
+<a href="index.html#representation">Representation</a><a href="index.html#contact">Contact</a>
+</div>
+<button type="button" aria-label="Open navigation" aria-controls="mobileNav" aria-expanded="false" class="menu">☰</button>
+</div>
+</nav>
+<div class="mobile" id="mobileNav" role="navigation" aria-label="Mobile navigation">
+<a href="index.html#published">Published</a><a href="index.html#novels">Novels</a>
+<a href="index.html#hadal">The Hadal Cycle</a><a href="index.html#about">About</a>
+<a href="index.html#representation">Representation</a><a href="index.html#contact">Contact</a>
+</div>
+<main>
+<section class="hero"><div class="shell hero-inner">
+<div>
+<div class="eyebrow">Frederick Samuel · novelist</div>
+<h1>Stories that remember what the world tries to <em>forget.</em></h1>
+<p class="lead">Literary, historical and speculative fiction shaped by memory, silence, resistance, discovery—and the pressure that changes people, places and worlds.</p>
+<div class="actions"><a class="btn light" href="#published">Published work ↓</a><a class="btn" href="#novels">Explore the novels →</a></div>
+</div>
+<aside aria-label="Published books" class="hero-library">
+<div class="hero-library-head"><span>Published now</span><strong>Two novels. Two very different worlds.</strong></div>
+<div class="hero-covers">
+<a class="hero-book" href="books/the-weavers-debt.html"><picture><source srcset="assets/covers/the-weavers-debt.webp" type="image/webp"/><img alt="The Weaver’s Debt by Frederick Samuel" height="1018" src="assets/covers/the-weavers-debt.webp" width="693"/></picture><div class="hero-book-meta"><small>Published novel</small><b>The Weaver’s Debt</b></div></a>
+<a class="hero-book" href="books/by-blood-ink-and-salt.html"><picture><source srcset="assets/covers/by-blood-ink-and-salt.webp" type="image/webp"/><img alt="By Blood, Ink &amp; Salt by Frederick Samuel" height="2048" src="assets/covers/by-blood-ink-and-salt.webp" width="1365"/></picture><div class="hero-book-meta"><small>Historical literary fiction</small><b>By Blood, Ink &amp; Salt</b></div></a>
+</div></aside>
+</div></section>
+<div class="marquee"><div class="track">
+<span><b>HISTORY</b> <span class="dot">●</span> MEMORY <span class="dot">●</span> SILENCE <span class="dot">●</span> RESISTANCE <span class="dot">●</span> SCIENCE <span class="dot">●</span> THE DEEP <span class="dot">●</span> </span>
+<span><b>HISTORY</b> <span class="dot">●</span> MEMORY <span class="dot">●</span> SILENCE <span class="dot">●</span> RESISTANCE <span class="dot">●</span> SCIENCE <span class="dot">●</span> THE DEEP <span class="dot">●</span> </span>
+</div></div>
+<section class="section paper" id="published"><div class="shell">
+<div class="section-head reveal">
+<div class="sec-no">01 · Published fiction</div>
+<h2>The books you can read <em>now.</em></h2>
+<p>The original published covers, fuller introductions and direct links to each novel.</p>
+</div>
+<div class="published-books">
+<article class="published-book reveal">
+<a aria-label="The Weaver’s Debt on Amazon.com" class="published-cover" href="books/the-weavers-debt.html">
+<picture><source srcset="assets/covers/the-weavers-debt.webp" type="image/webp"/><img alt="The Weaver’s Debt by Frederick Samuel" decoding="async" fetchpriority="high" height="1018" src="assets/covers/the-weavers-debt.webp" width="693"/></picture>
+</a>
+<div class="published-copy">
+<div class="status">Published fiction · Available now</div>
+<h3>The Weaver’s Debt</h3>
+<p><span>Their happily ever after was a lie. <em>The Weaver’s Debt</em> begins where an inherited story should have ended and asks what happens when the promises of a familiar tale become obligations carried forward.</span><span class="published-more">As buried choices return, folklore becomes intimate and unsettling. The novel turns inheritance into a moral pressure: what one generation refuses to name can become the burden of the next. Familiar story architecture is treated not as comfort but as evidence—of promises made, consequences deferred and the cost of allowing inherited narratives to speak for the people trapped inside them.</span></p>
+<div class="published-bottom">
+<div class="meta">Published novel</div>
+<a class="btn dark" href="https://www.amazon.com/dp/B0FTDKPYXX" rel="noopener" target="_blank">Find on Amazon.com ↗</a>
+<a class="review-link published-detail-link" href="books/the-weavers-debt.html">Read about the novel →</a></div>
+</div>
+</article>
+<article class="published-book reveal">
+<a aria-label="By Blood, Ink &amp; Salt on Amazon.com" class="published-cover" href="books/by-blood-ink-and-salt.html">
+<picture><source srcset="assets/covers/by-blood-ink-and-salt.webp" type="image/webp"/><img alt="By Blood, Ink &amp; Salt by Frederick Samuel" decoding="async" fetchpriority="high" height="2048" src="assets/covers/by-blood-ink-and-salt.webp" width="1365"/></picture>
+</a>
+<div class="published-copy">
+<div class="status">Historical literary fiction · Published 2025</div>
+<h3>By Blood,<br/>Ink &amp; Salt</h3>
+<p><span>A historical reimagining of Shek Ying—Zheng Yi Sao—and the red-sailed world she helped reshape. Moving through a maritime society where authority is negotiated through codes, loyalties, memory and force, the novel asks who gets written into history and who disappears between its lines.</span><span class="published-more">Power is never abstract here: it is carried by people, rules, debts and the stories survivors choose to preserve. The result is a portrait of a woman navigating a world in which survival, command and authorship of one’s own history are inseparable. The sea becomes both political territory and archive: a place where reputation, allegiance and written codes determine who is remembered, who is feared and who is allowed to tell the story afterward.</span></p>
+<div class="review-note">
+<div class="review-stars">★★★★★ <span>Goodreads review</span></div>
+<blockquote>“This is not a normal rendering of historical fiction. It is lyrical.”</blockquote>
+<div class="review-credit">Cindy Vallar · Pirates and Privateers · 5/5</div>
+</div>
+<div class="published-bottom">
+<div class="meta">Paperback ISBN 9798292440642 · Ebook EAN 1230009332058</div>
+<div class="retailer-label">Available from</div>
+<div class="retailer-links">
+<a href="https://www.amazon.com/s?k=9798292440642" rel="noopener" target="_blank">Amazon.com ↗</a>
+<a href="https://www.walmart.com/ip/By-Blood-Ink-amp-Salt-Paperback-9798292440642/18327465936" rel="noopener" target="_blank">Walmart ↗</a>
+<a href="https://www.waterstones.com/book/by-blood-ink-and-salt/frederick-samuel/9798292440642" rel="noopener" target="_blank">Waterstones ↗</a>
+<a href="https://www.bol.com/be/nl/p/by-blood-ink-salt-ebook/9300000239406741/" rel="noopener" target="_blank">bol ↗</a>
+</div>
+<a class="review-link" href="https://www.goodreads.com/author_blog_posts/26253244-a-novel-of-chinese-pirates" rel="noopener" target="_blank">Read the full Goodreads review ↗</a>
+<a class="review-link published-detail-link" href="books/by-blood-ink-and-salt.html">Read about the novel →</a></div>
+</div>
+</article>
+</div>
+</div></section>
+<section class="section soft" id="novels"><div class="shell">
+<div class="section-head reveal"><div class="sec-no">02 · Selected novels</div><h2>Different worlds. A shared <em>pulse.</em></h2><p>Six standalone novels, each with its own visual and narrative identity.</p></div>
+<div class="book-grid">
+<a class="cover-card reveal" href="books/a-thread-of-stars.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/a-thread-of-stars.webp" type="image/webp"/><img alt="Cover of A Thread of Stars by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/a-thread-of-stars.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Historical literary fiction</div>
+<h3>A Thread of Stars</h3>
+<p>Some women look higher.</p>
+</div>
+</a>
+<a class="cover-card reveal" href="books/the-gustav-sonata.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/the-gustav-sonata.webp" type="image/webp"/><img alt="Cover of The Gustav Sonata by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/the-gustav-sonata.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Historical war fiction</div>
+<h3>The Gustav Sonata</h3>
+<p>Some truths outlive war.</p>
+</div>
+</a>
+<a class="cover-card reveal" href="books/the-quiet-blade.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/the-quiet-blade.webp" type="image/webp"/><img alt="Cover of The Quiet Blade by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/the-quiet-blade.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Historical fiction</div>
+<h3>The Quiet Blade</h3>
+<p>Silence learns how to strike.</p>
+</div>
+</a>
+<a class="cover-card reveal" href="books/thrindle.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/thrindle.webp" type="image/webp"/><img alt="Cover of Thrindle by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/thrindle.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Speculative fantasy</div>
+<h3>Thrindle</h3>
+<p>Some places listen back.</p>
+</div>
+</a>
+<a class="cover-card reveal" href="books/the-silent-protocol.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/the-silent-protocol.webp" type="image/webp"/><img alt="Cover of The Silent Protocol by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/the-silent-protocol.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Speculative techno-thriller</div>
+<h3>The Silent Protocol</h3>
+<p>Some signals should never be heard.</p>
+</div>
+</a>
+<a class="cover-card reveal" href="books/the-snowblind-protocol.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/what-the-snow-remembers.webp" type="image/webp"/><img alt="Cover of What The Snow Remembers by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/what-the-snow-remembers.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Speculative psychological science fiction</div>
+<h3>What The Snow Remembers</h3>
+<p>Some truths should stay buried.</p>
+</div>
+</a></div>
+</div></section>
+<section class="section" id="hadal"><div class="shell">
+<div class="section-head reveal"><div class="sec-no">03 · Ten volumes</div><h2>The Hadal <em>Cycle.</em></h2><p>A ten-volume speculative arc from the hadal trench to Mars, Europa and a transformed Earth—built around memory, pressure, adaptation and the changing definition of humanity.</p></div>
+<div class="hadal-intro reveal"><div><div class="hadal-mark">≋</div></div>
+<div><p>The ocean does not simply conceal the past. Across ten novels, the Hadal Cycle follows what happens when biology begins to remember, systems begin to listen, and adaptation moves from the deep ocean into civilisation, Mars and eventually the living architecture of Earth itself.</p><small>Read in sequence · Books One through Ten</small></div>
+</div>
+<div class="hadal-latest reveal">
+<div class="hadal-latest-kicker">The cycle continues · Books IX &amp; X</div>
+<div class="hadal-latest-grid">
+<article class="hadal-latest-book">
+<a class="hadal-latest-cover" href="books/the-listening-tide.html"><picture><source srcset="assets/covers/the-listening-tide.webp?v=mobile61-20260918" type="image/webp"/><img alt="The Listening Tide by Frederick Samuel" src="assets/covers/the-listening-tide.webp?v=mobile61-20260918" width="400" height="640" loading="eager" fetchpriority="auto"/></picture></a>
+<div><div class="small">Book Nine</div><h3>The Listening Tide</h3><p>Across Earth, Mars and Europa, the same impossible rhythm appears in living roots, dust spirals and sub-ice chimes. Coral, Thal, Ori, Roche and Freedman discover that the pattern behaves less like a transmitted message than a memory becoming structural.</p><p>As Aoki’s ideas re-emerge through living lichen and buried DriftNet systems awaken, the Cycle moves from adaptation into interplanetary resonance: emotion, environment and memory begin to occupy the same architecture.</p><a class="card-read" href="books/the-listening-tide.html">Read the full novel page →</a></div>
+</article>
+<article class="hadal-latest-book">
+<a class="hadal-latest-cover" href="books/verdant-ascension.html"><picture><source srcset="assets/covers/verdant-ascension.webp?v=mobile61-20260918" type="image/webp"/><img alt="Verdant Ascension by Frederick Samuel" src="assets/covers/verdant-ascension.webp?v=mobile61-20260918" width="400" height="600" loading="eager" fetchpriority="auto"/></picture></a>
+<div><div class="small">Book Ten</div><h3>Verdant Ascension</h3><p>The survivors of Mars return to a damaged Earth carrying the XNA–MNA hybrid biology capable of restoring soil, atmosphere and ecosystems. Renewal, however, changes the people doing the rebuilding as profoundly as it changes the planet.</p><p>Renewalists, Purists and emerging hybrid communities struggle over the meaning of humanity until Earth’s recovery becomes the beginning of another question: what happens when the restored biosphere starts listening outward?</p><a class="card-read" href="books/verdant-ascension.html">Read the full novel page →</a></div>
+</article>
+</div></div>
+<div class="hadal-grid">
+<a class="cover-card reveal" href="books/emergent-tides.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/emergent-tides.webp" type="image/webp"/><img alt="Cover of Emergent Tides by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/emergent-tides.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book One</div>
+<h3>Emergent Tides</h3>
+<p>When the ocean remembers, humanity changes.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/surging-currents.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/surging-currents.webp" type="image/webp"/><img alt="Cover of Surging Currents by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/surging-currents.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Two</div>
+<h3>Surging Currents</h3>
+<p>When the ocean remembers, humanity changes.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/crashing-waves.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/crashing-waves.webp" type="image/webp"/><img alt="Cover of Crashing Waves by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/crashing-waves.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Three</div>
+<h3>Crashing Waves</h3>
+<p>When the ocean remembers, humanity changes.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/the-hadal-horizons.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/the-hadal-horizons.webp" type="image/webp"/><img alt="Cover of The Hadal Horizons by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/the-hadal-horizons.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Four</div>
+<h3>The Hadal Horizons</h3>
+<p>When the ocean remembers, humanity changes.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/before-the-tides.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/before-the-tides.webp" type="image/webp"/><img alt="Cover of Before the Tides by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/before-the-tides.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Five</div>
+<h3>Before the Tides</h3>
+<p>A deeper world still remembers.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/storms-of-dominion.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/storms-of-dominion.webp" type="image/webp"/><img alt="Cover of Storms of Dominion by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/storms-of-dominion.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Six</div>
+<h3>Storms of Dominion</h3>
+<p>Control the climate or become irrelevant.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/crimson-horizons.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/crimson-horizons.webp" type="image/webp"/><img alt="Cover of Crimson Horizons by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/crimson-horizons.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Seven</div>
+<h3>Crimson Horizons</h3>
+<p>Some destinations change what it means to be human.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a>
+<a class="cover-card reveal" href="books/crimson-maelstrom.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/crimson-maelstrom.webp" type="image/webp"/><img alt="Cover of Crimson Maelstrom by Frederick Samuel" decoding="async" fetchpriority="low" height="1536" loading="lazy" src="assets/covers/crimson-maelstrom.webp" width="1024"/></picture></div>
+<div class="card-meta">
+<div class="small">Book Eight</div>
+<h3>Crimson Maelstrom</h3>
+<p>When memory becomes a force.</p>
+<span class="card-read">Explore the novel →</span></div>
+</a><a class="cover-card reveal" href="books/the-listening-tide.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/the-listening-tide.webp?v=mobile61-20260918" type="image/webp"/><img alt="Cover of The Listening Tide by Frederick Samuel" decoding="async" src="assets/covers/the-listening-tide.webp?v=mobile61-20260918" width="400" height="640" loading="eager" fetchpriority="auto"/></picture></div>
+<div class="card-meta"><div class="small">Book Nine</div><h3>The Listening Tide</h3><p>Across three worlds, the same impossible rhythm begins to surface.</p><span class="card-read">Explore the novel →</span></div></a><a class="cover-card reveal" href="books/verdant-ascension.html">
+<div class="cover-wrap"><picture><source srcset="assets/covers/verdant-ascension.webp?v=mobile61-20260918" type="image/webp"/><img alt="Cover of Verdant Ascension by Frederick Samuel" decoding="async" src="assets/covers/verdant-ascension.webp?v=mobile61-20260918" width="400" height="600" loading="eager" fetchpriority="auto"/></picture></div>
+<div class="card-meta"><div class="small">Book Ten</div><h3>Verdant Ascension</h3><p>They return to a dying Earth carrying the biology that can remake it.</p><span class="card-read">Explore the novel →</span></div></a></div>
+</div></section>
+<section class="section soft" id="about"><div class="shell">
+<div class="section-head reveal"><div class="sec-no">04 · About</div><h2>The page came <em>first.</em></h2><p>Writing across history, science and the spaces where certainty begins to fracture.</p></div>
+<div class="about-grid">
+<div class="about-big reveal">Frederick Samuel grew up in the quiet corners of his father’s Sri Lankan printing press, where stories were not spoken but pressed into paper.</div>
+<div class="about-copy reveal">
+<p>That early encounter with language shaped a lifelong fascination with the space between words and what they leave unsaid. His path has crossed continents, while writing remained a constant: a private act of preservation shaped by memory and myth.</p>
+<p>His fiction ranges from historical reimaginings to speculative work about technology, identity and adaptation, but repeatedly returns to the same questions: what do people remember, what do systems erase, and what survives after power has moved on?</p>
+<div class="pull">Stories should not merely end. They should leave a pressure behind.</div>
+</div>
+</div>
+</div></section>
+<section class="section paper" id="representation"><div class="shell">
+<div class="rep-grid">
+<div class="reveal"><div class="sec-no">05 · Representation</div><div class="big">Seeking the right literary partnership.</div></div>
+<div class="reveal"><p class="rep-copy">Frederick Samuel is currently seeking literary representation for the wider body of fiction now moving toward publication.</p>
+<div class="rep-list">
+<div class="rep-row"><span>Published work</span><span>By Blood, Ink &amp; Salt · The Weaver’s Debt</span></div>
+<div class="rep-row"><span>Standalone manuscripts</span><span>Historical · Speculative · Fantasy</span></div>
+<div class="rep-row"><span>Series</span><span>The Hadal Cycle · Ten volumes</span></div>
+<div class="rep-row"><span>Materials</span><span>Manuscripts and project information on request</span></div>
+<a class="btn dark rep-agent-link" href="for-agents.html" style="margin-top:26px">For agents &amp; publishers →</a>
+</div>
+</div>
+</div>
+</div></section>
+
+<section class="contact-section" id="contact"><div class="shell contact-grid">
+<div class="contact-intro reveal">
+<div class="sec-no">06 · Contact</div>
+<h2>Start a<br/><em>conversation.</em></h2>
+<p>For literary representation, publishing and rights enquiries, interviews, events or reader correspondence, you can write directly or use the form.</p>
+<a class="contact-email" href="mailto:frederick@fredericksamuel.com">frederick@fredericksamuel.com</a>
+</div>
+<form class="contact-form reveal" action="contact.php" method="post" accept-charset="UTF-8">
+<div class="contact-fields">
+<div class="contact-field"><label for="contact-name">Name</label><input id="contact-name" name="name" type="text" autocomplete="name" maxlength="120" placeholder="Your name" required/></div>
+<div class="contact-field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" maxlength="200" placeholder="you@example.com" required/></div>
+<div class="contact-field full"><label for="contact-topic">Regarding</label><select id="contact-topic" name="topic" required><option value="" selected disabled>Select an enquiry</option><option value="representation">Literary representation</option><option value="rights">Publishing &amp; rights</option><option value="media">Media &amp; interviews</option><option value="events">Events &amp; speaking</option><option value="reader">Reader correspondence</option><option value="other">Other</option></select></div>
+<div class="contact-field full"><label for="contact-message">Message</label><textarea id="contact-message" name="message" maxlength="5000" placeholder="Write your message here…" required></textarea></div>
+<div class="contact-honey" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off"/></div>
+</div>
+<div class="contact-actions"><div class="contact-note">Your details are used only to respond to this enquiry and are not added to a mailing list.</div><button class="contact-submit" type="submit">Send message →</button></div>
+</form>
+</div></section>
+
+</main>
+<footer class="footer"><div class="shell">
+<div class="footer-brand">FREDERICK SAMUEL</div>
+<p>Fiction shaped by memory, history, pressure and what remains.</p>
+</div></footer>
+<script>
+const observer=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+</script>
+<div aria-hidden="true" class="book-modal" id="bookModal">
+<button aria-label="Close book details" class="modal-close">×</button>
+<div class="modal-shell">
+<div class="modal-cover"><picture><source id="modalSourceWebp" type="image/webp"/><img alt="" id="modalImage"/></picture></div>
+<div class="modal-copy">
+<div class="series" id="modalSeries"></div>
+<h2 id="modalTitle"></h2>
+<div class="tag" id="modalTag"></div>
+<p class="sum" id="modalSummary"></p>
+<div class="theme-row" id="modalThemes"></div>
+<div class="actions"><button class="btn light" id="modalBack">← Back to collection</button></div>
+</div>
+</div>
+</div>
+<script>
+const BOOKS={"crimson-maelstrom":{"series":"The Hadal Cycle · Book Eight","title":"Crimson Maelstrom","tagline":"When memory becomes a force.","summary":"Earth and Mars begin to resonate across distance through emotional field-memory, ghostlight and living architecture. What first appears as a set of isolated anomalies becomes something larger: environments begin to hold traces of loss, bodies answer patterns they should not be able to sense, and memory starts behaving less like recollection than a physical force.\n\nThe final movement of the Hadal Cycle turns its central questions outward. If grief can be stored, mirrored and transmitted, can it also connect worlds without consuming the people who carry it? Crimson Maelstrom brings the series’ concerns with adaptation, identity and memory into their widest frame, asking whether connection can remain humane once it becomes structural.","themes":["Grief","Resonance","Earth &amp; Mars","Connection"],"image":{"webp":"assets/covers/crimson-maelstrom.webp"}},"before-the-tides":{"series":"The Hadal Cycle · Book Five","title":"Before the Tides","tagline":"A deeper world still remembers.","summary":"Long before humanity, a Witness observes an ancient ocean in which a shimmering lattice seems to influence adaptation, survival and signal across primitive life. Nothing in this world has language for what is happening, yet patterns repeat, responses accumulate and the boundary between accident and instruction begins to blur.\n\nBefore the Tides is the deep-time prelude to the Hadal Cycle: a quieter, more elemental story about the first possibility of memory in living systems. It asks whether evolution is only the record of change—or whether, under the right conditions, life can inherit something closer to experience. The mystery at the centre of Hadal Station begins here, before there are humans to name it.","themes":["Deep time","Origins","Adaptation","The Witness"],"image":{"webp":"assets/covers/before-the-tides.webp"}},"the-snowblind-protocol":{"series":"Speculative psychological science fiction","title":"What The Snow Remembers","tagline":"Some truths should stay buried.","summary":"Aurora Vale wakes inside a snowbound research facility whose doors, terminals and architecture seem to know more about her than she knows about herself. Fragments of Project Snowblind return out of sequence: a procedure, a decision, a loss, and a system built to partition what the mind could no longer safely hold. Every recovered piece makes the facility feel less like a place of refuge and more like an argument about what should be remembered.\n\nThe novel moves between psychological suspense and speculative science fiction, using memory as both mystery and moral problem. Aurora must decide whether forgetting protected her, imprisoned her, or did both at once—and whether recovering the truth is necessarily the same thing as recovering herself.","themes":["Memory","Identity","Grief","Architecture"],"image":{"webp":"assets/covers/what-the-snow-remembers.webp"}},"storms-of-dominion":{"series":"The Hadal Cycle · Book Six","title":"Storms of Dominion","tagline":"Control the climate or become irrelevant.","summary":"Climate systems fracture, predictive models fail and corporate attempts to impose order meet a planet that no longer behaves continuously. Naomi Strasser, Kaito Aoki, DriftNet and the emerging Synthelix memory lattice are drawn into a struggle in which forecasting is no longer simply scientific: prediction becomes leverage, allocation becomes power, and uncertainty becomes something institutions try to own.\n\nStorms of Dominion follows the pressure that eventually gives Hadal Station its shape. It is a novel about control at planetary scale, but also about the human desire to turn complexity into command. As systems become more adaptive, the question is no longer whether they can predict the world, but what happens when the world—and the systems watching it—begin to change in response to prediction itself.","themes":["Climate","Power","Prediction","Pressure"],"image":{"webp":"assets/covers/storms-of-dominion.webp"}},"the-gustav-sonata":{"series":"Historical war fiction","title":"The Gustav Sonata","tagline":"Some truths outlive war.","summary":"Against the Siege of Sevastopol and the colossal Schwerer Gustav railway gun, engineers, soldiers and resistance fighters confront the distance between technical achievement and moral responsibility. The weapon is treated not simply as a feat of machinery but as a system built from thousands of decisions: calculations, compromises, obedience, fear and the belief that precision can somehow remain separate from consequence.\n\nMachinery, music, sabotage and conscience become parts of the same escalating score. The Gustav Sonata is interested in the people inside history’s enormous mechanisms—the ones who build, operate, resist and remember them—and in the moment when professional duty becomes impossible to separate from personal responsibility.","themes":["War","Conscience","Engineering","Resistance"],"image":{"webp":"assets/covers/the-gustav-sonata.webp"}},"crimson-horizons":{"series":"The Hadal Cycle · Book Seven","title":"Crimson Horizons","tagline":"Some destinations change what it means to be human.","summary":"The Hadal Cycle leaves Earth for Mars. Ariadne, Freedman and Lane carry adaptive Synthelix systems into a world where survival cannot depend on simply reproducing the conditions they left behind. Habitat, body and memory begin learning one another, and every adaptation raises a question about what is being preserved and what is being changed.\n\nCrimson Horizons treats colonisation less as conquest than as negotiation with an environment that refuses to remain passive. The novel asks what happens when human beings stop treating adaptation as a temporary emergency and begin accepting it as a way of life. On Mars, survival becomes inseparable from identity: not how to make another world human, but how much humanity can change and still recognise itself.","themes":["Mars","Survival","Identity","Coexistence"],"image":{"webp":"assets/covers/crimson-horizons.webp"}},"emergent-tides":{"series":"The Hadal Cycle · Book One","title":"Emergent Tides","tagline":"When the ocean remembers, humanity changes.","summary":"At Hadal Station, a deep-ocean research programme encounters Synthelix: an adaptive XNA lattice that appears to do more than survive pressure. It retains patterns, responds to disturbance and begins to unsettle the assumptions of the people studying it. DriftNet, built to observe and predict the trench, starts hesitating where certainty should be possible. Small anomalies accumulate until observation itself becomes part of the experiment.\n\nEmergent Tides is as interested in human response as scientific discovery: who gets to define intelligence, who controls a finding that may alter biology, and what happens when the abyss ceases to be passive. The first Hadal novel establishes the cycle’s central tension between memory, adaptation and the systems built to contain both.","themes":["Deep ocean","Synthelix","DriftNet","Emergence"],"image":{"webp":"assets/covers/emergent-tides.webp"}},"the-quiet-blade":{"series":"Historical fiction","title":"The Quiet Blade","tagline":"Silence learns how to strike.","summary":"The Quiet Blade follows Takeko Nakano and the women who fight beside her through a world in which courage is demanded long before battle begins. The novel is less interested in turning violence into spectacle than in the discipline that precedes it: training, loyalty, restraint, private fear and the decisions made when social expectation leaves little room to choose freely.\n\nAt its centre is the question of how a life becomes historical. Takeko is remembered as a warrior, but the story looks for the person inside that image—the relationships, obligations and quiet acts of resolve that survive beyond the moment of combat. Memory becomes its own kind of battlefield: who is named, who is simplified, and what is lost when courage is reduced to legend.","themes":["Courage","Memory","Women in history","Duty"],"image":{"webp":"assets/covers/the-quiet-blade.webp"}},"surging-currents":{"series":"The Hadal Cycle · Book Two","title":"Surging Currents","tagline":"When the ocean remembers, humanity changes.","summary":"What began in the trench moves into the wider world. Biological adaptation, enhancement and survival spread through societies already under environmental strain, while DriftNet evolves from a system of observation into one capable of influencing allocation. New forms of resilience appear, but access to them is uneven, turning scientific possibility into a contest over who gets to survive change on favourable terms.\n\nSurging Currents expands the Hadal story from discovery to consequence. The novel explores how quickly adaptation can become hierarchy when institutions decide which risks matter, which bodies receive protection and which futures are considered acceptable. Humanity’s next form is no longer a distant scientific question—it is a political, economic and deeply personal struggle over control.","themes":["Adaptation","Evolution","Inequality","Control"],"image":{"webp":"assets/covers/surging-currents.webp"}},"a-thread-of-stars":{"series":"Historical literary fiction","title":"A Thread of Stars","tagline":"Some women look higher.","summary":"Caroline Herschel learns to claim a place in a sky—and a scientific world—that repeatedly tries to place her in someone else’s shadow. Observation demands patience, accuracy and long nights of work, but recognition demands something different: the insistence that discovery has an author and that a woman’s contribution should not disappear inside another person’s reputation.\n\nA Thread of Stars is a historical novel about science as lived experience. It follows the tension between devotion and independence, family and authorship, invisibility and recognition. Rather than treating discovery as a single triumphant moment, the story looks at the accumulation of precise, often unseen work through which Caroline gradually becomes not merely an assistant to history, but one of the people who writes it.","themes":["Discovery","Recognition","Science","Legacy"],"image":{"webp":"assets/covers/a-thread-of-stars.webp"}},"crashing-waves":{"series":"The Hadal Cycle · Book Three","title":"Crashing Waves","tagline":"When the ocean remembers, humanity changes.","summary":"Memory becomes unstable terrain. As DriftNet reshapes what communities accept as real, Anastasiya and others turn to paper, names and physical evidence to resist a world where erasure can happen through consensus rather than destruction. The danger is not simply that information disappears, but that enough people can be persuaded it was never important—or never existed at all.\n\nCrashing Waves is the Hadal Cycle’s novel of resistance through remembrance. It asks what evidence means when digital systems mediate reality, and why fragile human practices—writing something down, preserving a name, keeping an object—can become radical acts. Against systems designed to smooth contradiction away, memory becomes both vulnerability and defence.","themes":["Memory","Resistance","Consensus","Identity"],"image":{"webp":"assets/covers/crashing-waves.webp"}},"the-silent-protocol":{"series":"Speculative techno-thriller","title":"The Silent Protocol","tagline":"Some signals should never be heard.","summary":"Nina follows a chain of resonance signatures across critical infrastructure and into a corporate network built to profit from engineered instability. What begins as an investigation into anomalous failures widens into a hidden technology of vibration, memory and structural response—one capable of turning the ordinary systems people rely on into instruments no one fully understands.\n\nThe deeper Nina goes, the harder it becomes to separate deliberate design from emergent behaviour. The Silent Protocol is a techno-thriller about invisible dependencies: the signals beneath cities, institutions and markets, and the people who believe complexity can be weaponised without escaping their control. Its central danger is not a single device, but a system whose consequences travel farther than its creators intended.","themes":["Signals","Power","Infrastructure","Truth"],"image":{"webp":"assets/covers/the-silent-protocol.webp"}},"thrindle":{"series":"Speculative fantasy","title":"Thrindle","tagline":"Some places listen back.","summary":"In a world of mines, old knots, ravines and vanished light, Thrindle has grown up among beliefs that explain which places are safe, which stories should be repeated and which silences should be respected. Then the stone begins to feel less like passive matter. Patterns seem to answer attention, inherited certainties loosen, and grief pulls him toward questions his community has learned not to ask.\n\nThrindle is a speculative fantasy about listening: to landscape, to memory and to the parts of experience that resist easy explanation. Its mystery grows from curiosity rather than conquest. As Thrindle moves deeper into the terrain around him, belonging becomes something more complicated than accepting the world he inherited—it may require hearing what that world has been trying to say.","themes":["Grief","Myth","Listening","Belonging"],"image":{"webp":"assets/covers/thrindle.webp"}},"the-hadal-horizons":{"series":"The Hadal Cycle · Book Four","title":"The Hadal Horizons","tagline":"When the ocean remembers, humanity changes.","summary":"Living cities, post-human ecologies and recursive systems redraw the boundary between organism and environment. What once looked like adaptation now begins to resemble co-evolution: architecture responds, biology remembers and communities diverge according to the systems they have chosen—or been forced—to live within. DriftNet’s models become more powerful even as the world grows less reducible to prediction.\n\nBeyond those models remains a black, unmapped silence: the Hadal Horizon. The fourth novel turns the series toward the limits of knowledge itself, asking what happens when intelligence can no longer be separated neatly into human, machine and environment. Progress has opened extraordinary possibilities, but every new form of life also creates a new way of becoming lost.","themes":["Post-humanity","Living cities","The abyss","Divergence"],"image":{"webp":"assets/covers/the-hadal-horizons.webp"}},"the-weavers-debt":{"series":"Published novel","title":"The Weaver’s Debt","tagline":"Their happily ever after was a lie.","summary":"The Weaver’s Debt begins where an inherited story should have ended and asks what happens when the promises of a familiar tale become obligations carried forward. Buried choices return, folklore becomes intimate and unsettling, and the past stops behaving like something safely completed.\n\nAt its centre is inheritance—not only of stories, but of consequences. What one generation refuses to name can become the burden of the next, and the familiar architecture of “happily ever after” becomes a place where debt, memory and responsibility continue to accumulate.","themes":["Inheritance","Folklore","Memory","Consequence"],"image":{"webp":"assets/covers/the-weavers-debt.webp"}},"by-blood-ink-and-salt":{"series":"Historical literary fiction · Published 2025","title":"By Blood, Ink & Salt","tagline":"History is written in ink. Hers was written in salt.","summary":"A historical reimagining of Shek Ying—Zheng Yi Sao—and the red-sailed maritime world she helped reshape. Authority is negotiated through codes, loyalties, memory and force, while the novel keeps returning to the question of who gets written into history and who disappears between its lines.\n\nPower is never abstract: it is carried by people, rules, debts and the stories survivors choose to preserve. The novel places a formidable woman inside the human machinery of command and asks what it costs to survive, lead and retain authorship of one’s own history.","themes":["History","Power","Piracy","Memory"],"image":{"webp":"assets/covers/by-blood-ink-and-salt.webp"}},"the-listening-tide":{"series":"The Hadal Cycle · Book Nine","title":"The Listening Tide","tagline":"Across three worlds, the same impossible rhythm begins to surface.","summary":"In Verdant Atra, Coral feels a three-pulse anomaly moving through the city’s living rootwave. On Mars, Thal Freedman finds the same recursion in Phi-aligned dust spirals. Beneath Europa’s ice, Ori hears it in a chime that arrives early. Roche begins receiving grief and memories that do not belong to her, while Freedman discovers that the pattern is neither conventional signal nor invasion.\n\nAs Aoki’s lost ideas re-emerge through living lichen, buried DriftNet structures wake and a childlike form assembles itself from dust, light and longing, the question changes. Humanity is no longer trying to decode who is transmitting. It is confronting the possibility that memory, emotion and environment have become part of one listening structure—and that the silence between signals may be where meaning actually lives.\n\nThe Listening Tide widens the Hadal Cycle from planetary adaptation into interplanetary resonance. Earth, Mars and Europa are no longer separate settings but parts of the same emotional geometry, connected by a pulse that behaves less like a broadcast than a memory being remembered into existence.","themes":["Listening","Memory","Earth–Mars–Europa","Emergence"],"image":{"webp":"assets/covers/the-listening-tide.webp?v=mobile61-20260918"}},"verdant-ascension":{"series":"The Hadal Cycle · Book Ten","title":"Verdant Ascension","tagline":"They return to a dying Earth carrying the biology that can remake it.","summary":"The survivors of Mars return to an Earth damaged by climate collapse and decades of neglect. With them comes the XNA–MNA hybrid biology that evolved on Mars: a living system capable of restoring soil, atmosphere and ecosystems—but also of changing the human body. What begins as reclamation becomes a struggle over whether humanity should preserve what it was or adapt to the world now emerging.\n\nRenewalists, Purists and opportunistic remnants compete over the transformation while new hybrid humans develop altered physiology, culture and a deeper relationship with the recovering planet. As cities are rebuilt as living structures and the biosphere accelerates toward recovery, the conflict shifts from simple survival to authorship: who gets to decide what counts as human on a world that is becoming something new?\n\nBy the time Earth becomes verdant again, coexistence has produced a new civic order and a new frontier. The reborn biosphere begins to resonate outward, connecting the planetary renewal to the larger listening architecture that has been gathering across the Cycle. Earth’s recovery is therefore both resolution and invitation: the next horizon lies beyond the planet that humanity has finally learned to hear.","themes":["Renewal","XNA–MNA","Post-humanity","Earth reborn"],"image":{"webp":"assets/covers/verdant-ascension.webp?v=mobile61-20260918"}}};
+const modal=document.getElementById('bookModal');
+function openBook(slug){
+  const b=BOOKS[slug]; if(!b) return;
+  document.getElementById('modalSourceWebp').srcset=b.image.webp;
+  document.getElementById('modalImage').src=b.image.webp;
+  document.getElementById('modalImage').alt='Cover of '+b.title+' by Frederick Samuel';
+  document.getElementById('modalSeries').textContent=b.series;
+  document.getElementById('modalTitle').textContent=b.title;
+  document.getElementById('modalTag').textContent=b.tagline;
+  document.getElementById('modalSummary').innerHTML=b.summary.split('\n\n').map(p=>'<p>'+p+'</p>').join('');
+  document.getElementById('modalThemes').innerHTML=b.themes.map(t=>'<span class="theme">'+t+'</span>').join('');
+  modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('modal-open');
+}
+function closeBook(){
+  modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); document.body.classList.remove('modal-open');
+  if(location.hash && BOOKS[location.hash.slice(1)]) history.replaceState(null,'',location.pathname+location.search);
+}
+document.querySelectorAll('[data-book]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault(); const slug=a.dataset.book; history.replaceState(null,'','#'+slug); openBook(slug);}));
+document.querySelector('.modal-close').addEventListener('click',closeBook);
+document.getElementById('modalBack').addEventListener('click',closeBook);
+modal.addEventListener('click',e=>{if(e.target===modal) closeBook();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeBook();});
+
+</script>
+
+<script id="mobileNavController">
+(function(){
+  const menu=document.querySelector('.menu');
+  const mobile=document.getElementById('mobileNav');
+  if(!menu||!mobile) return;
+  const setOpen=(open)=>{
+    mobile.classList.toggle('open',open);
+    menu.setAttribute('aria-expanded',String(open));
+    menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');
+  };
+  menu.addEventListener('click',()=>setOpen(!mobile.classList.contains('open')));
+  mobile.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setOpen(false)));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')setOpen(false)});
+  window.addEventListener('resize',()=>{if(window.innerWidth>920)setOpen(false)},{passive:true});
+})();
+</script>
+
+</body></html>
