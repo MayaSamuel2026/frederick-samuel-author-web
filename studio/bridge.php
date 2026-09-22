@@ -2,44 +2,14 @@
 declare(strict_types=1);
 
 const BOOK_AUTHOR_CORE_URL = 'https://noeva-core.179-198-203-247.nip.io';
+const BOOK_AUTHOR_BRIDGE_TOKEN = '5Tw7okPTJbLHNfHgmvv1n5nQcjaYclgbEKfoNg0nIYswADkCPPirFsVRLAv_zg3s';
 
-function ba_bridge_secret_path(): string {
-    return __DIR__ . '/data/bookauthor-bridge-token';
-}
-function ba_bridge_token_state(): array {
-    $path=ba_bridge_secret_path();
-    $token='';
-    if(is_file($path)){
-        $raw=@file_get_contents($path);
-        if(is_string($raw)) $token=trim($raw);
-    }
-    if(!preg_match('/^[A-Za-z0-9_-]{48,192}$/',$token)){
-        $dir=dirname($path);
-        if(!is_dir($dir)) @mkdir($dir,0770,true);
-        $token=rtrim(strtr(base64_encode(random_bytes(48)),'+/','-_'),'=');
-        $tmp=$path.'.tmp.'.bin2hex(random_bytes(6));
-        if(@file_put_contents($tmp,$token."\n",LOCK_EX)===false){
-            return ['ok'=>false,'error'=>'bridge_secret_write_failed','token'=>null,'sha256'=>null];
-        }
-        @chmod($tmp,0600);
-        if(!@rename($tmp,$path)){
-            @unlink($tmp);
-            return ['ok'=>false,'error'=>'bridge_secret_commit_failed','token'=>null,'sha256'=>null];
-        }
-        @chmod($path,0600);
-    }
-    return ['ok'=>true,'token'=>$token,'sha256'=>hash('sha256',$token)];
-}
 function ba_core_request(string $method, string $path, ?array $payload=null): array {
-    $secret=ba_bridge_token_state();
-    if(!($secret['ok']??false) || empty($secret['token'])){
-        return ['ok'=>false,'error'=>$secret['error']??'bridge_secret_unavailable','http_status'=>0];
-    }
     $url = rtrim(BOOK_AUTHOR_CORE_URL, '/') . '/' . ltrim($path, '/');
     $headers = [
         'Accept: application/json',
         'Content-Type: application/json',
-        'X-Book-Author-Bridge: ' . $secret['token'],
+        'X-Book-Author-Bridge: ' . BOOK_AUTHOR_BRIDGE_TOKEN,
     ];
     $body = $payload === null ? null : json_encode($payload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
 
