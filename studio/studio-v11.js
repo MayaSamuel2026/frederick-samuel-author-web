@@ -12,6 +12,7 @@ if(!API.upload){
     return payload;
   };
 }
+var baPdfRecovery={};
 async function baExtractPdfText(file){
   var pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
@@ -47,6 +48,26 @@ async function baCommitExtractedText(importId,text){
     err.status=r.status;err.payload=payload;throw err;
   }
   return payload;
+}
+async function baRecoverPdfImport(importRec){
+  if(!importRec || importRec.status!=='preserved_needs_extractor' || String(importRec.extension||'').toLowerCase()!=='pdf') return false;
+  var id=Number(importRec.id||0);
+  if(!id || baPdfRecovery[id]) return false;
+  baPdfRecovery[id]=true;
+  try{
+    notify('Recovering PDF text from preserved original…');
+    var r=await fetch('/api/imports/'+encodeURIComponent(id)+'/original-file',{credentials:'same-origin',cache:'no-store'});
+    if(!r.ok) throw new Error('original_pdf_fetch_failed_'+r.status);
+    var blob=await r.blob();
+    var text=await baExtractPdfText(blob);
+    if(!text || text.trim().length<100) throw new Error('pdf_text_layer_not_detected');
+    await baCommitExtractedText(id,text);
+    notify('PDF text extracted; whole-book analysis queued');
+    return true;
+  }catch(e){
+    console.error('Book Author PDF recovery failed',e);
+    return false;
+  }
 }
 if(document.getElementById('ba-v11-style'))return;
 var st=document.createElement('style');st.id='ba-v11-style';st.textContent=
@@ -92,7 +113,7 @@ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){retur
 function compactText(v){if(v==null)return '';if(typeof v==='string')return v;if(Array.isArray(v))return v.map(compactText).filter(Boolean).join(' · ');if(typeof v==='object'){return Object.entries(v).slice(0,8).map(function(kv){return kv[0].replaceAll('_',' ')+': '+compactText(kv[1])}).join(' · ')}return String(v)}
 function optimizationHtml(d){if(!d)return '';var map=d.optimization_map||d;if(!map||typeof map!=='object')return '';var sum=map.executive_summary||'';var recs=Array.isArray(map.priority_recommendations)?map.priority_recommendations:[];var chars=Array.isArray(map.characters)?map.characters.length:(map.characters&&typeof map.characters==='object'?Object.keys(map.characters).length:0);var blocks='';if(sum)blocks+='<div class="finding good"><h4>Whole-book synthesis</h4><p>'+esc(compactText(sum))+'</p></div>';if(chars)blocks+='<div class="card"><h4>Character model reconstructed</h4><p class="small muted">'+chars+' character records/arc observations were synthesized from the manuscript.</p></div>';if(recs.length){blocks+='<div class="eyebrow" style="margin-top:14px">Priority optimization recommendations</div>'+recs.slice(0,10).map(function(r){var sev=(r&&typeof r==='object'?(r.priority||r.severity||r.level):'')||'recommendation';var title=(r&&typeof r==='object'?(r.title||r.issue||r.category):'')||'Optimization opportunity';var detail=(r&&typeof r==='object'?(r.detail||r.reason||r.why_it_matters||r.suggestion||r.resolution_options):r);return '<div class="finding '+(String(sev).toLowerCase().includes('high')||String(sev).toLowerCase().includes('critical')?'watch':'')+'"><h4>'+esc(title)+' <span class="badge">'+esc(sev)+'</span></h4><p>'+esc(compactText(detail))+'</p></div>'}).join('')}return blocks}
 function renderImport(i){var s=i.structural_scan||{},e=(s.entity_candidates||[]).slice(0,10).map(function(x){return '<span class="trait">'+esc(x.name)+' · '+Number(x.mentions||0)+'</span>'}).join('');var st=String(i.analysis_status||'queued');var cls=st==='completed'?'good':(st==='failed'?'warn':'');document.getElementById('analysisResults').innerHTML='<div class="engine-state"><b>Original preserved.</b> SHA-256 '+esc(String(i.sha256||'').slice(0,16))+'… · Import #'+Number(i.id||0)+' · '+esc(String(i.status||'').replaceAll('_',' '))+'</div><div class="analysis-metrics"><div class="metric-card"><b>'+Number(s.word_count||0).toLocaleString()+'</b><span>Words extracted</span></div><div class="metric-card"><b>'+(s.chapter_estimate||0)+'</b><span>Chapter headings</span></div><div class="metric-card"><b>'+(s.paragraph_count||0)+'</b><span>Paragraphs</span></div><div class="metric-card"><b>'+(s.dialogue_ratio||0)+'%</b><span>Dialogue signal</span></div></div>'+(e?'<div class="card"><h4>Entity candidates — awaiting semantic confirmation</h4><div class="traits">'+e+'</div></div>':'')+(s.findings||[]).map(findingHtml).join('')+'<div class="card suggest"><h4>Deep manuscript analysis <span class="badge '+cls+'">'+esc(st.replaceAll('_',' '))+'</span></h4><p>'+esc(i.analysis_message||'')+'</p></div>'+optimizationHtml(i.deep_analysis)}
-async function refresh(){try{var im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports'),is=await API.get('/api/intelligence/status');['analysisEngineBadge','writerEngineBadge'].forEach(function(id){var b=document.getElementById(id);b.textContent=is.bound?'NOEVA local intelligence bound':(is.reachable?'NOEVA CORE ready · local node syncing':'Local structural engine · CORE unavailable');b.className='badge '+(is.bound?'good':'warn')});var list=document.getElementById('recentImports');list.innerHTML=im.items.length?im.items.slice().reverse().slice(0,5).map(function(i){return '<div class="job-card"><h4>'+esc(i.original_name)+'</h4><div class="tiny muted">'+Number((i.structural_scan||{}).word_count||0).toLocaleString()+' words · '+i.optimization_depth+' · '+i.status.replaceAll('_',' ')+'</div></div>'}).join(''):'<div class="small muted">No imported manuscript loaded yet.</div>';if(im.items.length)renderImport(im.items[im.items.length-1])}catch(e){console.warn(e)}}
+async function refresh(){try{var im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports'),is=await API.get('/api/intelligence/status');if(im.items&&im.items.length){var newest=im.items[im.items.length-1];if(await baRecoverPdfImport(newest)){im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports')}}['analysisEngineBadge','writerEngineBadge'].forEach(function(id){var b=document.getElementById(id);b.textContent=is.bound?'NOEVA local intelligence bound':(is.reachable?'NOEVA CORE ready · local node syncing':'Local structural engine · CORE unavailable');b.className='badge '+(is.bound?'good':'warn')});var list=document.getElementById('recentImports');list.innerHTML=im.items.length?im.items.slice().reverse().slice(0,5).map(function(i){return '<div class="job-card"><h4>'+esc(i.original_name)+'</h4><div class="tiny muted">'+Number((i.structural_scan||{}).word_count||0).toLocaleString()+' words · '+i.optimization_depth+' · '+i.status.replaceAll('_',' ')+'</div></div>'}).join(''):'<div class="small muted">No imported manuscript loaded yet.</div>';if(im.items.length)renderImport(im.items[im.items.length-1])}catch(e){console.warn(e)}}
 document.getElementById('uploadAnalyzeBtn').onclick=async function(){var f=fi.files[0];if(!f){notify('Choose a manuscript first');return}this.disabled=true;this.textContent='Preserving & parsing…';try{var fd=new FormData();fd.append('manuscript',f);fd.append('optimization_depth',depth);fd.append('scopes',JSON.stringify(Array.from(document.querySelectorAll('[data-analysis-scope]:checked')).map(function(x){return x.dataset.analysisScope})));var r=await API.upload('/api/projects/'+ACTIVE_PROJECT_ID+'/import-manuscript',fd);
 var isPdf=/\.pdf$/i.test(f.name||'')||String(f.type||'').toLowerCase()==='application/pdf';
 if(isPdf && r.import && r.import.status==='preserved_needs_extractor'){
