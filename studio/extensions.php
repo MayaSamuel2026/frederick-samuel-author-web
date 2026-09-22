@@ -366,7 +366,7 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         $job=['id'=>$aid,'project_id'=>$pid,'import_id'=>$id,'status'=>$astatus,'optimization_depth'=>$depth,'scopes'=>array_values($scopes),'pipeline'=>['segment','chapter_extract','character_relationship_graph','plot_threads','timeline_congruency','structure_pacing','style_profile','reader_experience','historical_checks','optimization_map'],'created_at'=>nowIso(),'message'=>$amsg,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'core_job_id'=>null];
 
         $s['imports'][]=$rec; $s['analysis_jobs'][]=$job;
-        audit($s,$pid,'manuscript.imported','manuscript_import',$id,['original_name'=>$original,'sha256'=>$sha,'bytes'=>$size,'status'=>$rec['status'],'analysis_job_id'=>$aid]);
+        audit($s,'manuscript.imported','manuscript_import',$id,['project_id'=>$pid,'original_name'=>$original,'sha256'=>$sha,'bytes'=>$size,'status'=>$rec['status'],'analysis_job_id'=>$aid]);
         saveState($stateFile,$s);
         if($text!=='') ba_dispatch_analysis($s,count($s['analysis_jobs'])-1,$stateFile);
         $ii=ba_find_index($s['imports'],$id);
@@ -393,7 +393,7 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         $workerToken=bin2hex(random_bytes(32)); $workerHash=hash('sha256',$workerToken);
         $job=['id'=>$id,'project_id'=>$pid,'chapter_id'=>(int)($b['chapter_id']??0),'target_words'=>$target,'outline'=>$outline,'pov'=>(string)($b['pov']??'Use book canon'),'tense'=>(string)($b['tense']??'Use book canon'),'style_source'=>(string)($b['style_source']??'Use approved book style profile'),'research_policy'=>(string)($b['research_policy']??'Respect verified facts; flag unknowns'),'instructions'=>(string)($b['instructions']??''),'context_flags'=>$ctx,'guardrails'=>$guards,'status'=>'dispatch_pending','message'=>'Chapter contract preserved. Preparing NOEVA local writing job.','created_at'=>nowIso(),'output_passage_id'=>null,'output_revision'=>null,'core_job_id'=>null,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'generation_contract'=>['outline_authoritative'=>true,'target_word_count'=>$target,'word_count_tolerance_percent'=>8,'preserve_book_style'=>true,'preserve_character_voice'=>true,'use_story_graph'=>in_array('story_graph',$ctx,true),'use_continuity'=>in_array('continuity',$ctx,true),'never_overwrite_approved_text'=>true,'result_requires_author_approval'=>true]];
         $s['write_jobs'][]=$job;
-        audit($s,$pid,'write_job.created','write_job',$id,['chapter_id'=>$job['chapter_id'],'target_words'=>$target,'status'=>'dispatch_pending']);
+        audit($s,'write_job.created','write_job',$id,['project_id'=>$pid,'chapter_id'=>$job['chapter_id'],'target_words'=>$target,'status'=>'dispatch_pending']);
         saveState($stateFile,$s);
         ba_dispatch_write($s,count($s['write_jobs'])-1,$stateFile);
         $job=$s['write_jobs'][count($s['write_jobs'])-1];
