@@ -355,14 +355,14 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
     $s['literary_intelligence_by_project']=is_array($s['literary_intelligence_by_project']??null)?$s['literary_intelligence_by_project']:[];
     if($method==='GET'&&$path==='intelligence/status') respond(ba_intelligence_status());
 
-    if($method==='GET'&&preg_match('#^projects/(\\d+)/literary-intelligence$#',$path,$m)){
+    if($method==='GET'&&preg_match('#^projects/(\d+)/literary-intelligence$#',$path,$m)){
         $pid=(int)$m[1]; $key=(string)$pid;
         respond(['ok'=>true,'literary_intelligence'=>$s['literary_intelligence_by_project'][$key]??[
             'author_style_memory'=>[],'style_control'=>[],'pending_feedback'=>[],'learning_events'=>[]
         ]]);
     }
 
-    if($method==='POST'&&preg_match('#^projects/(\\d+)/literary-intelligence/feedback$#',$path,$m)){
+    if($method==='POST'&&preg_match('#^projects/(\d+)/literary-intelligence/feedback$#',$path,$m)){
         $pid=(int)$m[1]; $key=(string)$pid; $b=bodyJson();
         $feedback=ba_sanitize_editorial_feedback($b['feedback']??[]);
         if(!$feedback) respond(['error'=>'valid_feedback_required'],422);
