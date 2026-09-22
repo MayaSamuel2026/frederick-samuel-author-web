@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/extensions.php';
 studio_gate_api();
 header('Content-Type: application/json; charset=UTF-8');
 header('Cache-Control: no-store, max-age=0');
@@ -46,7 +47,7 @@ function seedState(): array {
       ['id'=>1,'project_id'=>1,'source_passage_id'=>1,'target_passage_id'=>2,'status'=>'pending','source_revision'=>18,'target_revision'=>11,'proposed_html'=>'<p>Er ging <ins>kurz</ins> vor Sonnenaufgang, ohne sich zu verabschieden.</p>','nuance'=>['register'=>'restrained','subtext'=>'farewell withheld','emotional_temperature'=>'cool/high pressure','rhythm'=>'clipped ending','material'=>true],'created_at'=>$ts]
     ],
     'semantic_diffs'=>[['id'=>1,'source_passage_id'=>1,'prior_revision'=>17,'new_revision'=>18,'material'=>true,'summary'=>'Added temporal precision and explicit relational action.','created_at'=>$ts]],
-    'audit'=>[['id'=>1,'event_type'=>'seed','object_type'=>'project','object_id'=>1,'payload'=>['version'=>'1.0'],'created_at'=>$ts]],
+    'audit'=>[['id'=>1,'event_type'=>'seed','object_type'=>'project','object_id'=>1,'payload'=>['version'=>'1.1'],'created_at'=>$ts]],
     'exports'=>[]
   ];
 }
@@ -70,6 +71,7 @@ function findIndexById(array $items,int $id): int { foreach($items as $i=>$x){ i
 $method=$_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path=trim((string)($_GET['path'] ?? ''),'/');
 $s=loadState($stateFile);
+ba_extended_api($s,$stateFile,$method,$path,$dataDir);
 
 if($method==='GET' && $path==='health') respond(['ok'=>true,'service'=>'book-author-studio','version'=>'1.0']);
 if($method==='GET' && $path==='projects') respond(['items'=>[$s['project']]]);
