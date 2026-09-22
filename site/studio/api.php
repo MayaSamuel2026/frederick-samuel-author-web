@@ -1,5 +1,7 @@
 <?php
-declare(strict_types=1);\nrequire_once __DIR__ . '/auth.php';\nstudio_gate_api();
+declare(strict_types=1);
+require_once __DIR__ . '/auth.php';
+studio_gate_api();
 header('Content-Type: application/json; charset=UTF-8');
 header('Cache-Control: no-store, max-age=0');
 header('X-Robots-Tag: noindex, nofollow, noarchive');

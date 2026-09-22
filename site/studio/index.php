@@ -1,4 +1,6 @@
-<?php\nrequire_once __DIR__ . '/auth.php';\nstudio_gate_web();
+<?php
+require_once __DIR__ . '/auth.php';
+studio_gate_web();
 header('Content-Type: text/html; charset=UTF-8');
 header('Cache-Control: no-store, max-age=0');
 header('X-Robots-Tag: noindex, nofollow, noarchive');
