@@ -461,8 +461,18 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         $feedback=ba_sanitize_editorial_feedback($feedback);
         $projectLi['pending_feedback']=[];
         $s['literary_intelligence_by_project'][$key]=$projectLi;
+        $influences=[];
+        foreach((is_array($b['style_influences']??null)?$b['style_influences']:[]) as $row){
+            if(!is_array($row)) continue;
+            $name=trim((string)($row['name']??$row['author']??''));
+            if($name==='') continue;
+            $percent=$row['percent']??$row['weight']??null;
+            if($percent!==null) $percent=max(0,min(100,(float)$percent));
+            $influences[]=['name'=>mb_substr($name,0,120),'percent'=>$percent];
+            if(count($influences)>=12) break;
+        }
         $workerToken=bin2hex(random_bytes(32)); $workerHash=hash('sha256',$workerToken);
-        $job=['id'=>$id,'project_id'=>$pid,'chapter_id'=>(int)($b['chapter_id']??0),'target_words'=>$target,'outline'=>$outline,'pov'=>(string)($b['pov']??'Use book canon'),'tense'=>(string)($b['tense']??'Use book canon'),'style_source'=>(string)($b['style_source']??'Use approved book style profile'),'research_policy'=>(string)($b['research_policy']??'Respect verified facts; flag unknowns'),'instructions'=>(string)($b['instructions']??''),'scene_mode'=>$sceneMode,'style_control'=>$styleControl,'editorial_feedback'=>$feedback,'context_flags'=>$ctx,'guardrails'=>$guards,'status'=>'dispatch_pending','message'=>'Chapter contract preserved. Preparing NOEVA local writing job.','created_at'=>nowIso(),'output_passage_id'=>null,'output_revision'=>null,'core_job_id'=>null,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'generation_contract'=>['outline_authoritative'=>true,'target_word_count'=>$target,'word_count_tolerance_percent'=>8,'preserve_book_style'=>true,'preserve_character_voice'=>true,'style_modulation'=>true,'controlled_unpredictability'=>true,'author_style_learning'=>true,'use_story_graph'=>in_array('story_graph',$ctx,true),'use_continuity'=>in_array('continuity',$ctx,true),'never_overwrite_approved_text'=>true,'result_requires_author_approval'=>true]];
+        $job=['id'=>$id,'project_id'=>$pid,'chapter_id'=>(int)($b['chapter_id']??0),'target_words'=>$target,'outline'=>$outline,'pov'=>(string)($b['pov']??'Use book canon'),'tense'=>(string)($b['tense']??'Use book canon'),'style_source'=>(string)($b['style_source']??'Use approved book style profile'),'style_influences'=>$influences,'research_policy'=>(string)($b['research_policy']??'Respect verified facts; flag unknowns'),'instructions'=>(string)($b['instructions']??''),'scene_mode'=>$sceneMode,'style_control'=>$styleControl,'editorial_feedback'=>$feedback,'context_flags'=>$ctx,'guardrails'=>$guards,'status'=>'dispatch_pending','message'=>'Chapter contract preserved. Preparing NOEVA local writing job.','created_at'=>nowIso(),'output_passage_id'=>null,'output_revision'=>null,'core_job_id'=>null,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'generation_contract'=>['outline_authoritative'=>true,'target_word_count'=>$target,'word_count_tolerance_percent'=>8,'preserve_book_style'=>true,'preserve_character_voice'=>true,'style_modulation'=>true,'controlled_unpredictability'=>true,'author_style_learning'=>true,'use_story_graph'=>in_array('story_graph',$ctx,true),'use_continuity'=>in_array('continuity',$ctx,true),'never_overwrite_approved_text'=>true,'result_requires_author_approval'=>true]];
         $s['write_jobs'][]=$job;
         audit($s,$pid,'write_job.created','write_job',$id,['chapter_id'=>$job['chapter_id'],'target_words'=>$target,'status'=>'dispatch_pending']);
         saveState($stateFile,$s);
