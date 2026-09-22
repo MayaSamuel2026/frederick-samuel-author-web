@@ -373,6 +373,60 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         respond(['ok'=>true,'import'=>$ii>=0?$s['imports'][$ii]:$rec,'analysis_job'=>$s['analysis_jobs'][count($s['analysis_jobs'])-1]]);
     }
 
+    if($method==='POST'&&preg_match('#^imports/(\d+)/extracted-text$#',$path,$m)){
+        $id=(int)$m[1];
+        $ii=ba_find_index($s['imports'],$id);
+        if($ii<0) respond(['error'=>'import_not_found'],404);
+        $import=$s['imports'][$ii];
+        $b=bodyJson();
+        $text=(string)($b['text']??'');
+        $text=str_replace("\0",'',$text);
+        $text=preg_replace('/\R/u',"\n",$text)??$text;
+        $text=trim($text);
+        $bytes=strlen($text);
+        if($bytes<100) respond(['error'=>'extracted_text_too_short'],422);
+        if($bytes>15*1024*1024) respond(['error'=>'extracted_text_too_large','max_bytes'=>15*1024*1024],422);
+
+        $pid=(int)($import['project_id']??1);
+        $dir=rtrim($dataDir,'/').'/imports/project_'.$pid;
+        if(!is_dir($dir)&&!@mkdir($dir,0770,true)&&!is_dir($dir)) respond(['error'=>'import_storage_unavailable'],500);
+        $stored=basename((string)($import['stored_name']??('import_'.$id)));
+        $textFile=$stored.'.extracted.txt';
+        $textPath=$dir.'/'.$textFile;
+        if(@file_put_contents($textPath,$text,LOCK_EX)===false) respond(['error'=>'extracted_text_write_failed'],500);
+        @chmod($textPath,0660);
+
+        $scan=ba_scan($text);
+        $s['imports'][$ii]['status']='parsed';
+        $s['imports'][$ii]['extraction_message']='PDF text layer extracted locally in the browser; immutable original preserved.';
+        $s['imports'][$ii]['extracted_text_file']=$textFile;
+        $s['imports'][$ii]['structural_scan']=$scan;
+        $s['imports'][$ii]['analysis_status']='dispatch_pending';
+        $s['imports'][$ii]['analysis_message']='PDF text extracted. Preparing NOEVA local whole-book analysis.';
+
+        $ji=-1;
+        foreach($s['analysis_jobs']??[] as $j=>$row){
+            if((int)($row['import_id']??0)===$id){ $ji=(int)$j; break; }
+        }
+        if($ji<0) respond(['error'=>'analysis_job_not_found'],409);
+        $s['analysis_jobs'][$ji]['status']='dispatch_pending';
+        $s['analysis_jobs'][$ji]['message']='PDF text extracted. Preparing NOEVA local whole-book analysis.';
+        audit($s,'manuscript.text_extracted','manuscript_import',$id,[
+            'project_id'=>$pid,
+            'bytes'=>$bytes,
+            'word_count'=>(int)($scan['word_count']??0),
+            'extractor'=>'browser_pdfjs'
+        ]);
+        saveState($stateFile,$s);
+        ba_dispatch_analysis($s,$ji,$stateFile);
+        $ii=ba_find_index($s['imports'],$id);
+        respond([
+            'ok'=>true,
+            'import'=>$ii>=0?$s['imports'][$ii]:$import,
+            'analysis_job'=>$s['analysis_jobs'][$ji],
+        ]);
+    }
+
     if($method==='GET'&&preg_match('#^projects/(\d+)/analysis-jobs$#',$path,$m)){
         ba_sync_core_jobs($s,$stateFile);
         $pid=(int)$m[1]; respond(['items'=>array_values(array_filter($s['analysis_jobs'],fn($x)=>(int)($x['project_id']??0)===$pid))]);
