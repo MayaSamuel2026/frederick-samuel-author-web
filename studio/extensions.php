@@ -3,21 +3,28 @@ declare(strict_types=1);
 require_once __DIR__ . '/bridge.php';
 
 function ba_intelligence_status(): array {
+    $secret=ba_bridge_token_state();
     $health=ba_core_health();
     $reachable=(bool)($health['ok']??false);
+    $authorized=(int)($health['_http_status']??0)!==401;
     $bound=$reachable && (bool)($health['compute_bound']??false);
     return [
         'bound'=>$bound,
         'reachable'=>$reachable,
+        'authorized'=>$authorized,
         'mode'=>'noeva_local_intelligence',
         'adapter'=>'NOEVA CORE → local compute → Ollama',
         'pricing'=>'LOCAL_NO_API_FEES',
         'capable_nodes'=>$health['capable_nodes']??[],
+        'bridge_secret_sha256'=>$secret['sha256']??null,
+        'bridge_secret_server_only'=>true,
         'message'=>$bound
             ? 'NOEVA local intelligence is bound. Manuscript analysis and chapter writing run on the local compute cluster without a paid model API.'
-            : ($reachable
-                ? 'NOEVA CORE is reachable; waiting for a compute node to advertise the Book Author local-intelligence tasks.'
-                : 'Local parsing is active. NOEVA CORE local-intelligence binding is temporarily unavailable.')
+            : (!$authorized
+                ? 'Studio local-intelligence secret is ready; CORE is waiting for the rotated credential hash.'
+                : ($reachable
+                    ? 'NOEVA CORE is reachable; waiting for a compute node to advertise the Book Author local-intelligence tasks.'
+                    : 'Local parsing is active. NOEVA CORE local-intelligence binding is temporarily unavailable.'))
     ];
 }
 function ba_safe_name(string $name): string {
