@@ -150,6 +150,22 @@ function ba_find_index(array $rows,int $id): int {
     foreach($rows as $i=>$row){ if((int)($row['id']??0)===$id) return (int)$i; }
     return -1;
 }
+function ba_sanitize_editorial_feedback(mixed $value): array {
+    if(!is_array($value)) return [];
+    $allowed=['short_sentences','fragments','philosophical_narration','philosophical_dialogue','metaphoric_language','explicit_emotion','rhetorical_questions'];
+    $out=[];
+    foreach($value as $row){
+        if(!is_array($row)) continue;
+        $dimension=trim((string)($row['dimension']??''));
+        $direction=strtolower(trim((string)($row['direction']??'')));
+        $decision=strtolower(trim((string)($row['decision']??'')));
+        if(!in_array($dimension,$allowed,true)||!in_array($direction,['increase','decrease'],true)||!in_array($decision,['accepted','rejected'],true)) continue;
+        $weight=(float)($row['weight']??1.0); $weight=max(0.25,min(2.0,$weight));
+        $out[]=['dimension'=>$dimension,'direction'=>$direction,'decision'=>$decision,'weight'=>$weight,'recorded_at'=>nowIso()];
+        if(count($out)>=50) break;
+    }
+    return $out;
+}
 function ba_json_from_string(string $value): ?array {
     $value=trim($value);
     if($value==='') return null;
@@ -301,6 +317,23 @@ function ba_sync_core_jobs(array &$s,string $stateFile): void {
                 $s['write_jobs'][$i]['generated_draft']=(string)$payload['draft'];
                 $s['write_jobs'][$i]['generated_word_count']=(int)($payload['word_count']??ba_words((string)$payload['draft']));
                 $s['write_jobs'][$i]['model']=$payload['model']??null;
+                $li=is_array($payload['literary_intelligence']??null)?$payload['literary_intelligence']:[];
+                if($li){
+                    $s['write_jobs'][$i]['literary_intelligence']=$li;
+                    if(!isset($s['literary_intelligence_by_project'])||!is_array($s['literary_intelligence_by_project'])) $s['literary_intelligence_by_project']=[];
+                    $pid=(int)($job['project_id']??1); $key=(string)$pid;
+                    $projectLi=is_array($s['literary_intelligence_by_project'][$key]??null)?$s['literary_intelligence_by_project'][$key]:[];
+                    if(is_array($li['author_style_memory_next']??null)) $projectLi['author_style_memory']=$li['author_style_memory_next'];
+                    if(is_array($li['style_control']??null)) $projectLi['style_control']=$li['style_control'];
+                    if(is_array($li['learning_event']??null)){
+                        $events=is_array($projectLi['learning_events']??null)?$projectLi['learning_events']:[];
+                        $event=$li['learning_event']; $event['recorded_at']=nowIso(); $event['write_job_id']=(int)($job['id']??0);
+                        $events[]=$event;
+                        $projectLi['learning_events']=array_slice($events,-200);
+                    }
+                    $projectLi['updated_at']=nowIso();
+                    $s['literary_intelligence_by_project'][$key]=$projectLi;
+                }
                 $s['write_jobs'][$i]['message']='Draft ready for author review. Existing manuscript text has not been overwritten.';
             } else {
                 $s['write_jobs'][$i]['status']='failed';
@@ -319,7 +352,29 @@ function ba_sync_core_jobs(array &$s,string $stateFile): void {
 }
 function ba_extended_api(array &$s,string $stateFile,string $method,string $path,string $dataDir): void {
     $s['imports']=$s['imports']??[]; $s['analysis_jobs']=$s['analysis_jobs']??[]; $s['write_jobs']=$s['write_jobs']??[];
+    $s['literary_intelligence_by_project']=is_array($s['literary_intelligence_by_project']??null)?$s['literary_intelligence_by_project']:[];
     if($method==='GET'&&$path==='intelligence/status') respond(ba_intelligence_status());
+
+    if($method==='GET'&&preg_match('#^projects/(\\d+)/literary-intelligence$#',$path,$m)){
+        $pid=(int)$m[1]; $key=(string)$pid;
+        respond(['ok'=>true,'literary_intelligence'=>$s['literary_intelligence_by_project'][$key]??[
+            'author_style_memory'=>[],'style_control'=>[],'pending_feedback'=>[],'learning_events'=>[]
+        ]]);
+    }
+
+    if($method==='POST'&&preg_match('#^projects/(\\d+)/literary-intelligence/feedback$#',$path,$m)){
+        $pid=(int)$m[1]; $key=(string)$pid; $b=bodyJson();
+        $feedback=ba_sanitize_editorial_feedback($b['feedback']??[]);
+        if(!$feedback) respond(['error'=>'valid_feedback_required'],422);
+        $li=is_array($s['literary_intelligence_by_project'][$key]??null)?$s['literary_intelligence_by_project'][$key]:[];
+        $pending=is_array($li['pending_feedback']??null)?$li['pending_feedback']:[];
+        $li['pending_feedback']=array_slice(array_merge($pending,$feedback),-50);
+        $li['updated_at']=nowIso();
+        $s['literary_intelligence_by_project'][$key]=$li;
+        audit($s,$pid,'literary_intelligence.feedback','project',$pid,['items'=>count($feedback)]);
+        saveState($stateFile,$s);
+        respond(['ok'=>true,'pending_feedback'=>$li['pending_feedback']]);
+    }
 
     if($method==='GET'&&preg_match('#^projects/(\d+)/imports$#',$path,$m)){
         ba_sync_core_jobs($s,$stateFile);
@@ -390,8 +445,22 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         $id=maxId($s['write_jobs'])+1;
         $ctx=is_array($b['context_flags']??null)?array_values($b['context_flags']):[];
         $guards=is_array($b['guardrails']??null)?array_values($b['guardrails']):[];
+        $sceneMode=strtolower(trim((string)($b['scene_mode']??'ordinary')));
+        if(!in_array($sceneMode,['ordinary','building_tension','shock','aftermath','reflection'],true)) $sceneMode='ordinary';
+        $key=(string)$pid;
+        $projectLi=is_array($s['literary_intelligence_by_project'][$key]??null)?$s['literary_intelligence_by_project'][$key]:[];
+        $styleControl=is_array($b['style_control']??null)?$b['style_control']:(is_array($projectLi['style_control']??null)?$projectLi['style_control']:[]);
+        if(!isset($styleControl['recent_patterns'])&&is_array($projectLi['recent_patterns']??null)) $styleControl['recent_patterns']=$projectLi['recent_patterns'];
+        if(!isset($styleControl['protected_motifs'])&&is_array($projectLi['protected_motifs']??null)) $styleControl['protected_motifs']=$projectLi['protected_motifs'];
+        $feedback=array_merge(
+            is_array($projectLi['pending_feedback']??null)?$projectLi['pending_feedback']:[],
+            ba_sanitize_editorial_feedback($b['editorial_feedback']??[])
+        );
+        $feedback=ba_sanitize_editorial_feedback($feedback);
+        $projectLi['pending_feedback']=[];
+        $s['literary_intelligence_by_project'][$key]=$projectLi;
         $workerToken=bin2hex(random_bytes(32)); $workerHash=hash('sha256',$workerToken);
-        $job=['id'=>$id,'project_id'=>$pid,'chapter_id'=>(int)($b['chapter_id']??0),'target_words'=>$target,'outline'=>$outline,'pov'=>(string)($b['pov']??'Use book canon'),'tense'=>(string)($b['tense']??'Use book canon'),'style_source'=>(string)($b['style_source']??'Use approved book style profile'),'research_policy'=>(string)($b['research_policy']??'Respect verified facts; flag unknowns'),'instructions'=>(string)($b['instructions']??''),'context_flags'=>$ctx,'guardrails'=>$guards,'status'=>'dispatch_pending','message'=>'Chapter contract preserved. Preparing NOEVA local writing job.','created_at'=>nowIso(),'output_passage_id'=>null,'output_revision'=>null,'core_job_id'=>null,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'generation_contract'=>['outline_authoritative'=>true,'target_word_count'=>$target,'word_count_tolerance_percent'=>8,'preserve_book_style'=>true,'preserve_character_voice'=>true,'use_story_graph'=>in_array('story_graph',$ctx,true),'use_continuity'=>in_array('continuity',$ctx,true),'never_overwrite_approved_text'=>true,'result_requires_author_approval'=>true]];
+        $job=['id'=>$id,'project_id'=>$pid,'chapter_id'=>(int)($b['chapter_id']??0),'target_words'=>$target,'outline'=>$outline,'pov'=>(string)($b['pov']??'Use book canon'),'tense'=>(string)($b['tense']??'Use book canon'),'style_source'=>(string)($b['style_source']??'Use approved book style profile'),'research_policy'=>(string)($b['research_policy']??'Respect verified facts; flag unknowns'),'instructions'=>(string)($b['instructions']??''),'scene_mode'=>$sceneMode,'style_control'=>$styleControl,'editorial_feedback'=>$feedback,'context_flags'=>$ctx,'guardrails'=>$guards,'status'=>'dispatch_pending','message'=>'Chapter contract preserved. Preparing NOEVA local writing job.','created_at'=>nowIso(),'output_passage_id'=>null,'output_revision'=>null,'core_job_id'=>null,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'generation_contract'=>['outline_authoritative'=>true,'target_word_count'=>$target,'word_count_tolerance_percent'=>8,'preserve_book_style'=>true,'preserve_character_voice'=>true,'style_modulation'=>true,'controlled_unpredictability'=>true,'author_style_learning'=>true,'use_story_graph'=>in_array('story_graph',$ctx,true),'use_continuity'=>in_array('continuity',$ctx,true),'never_overwrite_approved_text'=>true,'result_requires_author_approval'=>true]];
         $s['write_jobs'][]=$job;
         audit($s,$pid,'write_job.created','write_job',$id,['chapter_id'=>$job['chapter_id'],'target_words'=>$target,'status'=>'dispatch_pending']);
         saveState($stateFile,$s);
