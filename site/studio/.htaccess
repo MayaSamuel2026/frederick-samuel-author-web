@@ -1,0 +1,16 @@
+Options -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+RewriteRule ^api/(.*)$ api.php?path=$1 [QSA,L]
+RewriteRule ^data(?:/|$) - [F,L]
+
+<FilesMatch "^(app\.\d+\.b64|\.env|\.env\..*|book_author\.db)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "same-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
