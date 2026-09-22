@@ -4,7 +4,7 @@ RewriteEngine On
 RewriteRule ^api/(.*)$ api.php?path=$1 [QSA,L]
 RewriteRule ^data(?:/|$) - [F,L]
 
-<FilesMatch "^(app\.\d+\.b64|\.env|\.env\..*|book_author\.db)$">
+<FilesMatch "^(app\.\d+\.b64|\.env|\.env\..*|book_author\.db|bridge\.php|auth\.php|extensions\.php)$">
   Require all denied
 </FilesMatch>
 
