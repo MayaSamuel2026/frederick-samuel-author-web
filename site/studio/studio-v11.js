@@ -162,19 +162,32 @@ function baUniqueLibraryImports(items){
 function baFindLibraryGrid(){
   var screen=document.getElementById('libraryScreen');
   if(!screen)return null;
-  var candidates=Array.from(screen.querySelectorAll('*')).filter(function(el){return String(el.textContent||'').trim()==='Start a new book'});
+  var candidates=Array.from(screen.querySelectorAll('*')).filter(function(el){
+    var txt=String(el.textContent||'').replace(/\s+/g,' ').trim();
+    return txt==='Start a new book'||(el.children.length===0&&txt.indexOf('Start a new book')>=0);
+  });
   for(var ci=0;ci<candidates.length;ci++){
     var node=candidates[ci];
     while(node&&node.parentElement&&node.parentElement!==screen){
       var parent=node.parentElement;
       try{
         var d=getComputedStyle(parent).display;
-        if(d==='grid'&&parent.children.length>=2)return parent;
+        if((d==='grid'||d==='flex')&&parent.children.length>=2&&parent.children.length<=12)return parent;
       }catch(_e){}
       node=parent;
     }
   }
-  return screen.querySelector('.library-grid,.book-grid,.projects-grid,.cards-grid');
+  var known=screen.querySelector('.library-grid,.book-grid,.projects-grid,.cards-grid');
+  if(known)return known;
+  var fallback=screen.querySelector('.ba-import-library-fallback');
+  if(!fallback){
+    fallback=document.createElement('div');
+    fallback.className='ba-import-library-fallback';
+    fallback.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,230px));gap:24px;margin:28px 0 10px';
+    var head=screen.querySelector('.library-head');
+    if(head&&head.parentNode)head.parentNode.insertBefore(fallback,head.nextSibling);else screen.appendChild(fallback);
+  }
+  return fallback;
 }
 function baRenderLibraryImports(items){
   var grid=baFindLibraryGrid();
