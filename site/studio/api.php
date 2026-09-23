@@ -79,7 +79,7 @@ ba_authoring_api($s,$stateFile,$method,$path,$dataDir);
 ba_blueprint_api($s,$stateFile,$method,$path,$dataDir);
 ba_extended_api($s,$stateFile,$method,$path,$dataDir);
 
-if($method==='GET' && $path==='health') respond(['ok'=>true,'service'=>'book-author-studio','version'=>'1.4']);
+if($method==='GET' && $path==='health') respond(['ok'=>true,'service'=>'book-author-studio','version'=>'1.6','specialist_intelligence'=>true]);
 if($method==='GET' && $path==='projects') respond(['items'=>[$s['project']]]);
 if($method==='GET' && preg_match('#^projects/(\d+)/workspace$#',$path,$m)){
   $current=null; foreach(array_reverse($s['passages']) as $p){ if($p['language']==='EN'){ $current=$p; break; } }
