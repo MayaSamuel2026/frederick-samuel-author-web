@@ -70,3 +70,51 @@ function ba_core_submit(string $action, string $sourceUrl, string $sourceKind, i
 function ba_core_status(string $jobId): array {
     return ba_core_request('GET','/v1/bookauthor/status?job_id='.rawurlencode($jobId));
 }
+
+
+function ba_core_print_status(): array {
+    return ba_core_request('GET','/v1/bookauthor/print/status');
+}
+
+function ba_core_print_profiles(): array {
+    return ba_core_request('GET','/v1/bookauthor/print/profiles');
+}
+
+function ba_core_print_preflight(array $edition, array $manuscript): array {
+    return ba_core_request('POST','/v1/bookauthor/print/preflight',[
+        'edition'=>$edition,
+        'manuscript'=>$manuscript,
+    ]);
+}
+
+function ba_core_print_render(string $kind, array $edition, array $manuscript=[]): array {
+    return ba_core_request('POST','/v1/bookauthor/print/render',[
+        'kind'=>$kind,
+        'edition'=>$edition,
+        'manuscript'=>$manuscript,
+    ]);
+}
+
+function ba_core_print_download(string $renderId): array {
+    $url = rtrim(BOOK_AUTHOR_CORE_URL, '/') . '/v1/bookauthor/print/download?render_id=' . rawurlencode($renderId);
+    $headers = ['Accept: application/pdf','X-Book-Author-Bridge: ' . BOOK_AUTHOR_BRIDGE_TOKEN];
+    if (function_exists('curl_init')) {
+        $ch=curl_init($url);
+        curl_setopt_array($ch,[
+            CURLOPT_RETURNTRANSFER=>true,CURLOPT_HTTPHEADER=>$headers,
+            CURLOPT_CONNECTTIMEOUT=>8,CURLOPT_TIMEOUT=>60,CURLOPT_FOLLOWLOCATION=>false,
+        ]);
+        $raw=curl_exec($ch);$code=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
+        $type=(string)curl_getinfo($ch,CURLINFO_CONTENT_TYPE);$error=curl_error($ch);curl_close($ch);
+        if($raw===false) return ['ok'=>false,'error'=>'core_transport_error','detail'=>$error,'http_status'=>$code];
+    } else {
+        $opts=['http'=>['method'=>'GET','header'=>implode("\r\n",$headers)."\r\n",'timeout'=>60,'ignore_errors'=>true]];
+        $raw=@file_get_contents($url,false,stream_context_create($opts));$code=0;$type='application/pdf';
+        if(isset($http_response_header)&&is_array($http_response_header)&&preg_match('/\s(\d{3})\s/',(string)($http_response_header[0]??''),$m))$code=(int)$m[1];
+        if($raw===false) return ['ok'=>false,'error'=>'core_transport_error','http_status'=>$code];
+    }
+    if($code!==200||!is_string($raw)||!str_starts_with($raw,'%PDF-')){
+        return ['ok'=>false,'error'=>'core_print_download_failed','http_status'=>$code];
+    }
+    return ['ok'=>true,'raw'=>$raw,'content_type'=>$type?:'application/pdf'];
+}
