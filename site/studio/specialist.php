@@ -89,13 +89,14 @@ function ba_specialist_materialize_historical_claims(array &$s,int $jobId,array 
     $exists=false;
     foreach($s['historical_claims'] as $row) if((int)($row['job_id']??0)===$jobId){$exists=true;break;}
     if($exists) return;
+    $job=null;foreach($s['historical_jobs']??[] as $j)if((int)($j['id']??0)===$jobId){$job=$j;break;}
     foreach($payload['claims']??[] as $row){
         if(!is_array($row)) continue;
         $claim=trim((string)($row['claim']??'')); if($claim==='') continue;
         $id=maxId($s['historical_claims'])+1;
         $status=(string)($row['evidence_status']??'RESEARCH_REQUIRED');
         $s['historical_claims'][]=[
-            'id'=>$id,'job_id'=>$jobId,'claim'=>$claim,'category'=>(string)($row['category']??'other'),
+            'id'=>$id,'job_id'=>$jobId,'chapter_id'=>(int)($job['chapter_id']??0),'passage_id'=>(int)($job['passage_id']??0),'claim'=>$claim,'category'=>(string)($row['category']??'other'),
             'risk'=>(string)($row['risk']??'medium'),'reason'=>(string)($row['reason']??''),
             'contested'=>(bool)($row['contested']??false),'research_queries'=>array_values($row['research_queries']??[]),
             'model_evidence_status'=>$status,'verification_status'=>'unverified',
