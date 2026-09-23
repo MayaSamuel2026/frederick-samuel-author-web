@@ -230,6 +230,9 @@ function ba_dispatch_write(array &$s,int $jobIndex,string $stateFile): void {
 }
 function ba_sync_core_jobs(array &$s,string $stateFile): void {
     $changed=false;
+    $health=ba_core_health();
+    $computeBound=(bool)($health['ok']??false) && (bool)($health['compute_bound']??false);
+    $capableNodes=is_array($health['capable_nodes']??null)?array_values($health['capable_nodes']):[];
     foreach($s['analysis_jobs']??[] as $i=>$job){
         if(($job['status']??'')==='dispatch_pending' && !empty($job['worker_token_pending'])){
             ba_dispatch_analysis($s,(int)$i,$stateFile);
@@ -242,7 +245,10 @@ function ba_sync_core_jobs(array &$s,string $stateFile): void {
         $core=$reply['job']; $status=strtoupper((string)($core['status']??''));
         if($status==='QUEUED'){
             $s['analysis_jobs'][$i]['status']='queued_local';
-            $s['analysis_jobs'][$i]['message']='Waiting for an available NOEVA local-intelligence slot.';
+            $s['analysis_jobs'][$i]['message']=$computeBound
+                ? 'Queued on NOEVA local compute; waiting for an available Book Author slot.'
+                : 'Queued safely. Waiting for a Book Author-capable NOEVA compute node to come online.';
+            $s['analysis_jobs'][$i]['capable_nodes']=$capableNodes;
             $changed=true;
         } elseif($status==='LEASED'){
             $s['analysis_jobs'][$i]['status']='running_local';
@@ -286,7 +292,10 @@ function ba_sync_core_jobs(array &$s,string $stateFile): void {
         $core=$reply['job']; $status=strtoupper((string)($core['status']??''));
         if($status==='QUEUED'){
             $s['write_jobs'][$i]['status']='queued_local';
-            $s['write_jobs'][$i]['message']='Waiting for an available NOEVA local-intelligence slot.';
+            $s['write_jobs'][$i]['message']=$computeBound
+                ? 'Queued on NOEVA local compute; waiting for an available Book Author slot.'
+                : 'Queued safely. Waiting for a Book Author-capable NOEVA compute node to come online.';
+            $s['write_jobs'][$i]['capable_nodes']=$capableNodes;
             $changed=true;
         } elseif($status==='LEASED'){
             $s['write_jobs'][$i]['status']='writing_local';
