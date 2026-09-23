@@ -62,7 +62,7 @@ function ba_core_submit(string $action, string $sourceUrl, string $sourceKind, i
         'source_kind'=>$sourceKind,
         'project_id'=>$projectId,
         'source_id'=>$sourceId,
-        'target'=>'NEW',
+        'target'=>'ANY',
         'priority'=>80,
     ]);
 }
