@@ -108,6 +108,8 @@ $canonical=[
     'recent_manuscript'=>worker_latest_passages($state,12),
     'recent_prose'=>worker_recent_prose($state,8),
     'literary_intelligence'=>$literary,
+    'authoring_profile'=>$job['authoring_profile']??($state['authoring_profile']??[]),
+    'engine_contract'=>$job['engine_contract']??[],
 ];
 worker_respond([
     'kind'=>'write',
@@ -136,4 +138,7 @@ worker_respond([
     'blueprint_chapter'=>$job['blueprint_chapter']??null,
     'blueprint_version'=>$job['blueprint_version']??null,
     'generation_contract'=>$job['generation_contract']??[],
+    'engine_contract'=>$job['engine_contract']??[],
+    'authoring_profile'=>$job['authoring_profile']??($state['authoring_profile']??[]),
+    'authoring_run_id'=>$job['authoring_run_id']??null,
 ]);
