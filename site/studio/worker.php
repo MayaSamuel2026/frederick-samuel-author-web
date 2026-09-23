@@ -73,6 +73,8 @@ if($kind==='analysis'){
         'optimization_depth'=>$job['optimization_depth']??'editorial',
         'scopes'=>$job['scopes']??[],
         'structural_scan'=>$import['structural_scan']??[],
+        'book_blueprint'=>$state['book_blueprint']??null,
+        'blueprint_authority'=>['guide'=>'interpret creatively','required'=>'must satisfy','locked'=>'must not contradict or relocate','forbidden'=>'must not occur'],
         'manuscript_text'=>$text,
         'immutable_original'=>true,
     ]);
@@ -89,6 +91,7 @@ $canonical=[
     'story_nodes'=>$state['story_nodes']??[],
     'story_edges'=>$state['story_edges']??[],
     'research_claims'=>$state['research']??[],
+    'book_blueprint'=>$state['book_blueprint']??null,
     'recent_manuscript'=>worker_latest_passages($state,12),
 ];
 worker_respond([
@@ -106,5 +109,8 @@ worker_respond([
     'context_flags'=>$job['context_flags']??[],
     'guardrails'=>$job['guardrails']??[],
     'canonical_context'=>$canonical,
+    'book_blueprint'=>$state['book_blueprint']??null,
+    'blueprint_chapter'=>$job['blueprint_chapter']??null,
+    'blueprint_version'=>$job['blueprint_version']??null,
     'generation_contract'=>$job['generation_contract']??[],
 ]);
