@@ -141,11 +141,14 @@ if(in_array($kind,['translate','historical','naming'],true)){
             $parts[]=trim(html_entity_decode(strip_tags((string)($p['content_html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
             if($chapterId<1)$chapterId=(int)($p['chapter_id']??0);
         } else {
+            $latestByScene=[];
             foreach($state['passages']??[] as $p){
-                if((int)($p['chapter_id']??0)===$chapterId && strtoupper((string)($p['language']??''))==='EN'){
-                    $parts[]=trim(html_entity_decode(strip_tags((string)($p['content_html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
-                }
+                if((int)($p['chapter_id']??0)!==$chapterId || strtoupper((string)($p['language']??''))!=='EN') continue;
+                $scene=(int)($p['scene_id']??0);
+                if(!isset($latestByScene[$scene]) || (int)($p['revision']??0)>(int)($latestByScene[$scene]['revision']??0)) $latestByScene[$scene]=$p;
             }
+            ksort($latestByScene);
+            foreach($latestByScene as $p) $parts[]=trim(html_entity_decode(strip_tags((string)($p['content_html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
         }
         $text=trim(implode("\n\n",$parts));
         if($text==='') worker_respond(['ok'=>false,'error'=>'historical_scope_empty'],409);
