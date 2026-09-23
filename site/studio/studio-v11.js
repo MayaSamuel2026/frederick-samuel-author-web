@@ -13,6 +13,7 @@ if(!API.upload){
   };
 }
 var baPdfRecovery={};
+var baSelectedImportId=null;
 async function baExtractPdfText(file){
   var pdfjs=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
@@ -71,7 +72,7 @@ async function baRecoverPdfImport(importRec){
 }
 if(document.getElementById('ba-v11-style'))return;
 var st=document.createElement('style');st.id='ba-v11-style';st.textContent=
-'.dual-actions{display:flex;gap:9px;flex-wrap:wrap}.analyze-grid,.writer-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:16px}.writer-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px}.writer-card h3{font-family:Georgia,serif;font-weight:500;margin:4px 0 13px;font-size:23px}.upload-zone{border:1.5px dashed #aaa39a;border-radius:18px;background:rgba(255,255,255,.48);padding:28px;text-align:center}.upload-zone.drag{border-color:var(--accent);background:#eef2ef}.upload-zone input[type=file]{display:none}.upload-icon{width:54px;height:54px;border-radius:16px;background:#e7e2d9;display:grid;place-items:center;margin:0 auto 14px;font-size:24px}.scope-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.scope-item{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line2);border-radius:12px;padding:10px;background:#fff}.scope-item input,.guardrail input{width:auto;margin-top:2px}.scope-item b{font-size:11px}.scope-item span{display:block;font-size:9px;color:var(--muted);margin-top:2px;line-height:1.35}.depth-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.depth{border:1px solid var(--line);border-radius:13px;padding:11px;background:#fff;cursor:pointer}.depth.active{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:#f3f0e9}.depth b{font-size:11px}.depth p{font-size:9px;color:var(--muted);margin:4px 0 0}.pipeline{display:grid;gap:7px}.pipe{display:grid;grid-template-columns:25px 1fr auto;gap:9px;align-items:center;padding:9px;border:1px solid var(--line2);border-radius:11px}.pn{width:25px;height:25px;border-radius:50%;background:#ece8df;display:grid;place-items:center;font-size:9px;font-weight:800}.pipe b{font-size:10px}.pipe span{font-size:9px;color:var(--muted)}.analysis-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.metric-card{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px}.metric-card b{display:block;font-family:Georgia,serif;font-size:22px;font-weight:500}.metric-card span{font-size:9px;color:var(--muted)}.finding{border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:13px;padding:12px;background:#fff;margin:8px 0}.finding.watch{border-left-color:var(--warn)}.finding.good{border-left-color:var(--good)}.finding h4{margin:0 0 5px;font-size:12px}.finding p{font-size:10px;color:var(--muted);margin:0;line-height:1.45}.engine-state{padding:10px 11px;border-radius:12px;background:#eeeae2;font-size:10px;color:#5f5b53;line-height:1.45}.outline-box{width:100%;min-height:210px;font-family:Georgia,serif;font-size:16px;line-height:1.55}.guardrails{display:grid;gap:7px}.guardrail{display:flex;gap:8px;align-items:flex-start;font-size:10px;color:#55524c}.job-card{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff;margin-top:9px}.job-card h4{margin:0 0 5px;font-size:12px}@media(max-width:980px){.analyze-grid,.writer-grid{grid-template-columns:1fr}.analysis-metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.scope-grid,.depth-options{grid-template-columns:1fr}}';
+'.dual-actions{display:flex;gap:9px;flex-wrap:wrap}.analyze-grid,.writer-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:16px}.writer-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px}.writer-card h3{font-family:Georgia,serif;font-weight:500;margin:4px 0 13px;font-size:23px}.upload-zone{border:1.5px dashed #aaa39a;border-radius:18px;background:rgba(255,255,255,.48);padding:28px;text-align:center}.upload-zone.drag{border-color:var(--accent);background:#eef2ef}.upload-zone input[type=file]{display:none}.upload-icon{width:54px;height:54px;border-radius:16px;background:#e7e2d9;display:grid;place-items:center;margin:0 auto 14px;font-size:24px}.scope-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.scope-item{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line2);border-radius:12px;padding:10px;background:#fff}.scope-item input,.guardrail input{width:auto;margin-top:2px}.scope-item b{font-size:11px}.scope-item span{display:block;font-size:9px;color:var(--muted);margin-top:2px;line-height:1.35}.depth-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.depth{border:1px solid var(--line);border-radius:13px;padding:11px;background:#fff;cursor:pointer}.depth.active{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:#f3f0e9}.depth b{font-size:11px}.depth p{font-size:9px;color:var(--muted);margin:4px 0 0}.pipeline{display:grid;gap:7px}.pipe{display:grid;grid-template-columns:25px 1fr auto;gap:9px;align-items:center;padding:9px;border:1px solid var(--line2);border-radius:11px}.pn{width:25px;height:25px;border-radius:50%;background:#ece8df;display:grid;place-items:center;font-size:9px;font-weight:800}.pipe b{font-size:10px}.pipe span{font-size:9px;color:var(--muted)}.analysis-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.metric-card{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px}.metric-card b{display:block;font-family:Georgia,serif;font-size:22px;font-weight:500}.metric-card span{font-size:9px;color:var(--muted)}.finding{border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:13px;padding:12px;background:#fff;margin:8px 0}.finding.watch{border-left-color:var(--warn)}.finding.good{border-left-color:var(--good)}.finding h4{margin:0 0 5px;font-size:12px}.finding p{font-size:10px;color:var(--muted);margin:0;line-height:1.45}.engine-state{padding:10px 11px;border-radius:12px;background:#eeeae2;font-size:10px;color:#5f5b53;line-height:1.45}.outline-box{width:100%;min-height:210px;font-family:Georgia,serif;font-size:16px;line-height:1.55}.guardrails{display:grid;gap:7px}.guardrail{display:flex;gap:8px;align-items:flex-start;font-size:10px;color:#55524c}.job-card{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff;margin-top:9px}.job-card h4{margin:0 0 5px;font-size:12px}.ba-import-actions{display:flex;gap:7px;align-items:center;margin-top:9px}.ba-import-actions .btn{min-height:30px;padding:0 10px}.ba-delete{border-color:#c8b6b1;color:#7a3129;background:#fff}.ba-delete:hover{border-color:#7a3129}.ba-import-library-card{position:relative;min-height:368px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(145deg,#40534b 0%,#667a70 100%);box-shadow:0 16px 34px rgba(28,31,29,.12);display:flex;flex-direction:column;cursor:pointer}.ba-import-library-card:focus{outline:2px solid var(--ink);outline-offset:3px}.ba-import-library-top{flex:1;padding:26px 24px 24px;display:flex;flex-direction:column;color:#fff}.ba-import-library-kicker{font-size:9px;letter-spacing:.17em;text-transform:uppercase;font-weight:800}.ba-import-library-title{font-family:Georgia,serif;font-size:30px;line-height:.98;margin:auto 0 22px;max-width:90%}.ba-import-library-status{font-size:10px}.ba-import-library-meta{background:rgba(252,250,245,.97);padding:16px 16px 14px;color:var(--ink);min-height:80px}.ba-import-library-meta b{display:block;font-size:12px;margin-bottom:6px}.ba-import-library-delete{position:absolute;right:12px;top:12px;width:30px;height:30px;border:1px solid rgba(255,255,255,.45);border-radius:50%;background:rgba(20,25,23,.35);color:#fff;display:grid;place-items:center;cursor:pointer;font-size:15px;backdrop-filter:blur(5px)}.ba-import-library-delete:hover{background:rgba(87,29,24,.8)}@media(max-width:980px){.analyze-grid,.writer-grid{grid-template-columns:1fr}.analysis-metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.scope-grid,.depth-options{grid-template-columns:1fr}}';
 document.head.appendChild(st);
 
 var ws=document.querySelector('.workspace'),rail=document.querySelector('.rail');
@@ -113,8 +114,129 @@ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){retur
 function compactText(v){if(v==null)return '';if(typeof v==='string')return v;if(Array.isArray(v))return v.map(compactText).filter(Boolean).join(' · ');if(typeof v==='object'){return Object.entries(v).slice(0,8).map(function(kv){return kv[0].replaceAll('_',' ')+': '+compactText(kv[1])}).join(' · ')}return String(v)}
 function optimizationHtml(d){if(!d)return '';var map=d.optimization_map||d;if(!map||typeof map!=='object')return '';var sum=map.executive_summary||'';var recs=Array.isArray(map.priority_recommendations)?map.priority_recommendations:[];var chars=Array.isArray(map.characters)?map.characters.length:(map.characters&&typeof map.characters==='object'?Object.keys(map.characters).length:0);var blocks='';if(sum)blocks+='<div class="finding good"><h4>Whole-book synthesis</h4><p>'+esc(compactText(sum))+'</p></div>';if(chars)blocks+='<div class="card"><h4>Character model reconstructed</h4><p class="small muted">'+chars+' character records/arc observations were synthesized from the manuscript.</p></div>';if(recs.length){blocks+='<div class="eyebrow" style="margin-top:14px">Priority optimization recommendations</div>'+recs.slice(0,10).map(function(r){var sev=(r&&typeof r==='object'?(r.priority||r.severity||r.level):'')||'recommendation';var title=(r&&typeof r==='object'?(r.title||r.issue||r.category):'')||'Optimization opportunity';var detail=(r&&typeof r==='object'?(r.detail||r.reason||r.why_it_matters||r.suggestion||r.resolution_options):r);return '<div class="finding '+(String(sev).toLowerCase().includes('high')||String(sev).toLowerCase().includes('critical')?'watch':'')+'"><h4>'+esc(title)+' <span class="badge">'+esc(sev)+'</span></h4><p>'+esc(compactText(detail))+'</p></div>'}).join('')}return blocks}
 function renderImport(i){var s=i.structural_scan||{},e=(s.entity_candidates||[]).slice(0,10).map(function(x){return '<span class="trait">'+esc(x.name)+' · '+Number(x.mentions||0)+'</span>'}).join('');var st=String(i.analysis_status||'queued');var cls=st==='completed'?'good':(st==='failed'?'warn':'');document.getElementById('analysisResults').innerHTML='<div class="engine-state"><b>Original preserved.</b> SHA-256 '+esc(String(i.sha256||'').slice(0,16))+'… · Import #'+Number(i.id||0)+' · '+esc(String(i.status||'').replaceAll('_',' '))+'</div><div class="analysis-metrics"><div class="metric-card"><b>'+Number(s.word_count||0).toLocaleString()+'</b><span>Words extracted</span></div><div class="metric-card"><b>'+(s.chapter_estimate||0)+'</b><span>Chapter headings</span></div><div class="metric-card"><b>'+(s.paragraph_count||0)+'</b><span>Paragraphs</span></div><div class="metric-card"><b>'+(s.dialogue_ratio||0)+'%</b><span>Dialogue signal</span></div></div>'+(e?'<div class="card"><h4>Entity candidates — awaiting semantic confirmation</h4><div class="traits">'+e+'</div></div>':'')+(s.findings||[]).map(findingHtml).join('')+'<div class="card suggest"><h4>Deep manuscript analysis <span class="badge '+cls+'">'+esc(st.replaceAll('_',' '))+'</span></h4><p>'+esc(i.analysis_message||'')+'</p></div>'+optimizationHtml(i.deep_analysis)}
-async function refresh(){try{var im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports'),is=await API.get('/api/intelligence/status');if(im.items&&im.items.length){var newest=im.items[im.items.length-1];if(await baRecoverPdfImport(newest)){im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports')}}['analysisEngineBadge','writerEngineBadge'].forEach(function(id){var b=document.getElementById(id);b.textContent=is.bound?'NOEVA local intelligence bound':(is.reachable?'NOEVA CORE ready · local node syncing':'Local structural engine · CORE unavailable');b.className='badge '+(is.bound?'good':'warn')});var list=document.getElementById('recentImports');list.innerHTML=im.items.length?im.items.slice().reverse().slice(0,5).map(function(i){return '<div class="job-card"><h4>'+esc(i.original_name)+'</h4><div class="tiny muted">'+Number((i.structural_scan||{}).word_count||0).toLocaleString()+' words · '+i.optimization_depth+' · '+i.status.replaceAll('_',' ')+'</div></div>'}).join(''):'<div class="small muted">No imported manuscript loaded yet.</div>';if(im.items.length)renderImport(im.items[im.items.length-1])}catch(e){console.warn(e)}}
+
+function baImportTitle(i){
+  var t=String((i&&i.display_title)||'').trim();
+  if(t) return t;
+  t=String((i&&i.original_name)||'Imported manuscript').replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').replace(/\s+(published|publication|final|manuscript|proof|print)\s*$/i,'').replace(/\s+/g,' ').trim();
+  return t||'Imported manuscript';
+}
+function baImportStatus(i){
+  return String((i&&i.analysis_status)||'queued').replaceAll('_',' ');
+}
+function baOpenImport(i){
+  if(!i)return;
+  baSelectedImportId=Number(i.id||0)||null;
+  extShow('analysisScreen');
+  renderImport(i);
+  try{window.scrollTo({top:0,behavior:'smooth'})}catch(_e){window.scrollTo(0,0)}
+}
+async function baDeleteImport(i){
+  if(!i)return;
+  var title=baImportTitle(i);
+  if(!window.confirm('Delete “'+title+'” from Book Author?\n\nThis removes the preserved uploaded source file and its analysis record. This cannot be undone.')) return;
+  try{
+    var r=await fetch('/api/imports/'+encodeURIComponent(i.id),{method:'DELETE',credentials:'same-origin',headers:{'Accept':'application/json'}});
+    var payload=null;
+    try{payload=await r.json()}catch(_e){payload={error:'invalid_server_response'}}
+    if(!r.ok) throw new Error(payload&&payload.error?payload.error:('Delete failed ('+r.status+')'));
+    if(Number(baSelectedImportId)===Number(i.id)) baSelectedImportId=null;
+    notify('Deleted '+title);
+    await refresh();
+  }catch(e){
+    console.error('Book Author delete failed',e);
+    notify('Could not delete '+title+' · '+(e&&e.message?e.message:'unknown error'));
+  }
+}
+function baUniqueLibraryImports(items){
+  var byKey={};
+  (items||[]).forEach(function(i){
+    var key=String(i.sha256||('id:'+i.id));
+    var prior=byKey[key];
+    if(!prior){byKey[key]=i;return}
+    var rank=function(x){var s=String(x.analysis_status||'');return s==='completed'?5:s==='running_local'?4:s==='queued_local'?3:s==='dispatch_pending'?2:s==='failed'?1:0};
+    if(rank(i)>rank(prior)||(rank(i)===rank(prior)&&Number(i.id||0)>Number(prior.id||0)))byKey[key]=i;
+  });
+  return Object.values(byKey).sort(function(a,b){return Number(a.id||0)-Number(b.id||0)});
+}
+function baFindLibraryGrid(){
+  var screen=document.getElementById('libraryScreen');
+  if(!screen)return null;
+  var candidates=Array.from(screen.querySelectorAll('*')).filter(function(el){return String(el.textContent||'').trim()==='Start a new book'});
+  for(var ci=0;ci<candidates.length;ci++){
+    var node=candidates[ci];
+    while(node&&node.parentElement&&node.parentElement!==screen){
+      var parent=node.parentElement;
+      try{
+        var d=getComputedStyle(parent).display;
+        if(d==='grid'&&parent.children.length>=2)return parent;
+      }catch(_e){}
+      node=parent;
+    }
+  }
+  return screen.querySelector('.library-grid,.book-grid,.projects-grid,.cards-grid');
+}
+function baRenderLibraryImports(items){
+  var grid=baFindLibraryGrid();
+  if(!grid)return;
+  grid.querySelectorAll('.ba-import-library-card').forEach(function(el){el.remove()});
+  var startNode=Array.from(grid.children).find(function(el){return /Start a new book/i.test(String(el.textContent||''))})||null;
+  baUniqueLibraryImports(items).forEach(function(i){
+    var card=document.createElement('article');
+    card.className='ba-import-library-card';
+    card.tabIndex=0;
+    card.dataset.importId=String(i.id);
+    var wc=Number((i.structural_scan||{}).word_count||0);
+    var status=baImportStatus(i);
+    var badgeClass=String(i.analysis_status||'')==='completed'?'good':(String(i.analysis_status||'')==='failed'?'warn':'');
+    card.innerHTML='<button class="ba-import-library-delete" type="button" title="Delete imported book" aria-label="Delete '+esc(baImportTitle(i))+'">×</button><div class="ba-import-library-top"><div class="ba-import-library-kicker">Imported book</div><div class="ba-import-library-title">'+esc(baImportTitle(i))+'</div><div class="ba-import-library-status">Analysis · '+esc(status)+'</div></div><div class="ba-import-library-meta"><b>'+wc.toLocaleString()+' words · <span class="badge '+badgeClass+'">'+esc(status)+'</span></b><div class="tiny muted">Open manuscript analysis and optimization map</div></div>';
+    card.onclick=function(ev){if(ev.target&&ev.target.closest&&ev.target.closest('.ba-import-library-delete'))return;baOpenImport(i)};
+    card.onkeydown=function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();baOpenImport(i)}};
+    var del=card.querySelector('.ba-import-library-delete');
+    del.onclick=function(ev){ev.preventDefault();ev.stopPropagation();baDeleteImport(i)};
+    if(startNode)grid.insertBefore(card,startNode);else grid.appendChild(card);
+  });
+}
+function baRenderRecentImports(items){
+  var list=document.getElementById('recentImports');
+  if(!list)return;
+  list.innerHTML=(items&&items.length)?items.slice().reverse().slice(0,8).map(function(i){
+    var wc=Number((i.structural_scan||{}).word_count||0);
+    var st=baImportStatus(i);
+    return '<div class="job-card" data-import-row="'+Number(i.id||0)+'"><h4>'+esc(baImportTitle(i))+'</h4><div class="tiny muted">'+wc.toLocaleString()+' words · '+esc(i.optimization_depth||'editorial')+' · '+esc(st)+'</div><div class="ba-import-actions"><button class="btn small" type="button" data-open-import="'+Number(i.id||0)+'">Open</button><button class="btn small ba-delete" type="button" data-delete-import="'+Number(i.id||0)+'">Delete</button></div></div>';
+  }).join(''):'<div class="small muted">No imported manuscript loaded yet.</div>';
+  list.querySelectorAll('[data-open-import]').forEach(function(btn){
+    btn.onclick=function(){var id=Number(btn.dataset.openImport);baOpenImport((items||[]).find(function(x){return Number(x.id)===id}))};
+  });
+  list.querySelectorAll('[data-delete-import]').forEach(function(btn){
+    btn.onclick=function(){var id=Number(btn.dataset.deleteImport);baDeleteImport((items||[]).find(function(x){return Number(x.id)===id}))};
+  });
+}
+async function refresh(){
+  try{
+    var im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports'),is=await API.get('/api/intelligence/status');
+    if(im.items&&im.items.length){
+      var newest=im.items[im.items.length-1];
+      if(await baRecoverPdfImport(newest)){im=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/imports')}
+    }
+    ['analysisEngineBadge','writerEngineBadge'].forEach(function(id){
+      var b=document.getElementById(id);
+      b.textContent=is.bound?'NOEVA local intelligence bound':(is.reachable?'NOEVA CORE ready · local node syncing':'Local structural engine · CORE unavailable');
+      b.className='badge '+(is.bound?'good':'warn');
+    });
+    baRenderRecentImports(im.items||[]);
+    baRenderLibraryImports(im.items||[]);
+    if(im.items&&im.items.length){
+      var chosen=baSelectedImportId?(im.items.find(function(x){return Number(x.id)===Number(baSelectedImportId)})||null):null;
+      if(!chosen)chosen=im.items[im.items.length-1];
+      renderImport(chosen);
+    }else{
+      document.getElementById('analysisResults').innerHTML='<div class="engine-state">Upload a manuscript to create its structural scan, immutable source record and deep-analysis pipeline.</div>';
+    }
+  }catch(e){console.warn(e)}
+}
 document.getElementById('uploadAnalyzeBtn').onclick=async function(){var f=fi.files[0];if(!f){notify('Choose a manuscript first');return}this.disabled=true;this.textContent='Preserving & parsing…';try{var fd=new FormData();fd.append('manuscript',f);fd.append('optimization_depth',depth);fd.append('scopes',JSON.stringify(Array.from(document.querySelectorAll('[data-analysis-scope]:checked')).map(function(x){return x.dataset.analysisScope})));var r=await API.upload('/api/projects/'+ACTIVE_PROJECT_ID+'/import-manuscript',fd);
+if(r&&r.duplicate&&r.import){baSelectedImportId=Number(r.import.id||0)||null;renderImport(r.import);await refresh();notify('This manuscript is already in the library; the existing book was opened');return;}
 var isPdf=/\.pdf$/i.test(f.name||'')||String(f.type||'').toLowerCase()==='application/pdf';
 if(isPdf && r.import && r.import.status==='preserved_needs_extractor'){
   this.textContent='Extracting PDF text…';
@@ -133,7 +255,7 @@ if(isPdf && r.import && r.import.status==='preserved_needs_extractor'){
     return;
   }
 }
-renderImport(r.import);await refresh();notify('Original preserved; manuscript analysis pipeline created')}catch(e){console.error('Book Author import failed',e);var detail=(e&&e.payload&&e.payload.error)?e.payload.error:(e&&e.message?e.message:'unknown_error');document.getElementById('analysisResults').innerHTML='<div class="finding watch"><h4>Import could not be completed</h4><p>'+String(detail).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]})+'</p></div>';notify('Import failed · '+detail)}finally{this.disabled=false;this.textContent='Upload & analyze manuscript'}};
+baSelectedImportId=Number((r.import||{}).id||0)||null;renderImport(r.import);await refresh();notify('Original preserved; manuscript analysis pipeline created')}catch(e){console.error('Book Author import failed',e);var detail=(e&&e.payload&&e.payload.error)?e.payload.error:(e&&e.message?e.message:'unknown_error');document.getElementById('analysisResults').innerHTML='<div class="finding watch"><h4>Import could not be completed</h4><p>'+String(detail).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]})+'</p></div>';notify('Import failed · '+detail)}finally{this.disabled=false;this.textContent='Upload & analyze manuscript'}};
 function renderJobs(a){var b=document.getElementById('writingJobs');b.innerHTML=a.length?a.slice().reverse().slice(0,5).map(function(j){var ready=j.status==='draft_ready';return '<div class="job-card"><h4>Chapter '+Number(j.chapter_id||0)+' draft <span class="badge '+(ready?'good':'warn')+'">'+esc(String(j.status||'').replaceAll('_',' '))+'</span></h4><div class="tiny muted">'+Number(j.target_words||0).toLocaleString()+' words · '+esc(j.style_source||'')+(j.generated_word_count?' · generated '+Number(j.generated_word_count).toLocaleString()+' words':'')+'</div><p class="small muted">'+esc(j.message||'')+'</p>'+(ready&&j.generated_draft?'<details><summary class="btn small">Read generated draft</summary><div style="white-space:pre-wrap;font-family:Georgia,serif;font-size:13px;line-height:1.65;margin-top:10px;max-height:520px;overflow:auto">'+esc(j.generated_draft)+'</div></details>':'')+'</div>'}).join(''):'<div class="small muted">No chapter draft requested yet.</div>'}
 async function jobs(){try{var r=await API.get('/api/projects/'+ACTIVE_PROJECT_ID+'/write-jobs');renderJobs(r.items)}catch(e){console.warn(e)}}
 document.getElementById('generateChapterBtn').onclick=async function(){var outline=document.getElementById('writerOutline').value.trim();if(!outline){notify('Add the chapter outline first');return}var body={chapter_id:Number(document.getElementById('writerChapter').value),target_words:Number(document.getElementById('writerWords').value),outline:outline,pov:document.getElementById('writerPov').value,tense:document.getElementById('writerTense').value,style_source:document.getElementById('writerStyle').value,research_policy:document.getElementById('writerResearch').value,instructions:document.getElementById('writerInstructions').value,context_flags:Array.from(document.querySelectorAll('[data-writer-context]:checked')).map(function(x){return x.dataset.writerContext}),guardrails:Array.from(document.querySelectorAll('[data-writer-guard]:checked')).map(function(x){return x.dataset.writerGuard})};this.disabled=true;this.textContent='Creating chapter contract…';try{var r=await API.send('/api/projects/'+ACTIVE_PROJECT_ID+'/write-jobs','POST',body);await jobs();notify(r.message)}catch(e){notify('Could not create writing job')}finally{this.disabled=false;this.textContent='✦ Generate chapter draft'}};
