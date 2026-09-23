@@ -15,7 +15,7 @@ async function load(){S.data=await api('projects/'+PID+'/specialist');if(!S.sour
 function open(){document.getElementById('spOverlay').classList.add('open');load().catch(function(e){toast(e.message)});if(!S.poll)S.poll=setInterval(function(){if(document.getElementById('spOverlay').classList.contains('open'))load().catch(function(){})},12000)}
 function close(){document.getElementById('spOverlay').classList.remove('open')}
 function passages(){return (S.data&&S.data.passages)||[]}
-function latestSourcePassages(){var map={};passages().filter(function(p){return String(p.language).toUpperCase()==='EN'}).forEach(function(p){var k=Number(p.chapter_id);if(!map[k]||Number(p.revision)>Number(map[k].revision))map[k]=p});return Object.values(map).sort(function(a,b){return Number(a.chapter_id)-Number(b.chapter_id)})}
+function latestSourcePassages(){var map={};passages().filter(function(p){return String(p.language).toUpperCase()==='EN'}).forEach(function(p){var k=Number(p.chapter_id)+':'+Number(p.scene_id||0);if(!map[k]||Number(p.revision)>Number(map[k].revision))map[k]=p});return Object.values(map).sort(function(a,b){return Number(a.chapter_id)-Number(b.chapter_id)||Number(a.scene_id||0)-Number(b.scene_id||0)})}
 function jobForSource(id){var rows=(S.data&&S.data.translation_jobs)||[];return rows.filter(function(j){return Number(j.source_passage_id)===Number(id)}).sort(function(a,b){return Number(b.id)-Number(a.id)})[0]||null}
 function chapterTitle(id){var c=((S.data&&S.data.chapters)||[]).find(function(x){return Number(x.id)===Number(id)});return c?c.title:'Chapter '+id}
 function render(){if(!S.data)return;if(S.tab==='historical')historicalView();else if(S.tab==='naming')namingView();else translationView()}
