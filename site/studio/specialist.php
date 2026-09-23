@@ -230,13 +230,16 @@ function ba_specialist_api(array &$s,string $stateFile,string $method,string $pa
         if(!$latestSource||(int)$latestSource['revision']!==(int)$job['source_revision']) respond(['error'=>'source_changed_since_translation'],409);
         $latestTarget=ba_specialist_latest_passage($s,(int)$job['chapter_id'],(string)$job['target_language']);
         if($latestTarget&&!empty($latestTarget['locked'])) respond(['error'=>'target_passage_locked'],409);
-        $text=trim((string)($result['translation']??''));if($text==='') respond(['error'=>'translation_missing'],409);
+        $generated=trim((string)($result['translation']??''));
+        $edited=trim((string)($b['target_text']??''));
+        $text=$edited!==''?$edited:$generated;if($text==='') respond(['error'=>'translation_missing'],409);
+        $authorEdited=$edited!==''&&$edited!==$generated;
         $newRev=max((int)($s['project']['current_revision']??0)+1,(int)($latestTarget['revision']??0)+1);
         $passage=[
             'id'=>maxId($s['passages'])+1,'project_id'=>(int)$job['project_id'],'chapter_id'=>(int)$job['chapter_id'],'scene_id'=>$source['scene_id']??1,
             'language'=>(string)$job['target_language'],'revision'=>$newRev,'approved'=>false,'locked'=>false,
             'parent_passage_id'=>$latestTarget['id']??null,'created_at'=>nowIso(),
-            'content_html'=>ba_authoring_html_from_draft($text),'source'=>'translation_job','translation_job_id'=>$id,
+            'content_html'=>ba_authoring_html_from_draft($text),'source'=>'translation_job','translation_job_id'=>$id,'author_edited_translation'=>$authorEdited,
         ];
         $s['passages'][]=$passage;$s['project']['current_revision']=$newRev;$s['project']['updated_at']=nowIso();
         $linkId=maxId($s['translation_links'])+1;$s['translation_links'][]=[
@@ -246,7 +249,7 @@ function ba_specialist_api(array &$s,string $stateFile,string $method,string $pa
             'nuance_profile'=>$result['nuance_profile']??[],'fidelity_gate'=>$result['fidelity_gate']??[],
             'created_at'=>nowIso(),
         ];
-        $s['translation_jobs'][$i]['status']='accepted';$s['translation_jobs'][$i]['accepted_at']=nowIso();$s['translation_jobs'][$i]['target_passage_id']=$passage['id'];
+        $s['translation_jobs'][$i]['status']='accepted';$s['translation_jobs'][$i]['accepted_at']=nowIso();$s['translation_jobs'][$i]['target_passage_id']=$passage['id'];$s['translation_jobs'][$i]['author_edited_before_accept']=$authorEdited;
         audit($s,'translation.accepted','translation_job',$id,['target_passage_id'=>$passage['id'],'target_revision'=>$newRev]);saveState($stateFile,$s);
         respond(['ok'=>true,'job'=>$s['translation_jobs'][$i],'passage'=>$passage]);
     }
