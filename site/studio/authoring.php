@@ -109,6 +109,21 @@ function ba_authoring_research_for_chapter(array $s,int $chapterId,?array $bpCha
             $items[]=$row;
         }
     }
+    foreach($s['historical_claims']??[] as $row){
+        $claimChapter=(int)($row['chapter_id']??0);
+        if($claimChapter!==0&&$claimChapter!==$chapterId) continue;
+        $status=(string)($row['verification_status']??'unverified');
+        $items[]=[
+            'id'=>'hist_'.(string)($row['id']??''),
+            'claim'=>(string)($row['claim']??''),
+            'status'=>$status==='verified'?'verified':($status==='contested'?'contested':'check'),
+            'confidence'=>$status==='verified'?'Evidence adjudicated':'Unresolved',
+            'usage_location'=>$claimChapter?'Chapter '.$claimChapter:'Book-wide',
+            'source_note'=>$status==='verified'?'Historical Intelligence claim with attached evidence and explicit verification.':'Historical Intelligence claim requiring evidence/review.',
+            'queued'=>$status!=='verified',
+            'historical_claim_id'=>$row['id']??null,
+        ];
+    }
     foreach($bpChapter['research']??[] as $claim){
         $items[]=[
             'id'=>null,
