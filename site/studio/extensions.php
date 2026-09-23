@@ -382,6 +382,8 @@ function ba_sync_core_jobs(array &$s,string $stateFile): void {
                 $s['write_jobs'][$i]['generated_draft']=(string)$payload['draft'];
                 $s['write_jobs'][$i]['generated_word_count']=(int)($payload['word_count']??ba_words((string)$payload['draft']));
                 $s['write_jobs'][$i]['model']=$payload['model']??null;
+                $s['write_jobs'][$i]['blueprint_compliance']=$payload['blueprint_compliance']??null;
+                $s['write_jobs'][$i]['engine_trace']=is_array($payload['engine_trace']??null)?$payload['engine_trace']:[];
                 $li=is_array($payload['literary_intelligence']??null)?$payload['literary_intelligence']:[];
                 if($li){
                     $s['write_jobs'][$i]['literary_intelligence']=$li;
