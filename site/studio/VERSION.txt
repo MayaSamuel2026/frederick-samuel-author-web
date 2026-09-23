@@ -1,1 +1,1 @@
-Book Author Studio — V1.2 · manuscript upload fix + NOEVA local intelligence adapter · 2026-09-22
+Book Author Studio — V1.3 · imported-book Library cards + actionable Recent imports + safe delete + duplicate guard · 2026-09-23
