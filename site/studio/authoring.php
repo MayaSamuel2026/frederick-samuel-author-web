@@ -275,23 +275,35 @@ function ba_authoring_sync_runs(array &$s,string $stateFile): void {
             $s['authoring_runs'][$i]['draft_ready_at']=$job['completed_at']??nowIso();
             $s['authoring_runs'][$i]['generated_word_count']=$job['generated_word_count']??null;
             $s['authoring_runs'][$i]['blueprint_compliance']=$job['blueprint_compliance']??(($job['core_result']['blueprint_compliance']??null));
-            $s['authoring_runs'][$i]['stages']['writing']=ba_authoring_stage('writing','complete',[
-                'word_count'=>$job['generated_word_count']??null,
-                'model'=>$job['model']??null,
-            ]);
-            $s['authoring_runs'][$i]['stages']['humanize']=ba_authoring_stage('humanize','complete',[
-                'diagnostics'=>$li['diagnostics_after']??[],
-                'style_resolution'=>$li['style_resolution']??[],
-            ]);
-            $s['authoring_runs'][$i]['stages']['refinement']=ba_authoring_stage('refinement','complete',[
-                'revision_performed'=>(bool)($li['revision_performed']??false),
-                'revision_requirements'=>$li['revision_requirements']??[],
-                'blueprint_compliance'=>$job['blueprint_compliance']??null,
-            ]);
-            $s['authoring_runs'][$i]['stages']['self_improvement']=ba_authoring_stage('self_improvement','complete',[
-                'learning_event'=>$li['learning_event']??null,
-                'patterns_remembered'=>count($li['recent_patterns_next']??[]),
-            ]);
+            $trace=is_array($job['engine_trace']??null)?$job['engine_trace']:[];
+            foreach($trace as $row){
+                if(!is_array($row)) continue;
+                $engine=(string)($row['engine']??'');
+                if($engine===''||!isset($s['authoring_runs'][$i]['stages'][$engine])) continue;
+                $status=$engine==='self_improvement'?'waiting_author':'complete';
+                $summary=is_array($row['summary']??null)?$row['summary']:[];
+                if($engine==='writing') $summary['model']=$job['model']??null;
+                if($engine==='self_improvement') $summary['author_decision_required']=true;
+                $s['authoring_runs'][$i]['stages'][$engine]=ba_authoring_stage($engine,$status,$summary);
+            }
+            if(!$trace){
+                $s['authoring_runs'][$i]['stages']['writing']=ba_authoring_stage('writing','complete',[
+                    'word_count'=>$job['generated_word_count']??null,'model'=>$job['model']??null,
+                ]);
+                $s['authoring_runs'][$i]['stages']['humanize']=ba_authoring_stage('humanize','complete',[
+                    'diagnostics'=>$li['diagnostics_after']??[],'style_resolution'=>$li['style_resolution']??[],
+                ]);
+                $s['authoring_runs'][$i]['stages']['refinement']=ba_authoring_stage('refinement','complete',[
+                    'revision_performed'=>(bool)($li['revision_performed']??false),
+                    'revision_requirements'=>$li['revision_requirements']??[],
+                    'blueprint_compliance'=>$job['blueprint_compliance']??null,
+                ]);
+                $s['authoring_runs'][$i]['stages']['self_improvement']=ba_authoring_stage('self_improvement','waiting_author',[
+                    'learning_event'=>$li['learning_event']??null,
+                    'patterns_remembered'=>count($li['recent_patterns_next']??[]),
+                    'author_decision_required'=>true,
+                ]);
+            }
             $changed=true;
         } elseif($status==='failed'){
             $s['authoring_runs'][$i]['status']='failed';
@@ -473,10 +485,14 @@ function ba_authoring_api(array &$s,string $stateFile,string $method,string $pat
         $job=ba_authoring_find_write_job($s,(int)$run['write_job_id']);
         if(!$job||trim((string)($job['generated_draft']??''))==='') respond(['error'=>'generated_draft_unavailable'],409);
         $chapterId=(int)$run['chapter_id'];$newRev=(int)($s['project']['current_revision']??0)+1;
+        $parentId=null;
+        foreach(array_reverse($s['passages']??[]) as $prior){
+            if((int)($prior['chapter_id']??0)===$chapterId&&($prior['language']??'')==='EN'){$parentId=(int)$prior['id'];break;}
+        }
         $passage=[
             'id'=>maxId($s['passages']??[])+1,'project_id'=>(int)$run['project_id'],'chapter_id'=>$chapterId,
             'scene_id'=>1,'language'=>'EN','revision'=>$newRev,'approved'=>false,'locked'=>false,
-            'parent_passage_id'=>null,'created_at'=>nowIso(),
+            'parent_passage_id'=>$parentId,'created_at'=>nowIso(),
             'content_html'=>ba_authoring_html_from_draft((string)$job['generated_draft']),
             'source'=>'authoring_run','authoring_run_id'=>$id,
         ];
@@ -484,6 +500,11 @@ function ba_authoring_api(array &$s,string $stateFile,string $method,string $pat
         $s['authoring_runs'][$ri]['status']='accepted';
         $s['authoring_runs'][$ri]['accepted_passage_id']=$passage['id'];
         $s['authoring_runs'][$ri]['accepted_at']=nowIso();
+        $s['authoring_runs'][$ri]['stages']['self_improvement']=ba_authoring_stage('self_improvement','complete',[
+            'author_decision'=>'accepted',
+            'learning_event'=>$job['literary_intelligence']['learning_event']??null,
+            'patterns_remembered'=>count($job['literary_intelligence']['recent_patterns_next']??[]),
+        ]);
         $learning=[
             'id'=>maxId($s['engine_learning'])+1,'project_id'=>(int)$run['project_id'],'run_id'=>$id,
             'event'=>'draft_accepted','chapter_id'=>$chapterId,'revision'=>$newRev,
@@ -500,6 +521,9 @@ function ba_authoring_api(array &$s,string $stateFile,string $method,string $pat
         if($ri<0) respond(['error'=>'authoring_run_not_found'],404);
         $b=bodyJson();$reason=ba_authoring_plain((string)($b['reason']??'Author rejected draft'),2000);
         $s['authoring_runs'][$ri]['status']='rejected';$s['authoring_runs'][$ri]['rejected_at']=nowIso();$s['authoring_runs'][$ri]['rejection_reason']=$reason;
+        $s['authoring_runs'][$ri]['stages']['self_improvement']=ba_authoring_stage('self_improvement','complete',[
+            'author_decision'=>'rejected','reason'=>$reason,
+        ]);
         $s['engine_learning'][]=[
             'id'=>maxId($s['engine_learning'])+1,'project_id'=>(int)($s['authoring_runs'][$ri]['project_id']??1),
             'run_id'=>$id,'event'=>'draft_rejected','reason'=>$reason,'created_at'=>nowIso(),
