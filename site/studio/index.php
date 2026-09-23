@@ -13,5 +13,5 @@ foreach($parts as $part){
 }
 $html=@gzdecode(base64_decode($payload));
 if($html===false){ http_response_code(500); echo 'Book Author application payload invalid.'; exit; }
-$html=str_replace('</body>','<script src="/studio-v11.js?v=20260923-1"></script><script src="/studio-blueprint.js?v=20260923-2"></script><script src="/studio-authoring.js?v=20260923-1"></script></body>',$html);
+$html=str_replace('</body>','<script src="/studio-v11.js?v=20260923-1"></script><script src="/studio-blueprint.js?v=20260923-2"></script><script src="/studio-authoring.js?v=20260923-1"></script><script src="/studio-specialist.js?v=20260923-1"></script></body>',$html);
 echo $html;

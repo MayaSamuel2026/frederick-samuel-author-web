@@ -4,6 +4,7 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/extensions.php';
 require_once __DIR__ . '/blueprint.php';
 require_once __DIR__ . '/authoring.php';
+require_once __DIR__ . '/specialist.php';
 studio_gate_api();
 header('Content-Type: application/json; charset=UTF-8');
 header('Cache-Control: no-store, max-age=0');
@@ -73,11 +74,12 @@ function findIndexById(array $items,int $id): int { foreach($items as $i=>$x){ i
 $method=$_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path=trim((string)($_GET['path'] ?? ''),'/');
 $s=loadState($stateFile);
+ba_specialist_api($s,$stateFile,$method,$path,$dataDir);
 ba_authoring_api($s,$stateFile,$method,$path,$dataDir);
 ba_blueprint_api($s,$stateFile,$method,$path,$dataDir);
 ba_extended_api($s,$stateFile,$method,$path,$dataDir);
 
-if($method==='GET' && $path==='health') respond(['ok'=>true,'service'=>'book-author-studio','version'=>'1.4']);
+if($method==='GET' && $path==='health') respond(['ok'=>true,'service'=>'book-author-studio','version'=>'1.6','specialist_intelligence'=>true]);
 if($method==='GET' && $path==='projects') respond(['items'=>[$s['project']]]);
 if($method==='GET' && preg_match('#^projects/(\d+)/workspace$#',$path,$m)){
   $current=null; foreach(array_reverse($s['passages']) as $p){ if($p['language']==='EN'){ $current=$p; break; } }
