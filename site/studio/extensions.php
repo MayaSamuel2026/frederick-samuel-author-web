@@ -24,6 +24,13 @@ function ba_safe_name(string $name): string {
     $name=preg_replace('/[^A-Za-z0-9._-]+/','_',basename($name)) ?: 'manuscript';
     return trim($name,'._-') ?: 'manuscript';
 }
+function ba_import_title(string $name): string {
+    $base=pathinfo(basename($name),PATHINFO_FILENAME);
+    $base=preg_replace('/[_-]+/u',' ',$base)??$base;
+    $base=preg_replace('/\s+(published|publication|final|manuscript|proof|print)\s*$/iu','',$base)??$base;
+    $base=preg_replace('/\s+/u',' ',trim($base))??trim($base);
+    return $base!==''?$base:'Imported manuscript';
+}
 function ba_words(string $text): int {
     if($text==='') return 0;
     preg_match_all('/[\p{L}\p{N}][\p{L}\p{N}\p{M}’\'\-]*/u',$text,$m);
@@ -332,7 +339,13 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
 
     if($method==='GET'&&preg_match('#^projects/(\d+)/imports$#',$path,$m)){
         ba_sync_core_jobs($s,$stateFile);
-        $pid=(int)$m[1]; respond(['items'=>array_values(array_filter($s['imports'],fn($x)=>(int)($x['project_id']??0)===$pid))]);
+        $pid=(int)$m[1];
+        $items=array_values(array_filter($s['imports'],fn($x)=>(int)($x['project_id']??0)===$pid));
+        foreach($items as &$item){
+            if(empty($item['display_title'])) $item['display_title']=ba_import_title((string)($item['original_name']??'Imported manuscript'));
+        }
+        unset($item);
+        respond(['items'=>$items]);
     }
 
     if($method==='POST'&&preg_match('#^projects/(\d+)/import-manuscript$#',$path,$m)){
@@ -355,6 +368,16 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         @chmod($dest,0660);
 
         $sha=hash_file('sha256',$dest)?:'';
+        foreach($s['imports'] as $existing){
+            if((int)($existing['project_id']??0)!==$pid || (string)($existing['sha256']??'')!==$sha) continue;
+            @unlink($dest);
+            if(empty($existing['display_title'])) $existing['display_title']=ba_import_title((string)($existing['original_name']??$original));
+            $existingJob=null;
+            foreach($s['analysis_jobs']??[] as $candidate){
+                if((int)($candidate['import_id']??0)===(int)($existing['id']??0)){ $existingJob=$candidate; break; }
+            }
+            respond(['ok'=>true,'duplicate'=>true,'import'=>$existing,'analysis_job'=>$existingJob,'message'=>'This manuscript is already in the library; the existing import was opened instead.']);
+        }
         $ex=ba_extract_text($dest,$ext); $text=(string)$ex['text']; $scan=ba_scan($text); $textFile=null;
         if($text!==''){
             $textFile=$stored.'.extracted.txt';
@@ -371,7 +394,7 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
             ? 'Original preserved and structural scan complete. Preparing NOEVA local whole-book analysis.'
             : (string)$ex['message'];
 
-        $rec=['id'=>$id,'project_id'=>$pid,'original_name'=>$original,'stored_name'=>$stored,'extension'=>$ext,'bytes'=>$size,'sha256'=>$sha,'created_at'=>nowIso(),'status'=>(string)$ex['status'],'extraction_message'=>(string)$ex['message'],'extracted_text_file'=>$textFile,'optimization_depth'=>$depth,'scopes'=>array_values($scopes),'structural_scan'=>$scan,'analysis_job_id'=>$aid,'analysis_status'=>$astatus,'analysis_message'=>$amsg,'immutable_original'=>true];
+        $rec=['id'=>$id,'project_id'=>$pid,'display_title'=>ba_import_title($original),'original_name'=>$original,'stored_name'=>$stored,'extension'=>$ext,'bytes'=>$size,'sha256'=>$sha,'created_at'=>nowIso(),'status'=>(string)$ex['status'],'extraction_message'=>(string)$ex['message'],'extracted_text_file'=>$textFile,'optimization_depth'=>$depth,'scopes'=>array_values($scopes),'structural_scan'=>$scan,'analysis_job_id'=>$aid,'analysis_status'=>$astatus,'analysis_message'=>$amsg,'immutable_original'=>true];
         $job=['id'=>$aid,'project_id'=>$pid,'import_id'=>$id,'status'=>$astatus,'optimization_depth'=>$depth,'scopes'=>array_values($scopes),'pipeline'=>['segment','chapter_extract','character_relationship_graph','plot_threads','timeline_congruency','structure_pacing','style_profile','reader_experience','historical_checks','optimization_map'],'created_at'=>nowIso(),'message'=>$amsg,'worker_token_hash'=>$workerHash,'worker_token_pending'=>$workerToken,'core_job_id'=>null];
 
         $s['imports'][]=$rec; $s['analysis_jobs'][]=$job;
@@ -380,6 +403,36 @@ function ba_extended_api(array &$s,string $stateFile,string $method,string $path
         if($text!=='') ba_dispatch_analysis($s,count($s['analysis_jobs'])-1,$stateFile);
         $ii=ba_find_index($s['imports'],$id);
         respond(['ok'=>true,'import'=>$ii>=0?$s['imports'][$ii]:$rec,'analysis_job'=>$s['analysis_jobs'][count($s['analysis_jobs'])-1]]);
+    }
+
+    if($method==='DELETE'&&preg_match('#^imports/(\d+)$#',$path,$m)){
+        $id=(int)$m[1];
+        $ii=ba_find_index($s['imports'],$id);
+        if($ii<0) respond(['error'=>'import_not_found'],404);
+        $import=$s['imports'][$ii];
+        $pid=(int)($import['project_id']??1);
+        $dir=rtrim($dataDir,'/').'/imports/project_'.$pid;
+        $files=[];
+        foreach(['stored_name','extracted_text_file'] as $key){
+            $name=basename((string)($import[$key]??''));
+            if($name!=='') $files[]=$dir.'/'.$name;
+        }
+        foreach(array_unique($files) as $file){
+            if(is_file($file)) @unlink($file);
+        }
+        $s['analysis_jobs']=array_values(array_filter(
+            $s['analysis_jobs']??[],
+            fn($job)=>(int)($job['import_id']??0)!==$id
+        ));
+        array_splice($s['imports'],$ii,1);
+        audit($s,'manuscript.deleted','manuscript_import',$id,[
+            'project_id'=>$pid,
+            'original_name'=>(string)($import['original_name']??''),
+            'display_title'=>(string)($import['display_title']??ba_import_title((string)($import['original_name']??''))),
+            'sha256'=>(string)($import['sha256']??'')
+        ]);
+        saveState($stateFile,$s);
+        respond(['ok'=>true,'deleted_import_id'=>$id]);
     }
 
     if($method==='GET'&&preg_match('#^imports/(\d+)/original-file$#',$path,$m)){
