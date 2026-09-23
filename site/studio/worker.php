@@ -54,7 +54,7 @@ function worker_recent_prose(array $state, int $max=8): string {
 $kind=strtolower(trim((string)($_GET['kind']??'')));
 $id=(int)($_GET['id']??0);
 $token=(string)($_GET['token']??'');
-if(!in_array($kind,['analysis','write'],true) || $id<1 || $token===''){
+if(!in_array($kind,['analysis','write','translate','historical','naming'],true) || $id<1 || $token===''){
     worker_respond(['ok'=>false,'error'=>'invalid_worker_request'],400);
 }
 $state=worker_state($stateFile);
@@ -87,6 +87,99 @@ if($kind==='analysis'){
         'blueprint_authority'=>['guide'=>'interpret creatively','required'=>'must satisfy','locked'=>'must not contradict or relocate','forbidden'=>'must not occur'],
         'manuscript_text'=>$text,
         'immutable_original'=>true,
+    ]);
+}
+
+
+if(in_array($kind,['translate','historical','naming'],true)){
+    $bucket=$kind==='translate'?'translation_jobs':($kind==='historical'?'historical_jobs':'naming_jobs');
+    $job=worker_find($state[$bucket]??[],$id);
+    if(!$job || !worker_match_token($job['worker_token_hash']??null,$token)){
+        worker_respond(['ok'=>false,'error'=>'worker_authorization_failed'],401);
+    }
+    $projectId=(int)($job['project_id']??1);
+    $canonical=[
+        'project'=>$state['project']??[],
+        'authoring_profile'=>$state['authoring_profile']??[],
+        'characters'=>$state['characters']??[],
+        'relationships'=>$state['relationships']??[],
+        'story_nodes'=>$state['story_nodes']??[],
+        'story_edges'=>$state['story_edges']??[],
+        'book_blueprint'=>$state['book_blueprint']??null,
+        'research_claims'=>$state['research']??[],
+        'historical_claims'=>$state['historical_claims']??[],
+        'recent_manuscript'=>worker_latest_passages($state,8),
+    ];
+
+    if($kind==='translate'){
+        $source=worker_find($state['passages']??[],(int)($job['source_passage_id']??0));
+        if(!$source) worker_respond(['ok'=>false,'error'=>'source_passage_not_found'],404);
+        $sourceText=trim(html_entity_decode(strip_tags((string)($source['content_html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+        if($sourceText==='') worker_respond(['ok'=>false,'error'=>'source_passage_empty'],409);
+        worker_respond([
+            'kind'=>'translate',
+            'project_id'=>$projectId,
+            'translation_job_id'=>$id,
+            'source_passage_id'=>$source['id'],
+            'source_revision'=>$source['revision']??null,
+            'source_language'=>strtoupper((string)($job['source_language']??$source['language']??'EN')),
+            'target_language'=>strtoupper((string)($job['target_language']??'DE')),
+            'source_text'=>$sourceText,
+            'protected_ambiguities'=>$job['protected_ambiguities']??[],
+            'terminology'=>$state['translation_terminology']??[],
+            'canonical_context'=>$canonical,
+        ]);
+    }
+
+    if($kind==='historical'){
+        $parts=[];
+        $passageId=(int)($job['passage_id']??0);
+        $chapterId=(int)($job['chapter_id']??0);
+        if($passageId>0){
+            $p=worker_find($state['passages']??[],$passageId);
+            if(!$p) worker_respond(['ok'=>false,'error'=>'historical_passage_not_found'],404);
+            $parts[]=trim(html_entity_decode(strip_tags((string)($p['content_html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+            if($chapterId<1)$chapterId=(int)($p['chapter_id']??0);
+        } else {
+            foreach($state['passages']??[] as $p){
+                if((int)($p['chapter_id']??0)===$chapterId && strtoupper((string)($p['language']??''))==='EN'){
+                    $parts[]=trim(html_entity_decode(strip_tags((string)($p['content_html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+                }
+            }
+        }
+        $text=trim(implode("\n\n",$parts));
+        if($text==='') worker_respond(['ok'=>false,'error'=>'historical_scope_empty'],409);
+        $evidence=[];
+        foreach($state['historical_claims']??[] as $claim){
+            foreach($claim['evidence']??[] as $ev){
+                if(is_array($ev))$evidence[]=['id'=>$ev['id']??null,'claim_id'=>$claim['id']??null]+$ev;
+            }
+        }
+        worker_respond([
+            'kind'=>'historical',
+            'project_id'=>$projectId,
+            'historical_job_id'=>$id,
+            'passage_id'=>$passageId?:null,
+            'chapter_id'=>$chapterId?:null,
+            'text'=>mb_substr($text,0,60000),
+            'setting'=>[
+                'setting'=>$state['authoring_profile']['setting']??'',
+                'genre'=>$state['authoring_profile']['genre']??($state['project']['genre']??''),
+            ],
+            'evidence_records'=>array_slice($evidence,0,120),
+            'canonical_context'=>$canonical,
+        ]);
+    }
+
+    worker_respond([
+        'kind'=>'naming',
+        'project_id'=>$projectId,
+        'naming_job_id'=>$id,
+        'naming_kind'=>$job['naming_kind']??'character',
+        'target_character_id'=>$job['target_character_id']??null,
+        'constraints'=>$job['constraints']??[],
+        'avoid'=>$job['avoid']??[],
+        'canonical_context'=>$canonical,
     ]);
 }
 
