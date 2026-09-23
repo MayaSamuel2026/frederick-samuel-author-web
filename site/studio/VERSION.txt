@@ -1,1 +1,1 @@
-Book Author Studio — V1.3 · imported-book Library cards + actionable Recent imports + safe delete + duplicate guard · 2026-09-23
+Book Author Studio — V1.4 · permanent Book Blueprint core + author authority bindings + local-engine compliance · 2026-09-23
