@@ -13,6 +13,7 @@ function ba_specialist_ensure(array &$s): void {
     $s['translation_terminology']=is_array($s['translation_terminology']??null)?array_values($s['translation_terminology']):[];
     $s['historical_jobs']=is_array($s['historical_jobs']??null)?array_values($s['historical_jobs']):[];
     $s['historical_claims']=is_array($s['historical_claims']??null)?array_values($s['historical_claims']):[];
+    $s['historical_research_frontier']=is_array($s['historical_research_frontier']??null)?array_values($s['historical_research_frontier']):[];
     $s['naming_jobs']=is_array($s['naming_jobs']??null)?array_values($s['naming_jobs']):[];
     $s['naming_decisions']=is_array($s['naming_decisions']??null)?array_values($s['naming_decisions']):[];
     $s['rename_review']=is_array($s['rename_review']??null)?array_values($s['rename_review']):[];
@@ -95,13 +96,25 @@ function ba_specialist_materialize_historical_claims(array &$s,int $jobId,array 
         $claim=trim((string)($row['claim']??'')); if($claim==='') continue;
         $id=maxId($s['historical_claims'])+1;
         $status=(string)($row['evidence_status']??'RESEARCH_REQUIRED');
+        $queries=array_values(array_filter(array_map(fn($q)=>trim((string)$q),$row['research_queries']??[])));
         $s['historical_claims'][]=[
             'id'=>$id,'job_id'=>$jobId,'chapter_id'=>(int)($job['chapter_id']??0),'passage_id'=>(int)($job['passage_id']??0),'claim'=>$claim,'category'=>(string)($row['category']??'other'),
             'risk'=>(string)($row['risk']??'medium'),'reason'=>(string)($row['reason']??''),
-            'contested'=>(bool)($row['contested']??false),'research_queries'=>array_values($row['research_queries']??[]),
+            'contested'=>(bool)($row['contested']??false),'research_queries'=>$queries,
             'model_evidence_status'=>$status,'verification_status'=>'unverified',
             'evidence'=>[],'created_at'=>nowIso(),'verified_at'=>null,'verification_rationale'=>null,
         ];
+        foreach($queries as $query){
+            if($query==='') continue;
+            $frontierId=maxId($s['historical_research_frontier'])+1;
+            $s['historical_research_frontier'][]=[
+                'id'=>$frontierId,'claim_id'=>$id,'query'=>mb_substr($query,0,500),
+                'status'=>'awaiting_browser_agent_activation',
+                'acquisition_mode'=>'NOEVA_BROWSER_AGENT_PUBLIC_READ_ONLY',
+                'external_vendor_allowed'=>false,'auto_verification_allowed'=>false,
+                'source_count'=>0,'created_at'=>nowIso(),'updated_at'=>nowIso(),
+            ];
+        }
     }
 }
 
@@ -195,6 +208,11 @@ function ba_specialist_api(array &$s,string $stateFile,string $method,string $pa
             'translation_jobs'=>$s['translation_jobs'],'translation_links'=>$s['translation_links'],
             'translation_queues'=>ba_translation_queues($s),'terminology'=>$s['translation_terminology'],
             'historical_jobs'=>$s['historical_jobs'],'historical_claims'=>$s['historical_claims'],
+            'historical_research_frontier'=>$s['historical_research_frontier'],
+            'historical_research_acquisition'=>[
+                'mode'=>'NOEVA_BROWSER_AGENT_PUBLIC_READ_ONLY','state'=>'BLOCKED_UNTIL_BROWSER_AGENT_ACTIVE',
+                'external_vendor_allowed'=>false,'auto_verification_allowed'=>false,
+            ],
             'historical_notes'=>ba_historical_notes($s),
             'naming_jobs'=>$s['naming_jobs'],'naming_decisions'=>$s['naming_decisions'],'rename_review'=>$s['rename_review'],
             'chapters'=>$s['chapters']??[],'characters'=>$s['characters']??[],'passages'=>$s['passages']??[],
