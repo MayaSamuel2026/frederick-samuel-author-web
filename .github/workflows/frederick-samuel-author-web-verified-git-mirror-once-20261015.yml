@@ -1,0 +1,43 @@
+name: frederick-samuel-author-web complete Git history backup once
+on:
+  push:
+    branches: [backup/verified-full-history-20261015]
+    paths: [.github/workflows/frederick-samuel-author-web-verified-git-mirror-once-20261015.yml]
+permissions:
+  contents: read
+jobs:
+  complete-source-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Create Git mirror with all heads and tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          git clone --quiet --mirror "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$RUNNER_TEMP/mirror.git"
+          git -C "$RUNNER_TEMP/mirror.git" remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          BRANCH_COUNT="$(git -C "$RUNNER_TEMP/mirror.git" for-each-ref --format='%(refname)' refs/heads | wc -l)"
+          test "$BRANCH_COUNT" -ge 14
+          mkdir -p "$RUNNER_TEMP/offline"
+          git -C "$RUNNER_TEMP/mirror.git" bundle create "$RUNNER_TEMP/offline/frederick-samuel-author-web-full-history.bundle" --all
+          (cd "$RUNNER_TEMP/offline" && sha256sum *.bundle > SHA256SUMS.txt)
+      - name: Restore mirror independently and compare every branch and tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --quiet --mirror "$RUNNER_TEMP/offline/frederick-samuel-author-web-full-history.bundle" "$RUNNER_TEMP/restore.git"
+          git -C "$RUNNER_TEMP/mirror.git" for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags | LC_ALL=C sort > "$RUNNER_TEMP/expected.txt"
+          git -C "$RUNNER_TEMP/restore.git" for-each-ref --format='%(refname) %(objectname)' refs/heads refs/tags | LC_ALL=C sort > "$RUNNER_TEMP/offline/RESTORED_REFS.txt"
+          diff -u "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/offline/RESTORED_REFS.txt"
+          git -C "$RUNNER_TEMP/restore.git" fsck --full --no-reflogs
+          printf 'RESTORE_VERIFICATION=PASS\nREPOSITORY=%s\nBRANCHES=%s\n' "$GITHUB_REPOSITORY" "$(git -C "$RUNNER_TEMP/restore.git" for-each-ref --format='%(refname)' refs/heads | wc -l)" | tee "$RUNNER_TEMP/offline/VERIFY_RESULT.txt"
+      - name: Provide downloadable ZIP for independent local retention
+        uses: actions/upload-artifact@v4
+        with:
+          name: frederick-samuel-author-web-verified-git-mirror-20261015
+          path: ${{ runner.temp }}/offline/
+          retention-days: 30
+          if-no-files-found: error
