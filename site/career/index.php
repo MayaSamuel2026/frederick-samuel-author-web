@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__.'/lib.php';
 require __DIR__.'/sources.php';
+require __DIR__.'/boards.php';
 require __DIR__.'/language.php';
 header('X-Robots-Tag: noindex, nofollow, noarchive');
 header('X-Content-Type-Options: nosniff');
@@ -55,9 +56,17 @@ if($api!==''){
         $sent=rows('SELECT sent.id,sent.job_id,sent.recipient,sent.subject,sent.created_at,jobs.company FROM sent LEFT JOIN jobs ON jobs.id=sent.job_id ORDER BY sent.id DESC LIMIT 150');
         $counts=[];foreach($jobs as $j){$st=(string)$j['status'];$counts[$st]=($counts[$st]??0)+1;}
         $stats=[];foreach($counts as $status=>$n)$stats[]=['status'=>$status,'n'=>$n];
-        jsonout(['ok'=>true,'jobs'=>$jobs,'files'=>$files,'sent'=>$sent,'stats'=>$stats,'profile'=>['name'=>setting('name','Frederick Samuel'),'address'=>setting('address',"Marienburger Straße 16\n56112 Lahnstein\nDeutschland"),'phone'=>setting('phone'),'default_language'=>setting('default_language','de')],'gmail_connected'=>setting('gmail_refresh')!=='','gmail_available'=>cfg('google_client_id')!==''&&cfg('google_client_secret')!=='','last_scan'=>setting('last_scan'),'scan_info'=>json_decode(setting('last_scan_info','{}'),true),'cleanup'=>$cleanup,'keywords'=>['include'=>setting('career_include_keywords',career_default_includes()),'exclude'=>setting('career_exclude_keywords',career_default_excludes())],'last_mail_import'=>setting('last_mail_import'),'last_gmail_sync'=>setting('last_gmail_sync'),'gmail_sync_info'=>json_decode(setting('last_gmail_sync_info','{}'),true)]);
+        jsonout(['ok'=>true,'jobs'=>$jobs,'files'=>$files,'sent'=>$sent,'stats'=>$stats,'profile'=>['name'=>setting('name','Frederick Samuel'),'address'=>setting('address',"Marienburger Straße 16\n56112 Lahnstein\nDeutschland"),'phone'=>setting('phone'),'default_language'=>setting('default_language','de')],'gmail_connected'=>setting('gmail_refresh')!=='','gmail_available'=>cfg('google_client_id')!==''&&cfg('google_client_secret')!=='','last_scan'=>setting('last_scan'),'scan_info'=>json_decode(setting('last_scan_info','{}'),true),'cleanup'=>$cleanup,'keywords'=>['include'=>setting('career_include_keywords',career_default_includes()),'exclude'=>setting('career_exclude_keywords',career_default_excludes())],'last_mail_import'=>setting('last_mail_import'),'last_gmail_sync'=>setting('last_gmail_sync'),'gmail_sync_info'=>json_decode(setting('last_gmail_sync_info','{}'),true),'last_board_scan'=>setting('last_board_scan'),'board_scan_info'=>json_decode(setting('last_board_scan_info','{}'),true)]);
     }
-    if($api==='scan')jsonout(['ok'=>true,'result'=>crawl()]);
+    if($api==='scan'){
+        $base=crawl();
+        $boards=career_public_board_scan();
+        $base['new']+=$boards['new'];$base['examined']+=$boards['examined'];
+        $base['errors']=array_merge($base['errors'],$boards['errors']);
+        $base['boards']=$boards['sources'];
+        setsetting('last_scan_info',json_encode($base,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
+        jsonout(['ok'=>true,'result'=>$base]);
+    }
     if($api==='syncmail')jsonout(['ok'=>true,'result'=>career_import_gmail_alerts(4)]);
     if($api==='keywords'){
         $values=[];
