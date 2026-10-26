@@ -107,7 +107,9 @@ function career_alert_candidates(string $source,string $body): array {
 function career_import_gmail_alerts(int $perLabel=6): array {
     if(setting('gmail_refresh')==='')return ['connected'=>false,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>['Gmail is not connected in website settings.']];
     $db=db();
-    $db->exec('CREATE TABLE IF NOT EXISTS career_imported_alerts(message_id TEXT PRIMARY KEY,source TEXT NOT NULL,processed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,added INTEGER NOT NULL DEFAULT 0)');\n    $cols=$db->query('PRAGMA table_info(career_imported_alerts)')->fetchAll();\n    if(!in_array('parser_version',array_column($cols,'name'),true))$db->exec('ALTER TABLE career_imported_alerts ADD COLUMN parser_version INTEGER NOT NULL DEFAULT 1');
+    $db->exec('CREATE TABLE IF NOT EXISTS career_imported_alerts(message_id TEXT PRIMARY KEY,source TEXT NOT NULL,processed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,added INTEGER NOT NULL DEFAULT 0)');
+    $cols=$db->query('PRAGMA table_info(career_imported_alerts)')->fetchAll();
+    if(!in_array('parser_version',array_column($cols,'name'),true))$db->exec('ALTER TABLE career_imported_alerts ADD COLUMN parser_version INTEGER NOT NULL DEFAULT 1');
     $labels=gmailcall('GET','labels');
     $available=[];foreach(($labels['labels']??[]) as $label)$available[strtolower((string)($label['name']??''))]=(string)$label['id'];
     $result=['connected'=>true,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>[]];
