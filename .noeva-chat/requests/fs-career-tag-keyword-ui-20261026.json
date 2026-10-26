@@ -1,0 +1,9 @@
+{
+  "schema": "noeva-chat-github-gateway/1.0",
+  "request_id": "fs-career-tag-keyword-ui-20261026",
+  "repository": "MayaSamuel2026/frederick-samuel-author-web",
+  "action": "dispatch",
+  "route": "author-release",
+  "source_sha": "618121504ce3813a001febca70f56d55cc905c59",
+  "authorize_release": true
+}
