@@ -101,7 +101,7 @@ function career_default_excludes(): string {
 }
 function career_keyword_terms(string $key): array {
     $fallback=$key==='career_include_keywords'?career_default_includes():career_default_excludes();
-    $value=setting($key,$fallback);
+    $value=configured()?setting($key,$fallback):$fallback;
     $parts=explode(',',$value);
     $terms=[];
     foreach($parts as $part){
