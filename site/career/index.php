@@ -45,7 +45,9 @@ if($api!==''){
     $mutating=!in_array($api,['list','inbox','sent','download','pdf','status'],true);
     if($mutating){if($_SERVER['REQUEST_METHOD']!=='POST')fail('POST required',405);if(!hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??'')))fail('Invalid request token',403);}
     if($api==='list'){
+        $recovery=career_restore_relevant_archives();
         $cleanup=career_archive_unsuitable_jobs();
+        $cleanup['restored']=$recovery['restored'];
         $jobs=array_values(array_filter(rows('SELECT * FROM jobs WHERE status != "archived" ORDER BY CASE status WHEN "interview" THEN 0 WHEN "applied" THEN 1 ELSE 2 END, id DESC LIMIT 3000'),static fn($j)=>career_job_eligible($j)));
         $files=rows('SELECT id,name,kind,mime,size,uploaded_at FROM files ORDER BY id DESC');
         $sent=rows('SELECT sent.id,sent.job_id,sent.recipient,sent.subject,sent.created_at,jobs.company FROM sent LEFT JOIN jobs ON jobs.id=sent.job_id ORDER BY sent.id DESC LIMIT 150');
