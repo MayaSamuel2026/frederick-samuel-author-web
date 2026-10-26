@@ -18,6 +18,11 @@ foreach($cases as [$source,$html,$title,$company,$city]){
 }
 $blocked=career_board_parse('StepStone','<html><body><h2>Sign in to view listings</h2></body></html>');
 if(count($blocked)!==0){fwrite(STDERR,"FAIL empty document must not create a job\n");exit(1);}
+$stepstoneModern='<div data-at="job-item"><a class="res-xaz43y" href="/stellenangebote--Head-of-Sales-Pharma-Berlin--99887-inline.html"><style>.res-xrpel9{min-width:0;display:flex}</style><h2>Head of Sales Pharma</h2></a><span data-at="job-item-company">BioPharma GmbH</span><span data-at="job-item-location">Berlin</span></div>';
+$modern=career_board_parse('StepStone','<html><body>'.$stepstoneModern.'</body></html>');
+if(count($modern)!==1||$modern[0]['title']!=='Head of Sales Pharma'||$modern[0]['company']!=='BioPharma GmbH'){
+    fwrite(STDERR,"FAIL modern StepStone embedded-style card parsing\n");exit(1);
+}
 foreach(['StepStone','Indeed','LinkedIn','JobPharm'] as $board){
  $url=career_board_search_url($board,'Sales Director Pharma');
  if(!filter_var($url,FILTER_VALIDATE_URL)){fwrite(STDERR,"FAIL $board query URL\n");exit(1);}
