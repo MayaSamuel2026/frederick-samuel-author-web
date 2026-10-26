@@ -41,12 +41,11 @@ function httpget(string $url,array $headers=[]): array {
 function career_germany_location(string $location,string $source=''): bool {
     $loc=trim($location);
     if($loc==='')return false;
-    if(preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|milan|lisbon|lissabon|stockholm|warszawa|copenhagen|kopenhagen|new york|boston|uk|united kingdom|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|worldwide|weltweit)\b/iu',$loc))return false;
+    if(preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|lisbon|lissabon|stockholm|copenhagen|kopenhagen|new york|boston|dublin|ireland|irland|edinburgh|manchester|birmingham|glasgow|lisboa|porto|budapest|hungary|ungarn|bratislava|slovakia|slowakei|praha|prag|prague|czechia|tschechien|czech republic|denmark|dänemark|sweden|schweden|norway|norwegen|finland|finnland|romania|rumänien|bulgaria|bulgarien|greece|griechenland|turkey|türkei|portugal|luxembourg|luxemburg|canada|kanada|usa|united states|us|u\.s\.|uk|u\.k\.|united kingdom|great britain|großbritannien|england|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|nederland|holland|worldwide|weltweit|global|international only|remote worldwide)\b/iu',$loc))return false;
     // Country explicitly stated, nationwide Germany or a named German city / region.
     if(preg_match('/\b(deutschland|germany|deutschlandweit|bundesweit|norddeutschland|süddeutschland|westdeutschland|ostdeutschland|deutschlandweit|baden.württemberg|rheinland.pfalz|nordrhein.westfalen|mitteldeutschland|niedersachsen|schleswig.holstein|thüringen|brandenburg|mecklenburg.vorpommern|bayern|bavaria|sachsen.anhalt|saarland|hessen|westfalen)\b/iu',$loc))return true;
-    if(preg_match('/\b(berlin|hamburg|münchen|munich|frankfurt|köln|cologne|stuttgart|düsseldorf|dresden|leipzig|dortmund|essen|bremen|hannover|nürnberg|nuremberg|bonn|duisburg|bochum|wuppertal|bielefeld|mannheim|karlsruhe|münster|augsburg|wiesbaden|aachen|mönchengladbach|gelsenkirchen|braunschweig|chemnitz|kiel|halle|magdeburg|freiburg|krefeld|mainz|lübeck|erfurt|rostock|kassel|potsdam|heidelberg|darmstadt|offenbach|oldenburg|osnabrück|regensburg|ingolstadt|würzburg|ulm|heilbronn|pforzheim|reutlingen|fürth|jena|trier|koblenz|gießen|giessen|neuss|solingen|leverkusen|bensheim|frechen|bad homburg|ansbach|suhl|gotha|bamberg|minden|bremerhaven|wetzlar|ravensburg|walsrode|remscheid|schweinfurt|wolfsburg|saarbrücken|hildesheim|sigmaringen|lüneburg|ludwigshafen|tübingen|bayreuth|fulda|montabaur|lahnstein|neuwied|weiden|rüsselsheim|rottenburg|falkensee|cottbus|aalen|düren|greifswald|kaufbeuren|fürstenfeldbruck|leer|iserlohn|gütersloh|verden|dinslaken|schwerin|falkensee|göttingen|delmenhorst|freiberg|ländlich)\b/iu',$loc))return true;
-    // The national employment agency's source is restricted to German listings here.
-    if(strcasecmp($source,'Arbeitsagentur')===0)return true;
+    if(preg_match('/\b(berlin|hamburg|münchen|munich|frankfurt|köln|cologne|stuttgart|düsseldorf|dresden|leipzig|dortmund|essen|bremen|hannover|nürnberg|nuremberg|bonn|duisburg|bochum|wuppertal|bielefeld|mannheim|karlsruhe|münster|augsburg|wiesbaden|aachen|mönchengladbach|gelsenkirchen|braunschweig|chemnitz|kiel|halle|magdeburg|freiburg|krefeld|mainz|lübeck|erfurt|rostock|kassel|potsdam|heidelberg|darmstadt|offenbach|oldenburg|osnabrück|regensburg|ingolstadt|würzburg|ulm|heilbronn|pforzheim|reutlingen|fürth|jena|trier|koblenz|gießen|giessen|neuss|solingen|leverkusen|bensheim|frechen|bad homburg|ansbach|suhl|gotha|bamberg|minden|bremerhaven|wetzlar|ravensburg|walsrode|remscheid|schweinfurt|wolfsburg|saarbrücken|hildesheim|sigmaringen|lüneburg|ludwigshafen|tübingen|bayreuth|fulda|montabaur|lahnstein|neuwied|weiden|rüsselsheim|rottenburg|falkensee|cottbus|aalen|düren|greifswald|kaufbeuren|fürstenfeldbruck|leer|iserlohn|gütersloh|verden|dinslaken|schwerin|falkensee|göttingen|delmenhorst|freiberg)\b/iu',$loc))return true;
+    // Reject unknown locations even from a German job board: source country is not the job location.
     return false;
 }
 function career_norm(string $x): string {
@@ -71,7 +70,7 @@ function upsertjob(array $r): int {
     $r['title']=clean((string)($r['title']??''),200);
     $r['location']=clean((string)($r['location']??''),140);
     $r['company']=clean((string)($r['company']??''),160);
-    if(excluded_role($r['title'])||!relevant($r['title'],(string)($r['description']??''))||!career_germany_location($r['location'],(string)($r['source']??'')))return 0;
+    if(!career_job_eligible($r))return 0;
     // URL uniqueness + semantic de-duplication across crawler and Gmail alert sources.
     foreach(rows('SELECT id,company,title,location,url FROM jobs WHERE status != "archived"') as $existing){
         if((string)$existing['url']===$url||career_same_job($r,$existing))return 0;
@@ -82,7 +81,7 @@ function upsertjob(array $r): int {
 }
 function excluded_role(string $title): bool {
     // Apply exclusions to the role title, never to the job description (which may mention sales reps).
-    return (bool)preg_match('/\b(junior|jr\.?|trainee|intern(ship)?|graduate|representative|sales\s*rep|legal|jurist(in)?|rechtsanw(a|ä)lt(in)?|rechtsabteilung)\b/iu', $title);
+    return (bool)preg_match('/\b(junior|jr\.?|trainee|intern(ship)?|graduate|representatives?|sales[\s-]*reps?|account[\s-]*executives?|account[\s-]*execs?|sales[\s-]*executives?|legal|jurist(in)?|rechtsanw(a|ä)lt(in)?|rechtsabteilung|pharmareferent(in)?|pharmaberater(in)?|außendienstmitarbeiter(in)?|aussendienstmitarbeiter(in)?)\b/iu', $title);
 }
 function relevant(string $title,string $description=''): bool {
     if(excluded_role($title))return false;
@@ -90,7 +89,32 @@ function relevant(string $title,string $description=''): bool {
     foreach($focus as $p)if((function_exists('mb_strpos')?mb_strpos($x,$p):strpos($x,$p))!==false)return true;
     return (bool)preg_match('/(pharma|life.science|healthcare|medical|klinisch|hospital|krankenhaus|biotech)/iu',$description.' '.$title) && (bool)preg_match('/(sales|vertrieb|commercial|geschäftsbereich|business.development)/iu',$title);
 }
+/** One rule for every intake channel, existing results and manual additions. */
+function career_job_eligible(array $j): bool {
+    return !excluded_role((string)($j['title']??''))
+        && relevant((string)($j['title']??''),(string)($j['description']??''))
+        && career_germany_location((string)($j['location']??''),(string)($j['source']??''));
+}
+/** Remove unsuitable discovery results from the active database without deleting mail/application history. */
+function career_archive_unsuitable_jobs(): array {
+    $archive=[];$historical=0;
+    foreach(rows('SELECT id,source,title,description,location,status FROM jobs WHERE status != "archived"') as $j){
+        if(career_job_eligible($j))continue;
+        if(in_array($j['status'],['applied','interview','rejected','offer'],true)){$historical++;continue;}
+        $archive[]=(int)$j['id'];
+    }
+    if($archive){
+        $conn=db();$conn->beginTransaction();
+        try {
+            $update=$conn->prepare('UPDATE jobs SET status="archived" WHERE id=? AND status IN ("new","shortlisted","draft")');
+            foreach($archive as $id)$update->execute([$id]);
+            $conn->commit();
+        } catch(Throwable $e) {$conn->rollBack();throw $e;}
+    }
+    return ['archived'=>count($archive),'historical_preserved'=>$historical];
+}
 function crawl(): array {
+    $cleanup=career_archive_unsuitable_jobs();
     $new=0;$seen=0;$log=[];
     // Unofficial BA endpoint may change; continue independently on failures.
     foreach(['Pharma Sales Manager','Sales Director Pharma','Regionalleiter Pharma','Commercial Excellence Manager','Commercial Effectiveness'] as $term){
@@ -105,7 +129,7 @@ function crawl(): array {
       }
     }catch(Throwable $e){$log[]='Arbeitnow: '.$e->getMessage();}
     setsetting('last_scan',gmdate('Y-m-d H:i:s').' UTC');setsetting('last_scan_info',json_encode(['new'=>$new,'examined'=>$seen,'errors'=>$log],JSON_UNESCAPED_UNICODE));
-    return ['new'=>$new,'examined'=>$seen,'errors'=>$log,'at'=>setting('last_scan')];
+    return ['new'=>$new,'examined'=>$seen,'errors'=>$log,'cleanup'=>$cleanup,'at'=>setting('last_scan')];
 }
 function jobletter(array $j,string $lang): string {
     $title=(string)$j['title'];$company=(string)$j['company'];$effect=(bool)preg_match('/effectiveness|excellence|effizienz|commercial strategy|commercial operation|vertriebssteuerung/i',$title);
