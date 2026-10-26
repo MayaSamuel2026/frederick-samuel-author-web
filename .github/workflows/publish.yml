@@ -98,7 +98,11 @@ jobs:
           php -l site/career/lib.php
           php -l site/career/index.php
           node --check site/career/app.js
-          grep -q 'id="keywordsForm"' site/career/index.php
+          grep -q 'id="keywordIncludeList"' site/career/index.php
+          grep -q 'id="keywordExcludeList"' site/career/index.php
+          grep -q 'id="keywordIncludeForm"' site/career/index.php
+          grep -q 'id="keywordExcludeForm"' site/career/index.php
+          grep -q 'persistKeywordChange' site/career/app.js
           grep -q 'career_default_excludes' site/career/lib.php
           php tests/career-filter-test.php
 
@@ -223,7 +227,7 @@ jobs:
             homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
             login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
             app_js="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/app.js?v=$GITHUB_RUN_ID" || true)"
-            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"keywordsForm"* && "$app_js" == *"keywordInclude"* ]]; then
+            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* ]]; then
               echo "HOSTINGER_READBACK_PASS: footer, private login, language tools and editable career keyword filters"
               exit 0
             fi
