@@ -48,7 +48,8 @@ if($api!==''){
         $recovery=career_restore_relevant_archives();
         $cleanup=career_archive_unsuitable_jobs();
         $cleanup['restored']=$recovery['restored'];
-        $jobs=array_values(array_filter(rows('SELECT * FROM jobs WHERE status != "archived" ORDER BY CASE status WHEN "interview" THEN 0 WHEN "applied" THEN 1 ELSE 2 END, id DESC LIMIT 3000'),static fn($j)=>career_job_eligible($j)));
+        $jobs=array_values(array_filter(rows('SELECT * FROM jobs WHERE status != "archived" ORDER BY CASE status WHEN "interview" THEN 0 WHEN "applied" THEN 1 ELSE 2 END, id DESC LIMIT 3000'),static fn($j)=>career_existing_visible($j)));
+        foreach($jobs as &$entry){$entry['location_verified']=career_germany_location((string)$entry['location'],(string)$entry['source']);}unset($entry);
         $files=rows('SELECT id,name,kind,mime,size,uploaded_at FROM files ORDER BY id DESC');
         $sent=rows('SELECT sent.id,sent.job_id,sent.recipient,sent.subject,sent.created_at,jobs.company FROM sent LEFT JOIN jobs ON jobs.id=sent.job_id ORDER BY sent.id DESC LIMIT 150');
         $counts=[];foreach($jobs as $j){$st=(string)$j['status'];$counts[$st]=($counts[$st]??0)+1;}
