@@ -21,6 +21,13 @@ foreach($terms as $source=>$term){
                 .', testids='.substr_count($html,'job-item') . PHP_EOL;
             if($a && $a->length){
                 $anchor=$a->item(0);$card=career_board_card($anchor,'StepStone');
+                $parents=[];$node=$anchor;
+                for($level=0;$level<9 && $node instanceof DOMElement;$level++,$node=$node->parentNode){
+                    $parents[]=$node->tagName.'['.mb_substr($node->getAttribute('class'),0,45).']'
+                        .'['.mb_substr($node->getAttribute('data-testid'),0,38).']'
+                        .'['.mb_substr($node->getAttribute('data-at'),0,38).']';
+                }
+                echo '  ancestor_chain='.implode(' > ',$parents).PHP_EOL;
                 echo '  first_anchor='.mb_substr(trim($anchor->textContent),0,90)
                      .' ; ancestor='.($card instanceof DOMElement?$card->tagName.' '.mb_substr($card->getAttribute('class'),0,110):'n/a')
                      .' ; company='.career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"company") or contains(@class,"company-name")]')
