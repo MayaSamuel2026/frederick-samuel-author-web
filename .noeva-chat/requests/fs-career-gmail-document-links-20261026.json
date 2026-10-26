@@ -1,0 +1,9 @@
+{
+  "schema": "noeva-chat-github-gateway/1.0",
+  "request_id": "fs-career-gmail-document-links-20261026",
+  "repository": "MayaSamuel2026/frederick-samuel-author-web",
+  "action": "dispatch",
+  "route": "author-release",
+  "source_sha": "6c4be87b9cb5570c3b9c9dbeaff8e9fbc4a1b2ad",
+  "authorize_release": true
+}
