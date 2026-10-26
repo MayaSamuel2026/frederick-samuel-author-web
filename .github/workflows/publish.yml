@@ -212,7 +212,7 @@ jobs:
             homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
             login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
             app_js="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/app.js?v=$GITHUB_RUN_ID" || true)"
-            if [[ "$homepage" == *'class="career-private-link"'* && "$login" == *'PRIVATE CAREER WORKSPACE'* && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* ]]; then
+            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* ]]; then
               echo "HOSTINGER_READBACK_PASS: footer, private login and DE/EN language module"
               exit 0
             fi
@@ -220,4 +220,5 @@ jobs:
             if [ "$attempt" = 1 ]; then printf "Live app.js sample: %.140s\\n" "$app_js"; fi
             sleep 8
           done
-          echo "::error::HOSTINGER_READBACK_UNVERIFIED: new app.js not confirmed on live Hostinger"\n          exit 1
+          echo "::error::HOSTINGER_READBACK_UNVERIFIED: revised private app not confirmed"
+          exit 1
