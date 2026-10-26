@@ -9,10 +9,10 @@ foreach($terms as $source=>$term){
     try{
         $html=career_board_http($url);
         $jobs=career_board_parse($source,$html);
-        echo $source.': HTTP OK, bytes='.strlen($html).', eligible='.count($jobs).'\n';
-        if($jobs)echo '  example: '.mb_substr($jobs[0]['title'],0,100).'\n';
-        else echo '  no eligible structured records; source HTML or page selectors need inspection\n';
+        echo $source.': HTTP OK, bytes='.strlen($html).', eligible='.count($jobs) . PHP_EOL;
+        if($jobs)echo '  example: '.mb_substr($jobs[0]['title'],0,100) . PHP_EOL;
+        else echo '  no eligible structured records; source HTML or page selectors need inspection' . PHP_EOL;
     }catch(Throwable $e){
-        echo $source.': UNAVAILABLE '.$e->getMessage().'\n';
+        echo $source.': UNAVAILABLE '.$e->getMessage() . PHP_EOL;
     }
 }
