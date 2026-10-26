@@ -354,3 +354,16 @@ sitemap = (
 (root / "sitemap.xml").write_text(sitemap, encoding="utf-8")
 
 print(f"SEO V6.3: enhanced {len(pages)} indexable pages, generated robots.txt and sitemap.xml")
+
+
+# Private Career Workspace entrypoint — discreet, no changes to public content/SEO.
+# This is intentionally outside the sitemap and inserted only in the homepage footer.
+home = root / "index.html"
+home_html = home.read_text(encoding="utf-8")
+private_link = '<p class="career-private-link"><a href="/career/" rel="nofollow" style="font-size:9px;opacity:.54;text-decoration:none;letter-spacing:.1em">Private login</a></p>'
+if 'class="career-private-link"' not in home_html:
+    footer_anchor = '<p><a href="imprint.html" style="text-decoration:underline;text-underline-offset:4px">Imprint</a></p>'
+    if footer_anchor not in home_html:
+        raise SystemExit("Career footer link: known-good footer anchor missing")
+    home_html = home_html.replace(footer_anchor, footer_anchor + "\n" + private_link, 1)
+    home.write_text(home_html, encoding="utf-8")
