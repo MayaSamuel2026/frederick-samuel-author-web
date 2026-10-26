@@ -67,9 +67,9 @@ function career_board_xpath_text(DOMXPath $xp,DOMNode $root,string $query): stri
 }
 function career_board_card(DOMNode $anchor,string $board): DOMNode {
     $n=$anchor;$best=$anchor;
-    for($depth=0;$depth<8 && $n!==null;$depth++,$n=$n->parentNode) {
+    for($depth=0;$depth<12 && $n!==null;$depth++,$n=$n->parentNode) {
         if(!$n instanceof DOMElement)continue;
-        $class=strtolower($n->getAttribute('class').' '.$n->getAttribute('data-testid'));
+        $class=strtolower($n->getAttribute('class').' '.$n->getAttribute('data-testid').' '.$n->getAttribute('data-at').' '.$n->getAttribute('data-qa'));
         if(preg_match('/job[-_ ]?(?:card|item|listing|seen|result)|base-search-card|job-search-card/i',$class))return $n;
         if(in_array(strtolower($n->tagName),['article','li'],true))return $n;
         $length=mb_strlen(trim(preg_replace('/\s+/u',' ',$n->textContent??'')));
@@ -85,6 +85,10 @@ function career_board_parse(string $board,string $html): array {
     try{$doc->loadHTML('<?xml encoding="utf-8"?>'.$html,LIBXML_NONET|LIBXML_NOERROR|LIBXML_NOWARNING);}
     finally{libxml_clear_errors();libxml_use_internal_errors($old);}
     $xp=new DOMXPath($doc);
+    // Modern StepStone pages embed extensive CSS inside job-link nodes.
+    // Ignore style/script text before finding cards, titles and locations.
+    $noise=$xp->query('//style|//script|//noscript');
+    if($noise){foreach(iterator_to_array($noise) as $node)if($node->parentNode)$node->parentNode->removeChild($node);}
     $query=match($board) {
         'StepStone'=>'//a[contains(@href,"stellenangebote--") or contains(@data-testid,"job-item-title") or contains(@data-at,"job-item-title")]',
         'Indeed'=>'//a[contains(@class,"jcs-JobTitle") or contains(@href,"jk=") or contains(@href,"viewjob")]',
