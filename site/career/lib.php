@@ -58,6 +58,9 @@ function career_germany_location(string $location,string $source=''): bool {
     // German Federal Employment Agency feed is scoped to Germany; its smaller towns
     // must not disappear just because they are missing from a handwritten city list.
     if(strcasecmp($source,'Arbeitsagentur')===0)return true;
+    // Public result searches explicitly restricted to Germany contain many smaller towns.
+    // Reject any explicitly foreign base above, then allow their German result-page cities.
+    if(in_array($source,['StepStone','Indeed','LinkedIn','JobPharm'],true))return true;
     // Genuine unknown bases are not automatically treated as Germany.
     return false;
 }
