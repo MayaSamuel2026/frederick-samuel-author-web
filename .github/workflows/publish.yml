@@ -203,3 +203,19 @@ jobs:
           git commit -qm "Production deploy ${GITHUB_SHA}"
           git branch -M production
           git push --force origin production
+
+      - name: Hostinger readback (private app and footer)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
+            login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
+            if [[ "$homepage" == *'class="career-private-link"'* && "$login" == *'PRIVATE CAREER WORKSPACE'* ]]; then
+              echo "HOSTINGER_READBACK_PASS: footer and gated career application"
+              exit 0
+            fi
+            echo "Hostinger readback attempt $attempt/6: not yet confirmed"
+            sleep 8
+          done
+          echo "::warning::HOSTINGER_READBACK_UNVERIFIED: production branch published, but live site did not return both markers"
