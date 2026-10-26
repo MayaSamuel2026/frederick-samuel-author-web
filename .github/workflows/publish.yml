@@ -246,8 +246,8 @@ jobs:
             homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
             login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
             app_js="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/app.js?v=$GITHUB_RUN_ID" || true)"
-            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* && "$app_js" == *"\$\$('[data-language]').forEach(el=>"* && "$app_js" == *"\$\$('[data-placeholder-i]').forEach(el=>"* ]]; then
-              echo "HOSTINGER_READBACK_PASS: footer, private login, language tools and editable career keyword filters"
+            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"syncJobAlerts"* && "$app_js" == *"Gmail · StepStone"* && "$app_js" == *"Gmail · LinkedIn"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* && "$app_js" == *"\$\$('[data-language]').forEach(el=>"* && "$app_js" == *"\$\$('[data-placeholder-i]').forEach(el=>"* ]]; then
+              echo "HOSTINGER_READBACK_PASS: private login, six Gmail source filters, active job-alert sync and editable keywords"
               exit 0
             fi
             echo "Hostinger readback attempt $attempt/6: footer_bytes=${#homepage} gate_bytes=${#login} js_bytes=${#app_js}"
