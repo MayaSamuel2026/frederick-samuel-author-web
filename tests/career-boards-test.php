@@ -22,4 +22,12 @@ foreach(['StepStone','Indeed','LinkedIn','JobPharm'] as $board){
  $url=career_board_search_url($board,'Sales Director Pharma');
  if(!filter_var($url,FILTER_VALIDATE_URL)){fwrite(STDERR,"FAIL $board query URL\n");exit(1);}
 }
+$preferred=career_board_scan_terms(['sales director pharma','regionalleiter pharma','head of sales pharma','commercial excellence pharma'],2,3);
+if($preferred!==['head of sales pharma','commercial excellence pharma','sales director pharma']){
+    fwrite(STDERR,"FAIL circular priority query rotation\n");exit(1);
+}
+$pool=career_board_terms();
+foreach(['sales director pharma','regionalleiter pharma','head of sales pharma','commercial excellence pharma'] as $term){
+    if(!in_array($term,$pool,true)){fwrite(STDERR,"FAIL missing priority query: $term\n");exit(1);}
+}
 echo "PASS: four public job-board formats, search URLs, honest empty-result handling\n";
