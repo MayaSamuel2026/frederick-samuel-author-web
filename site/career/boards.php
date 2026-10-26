@@ -113,7 +113,8 @@ function career_public_board_scan(): array {
     $terms=career_board_terms();$result=['new'=>0,'examined'=>0,'sources'=>[],'errors'=>[]];
     if(!$terms)return $result;
     // Rotate through all saved terms over successive days, avoiding excessive requests.
-    $offset=((int)gmdate('z')) % count($terms);
+    $offset=((int)setting('career_board_cursor',(string)(((int)gmdate('z')) % count($terms)))) % count($terms);
+    if($offset<0)$offset=0;
     foreach($sources as $i=>$source) {
         $word=$terms[($offset+$i)%count($terms)];
         $report=['query'=>$word,'new'=>0,'found'=>0,'status'=>''];
@@ -129,6 +130,8 @@ function career_public_board_scan(): array {
         }
         $result['sources'][$source]=$report;
     }
+    // Each refresh advances the per-board query to the next saved term.
+    setsetting('career_board_cursor',(string)(($offset+1)%count($terms)));
     setsetting('last_board_scan',gmdate('Y-m-d H:i:s').' UTC');
     setsetting('last_board_scan_info',json_encode($result,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
     return $result;
