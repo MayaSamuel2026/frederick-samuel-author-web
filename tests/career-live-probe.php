@@ -10,6 +10,23 @@ foreach($terms as $source=>$term){
         $html=career_board_http($url);
         $jobs=career_board_parse($source,$html);
         echo $source.': HTTP OK, bytes='.strlen($html).', eligible='.count($jobs) . PHP_EOL;
+        if($source==='StepStone' && !$jobs) {
+            $doc=new DOMDocument();$prev=libxml_use_internal_errors(true);
+            $doc->loadHTML('<?xml encoding="utf-8"?>'.$html,LIBXML_NONET|LIBXML_NOERROR|LIBXML_NOWARNING);
+            libxml_clear_errors();libxml_use_internal_errors($prev);$xp=new DOMXPath($doc);
+            $a=$xp->query('//a[contains(@href,"stellenangebote--")]');
+            echo '  diagnostic: links='.($a?$a->length:0)
+                .', text_mentions='.substr_count($html,'stellenangebote--')
+                .', json_jobposting='.substr_count($html,'JobPosting')
+                .', testids='.substr_count($html,'job-item') . PHP_EOL;
+            if($a && $a->length){
+                $anchor=$a->item(0);$card=career_board_card($anchor,'StepStone');
+                echo '  first_anchor='.mb_substr(trim($anchor->textContent),0,90)
+                     .' ; ancestor='.($card instanceof DOMElement?$card->tagName.' '.mb_substr($card->getAttribute('class'),0,110):'n/a')
+                     .' ; company='.career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"company") or contains(@class,"company-name")]')
+                     .' ; location='.career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"location") or contains(@class,"location")]') . PHP_EOL;
+            }
+        }
         if($jobs)echo '  example: '.mb_substr($jobs[0]['title'],0,100) . PHP_EOL;
         else echo '  no eligible structured records; source HTML or page selectors need inspection' . PHP_EOL;
     }catch(Throwable $e){
