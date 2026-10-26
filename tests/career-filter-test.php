@@ -30,13 +30,15 @@ $cases=[
  ['Sales Director','Worldwide',false],
  ['Sales Director','Remote',false],
  ['Sales Director','Unknown City',false],
+ ['Sales Manager Pharma','Hof',false],
+ ['Regionalleiter','Neustadt an der Weinstraße',false],
  ['Sales Director','',false],
  ['Sales Director','München, Deutschland',true],
  ['Sales Director','Berlin, Germany',true],
 ];
 foreach($cases as $i=>$test){
  [$title,$location,$expected]=$test;
- foreach(['Arbeitnow','Arbeitsagentur','Gmail · StepStone','Manual'] as $source){
+ foreach(['Arbeitnow','Gmail · StepStone','Manual'] as $source){
    $actual=career_job_eligible(['title'=>$title,'location'=>$location,'source'=>$source,'description'=>'']);
    if($actual!==$expected){
       fwrite(STDERR,"FAIL test $i: $title @ $location from $source => ".($actual?'accepted':'rejected')."\n");
@@ -44,4 +46,25 @@ foreach($cases as $i=>$test){
    }
  }
 }
-echo "PASS: ".(count($cases)*4)." role/location eligibility checks across crawler, Gmail and manual sources\n";
+$germanAgency=['Hof','Neustadt an der Weinstraße','Bad Dürkheim'];
+foreach($germanAgency as $location){
+    if(!career_job_eligible(['title'=>'Regionalleiter Pharma','location'=>$location,'source'=>'Arbeitsagentur'])) {
+        fwrite(STDERR,"FAIL agency regional city: $location\\n");exit(1);
+    }
+}
+$reviewCases=[
+ ['Regionalleiter Pharma','Hof',true],
+ ['Sales Manager Pharma','Neustadt an der Weinstraße',true],
+ ['Sales Director','Remote',true],
+ ['Head of Sales','Barcelona',false],
+ ['Regionalleiter','Berlin / London',false],
+ ['Sales Representative','Berlin',false],
+ ['Account Executive','Berlin',false],
+ ['Junior Sales Manager','Berlin',false],
+];
+foreach($reviewCases as $test) {
+  [$title,$location,$expected]=$test;
+  $actual=career_existing_visible(['title'=>$title,'location'=>$location,'description'=>'']);
+  if($actual!==$expected){fwrite(STDERR,"FAIL existing review $title @ $location\\n");exit(1);}
+}
+echo "PASS: ".(count($cases)*3+count($germanAgency)+count($reviewCases))." role, Germany-location and archive recovery checks\\n";
