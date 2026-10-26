@@ -45,11 +45,13 @@ if($api!==''){
     $mutating=!in_array($api,['list','inbox','sent','download','pdf','status'],true);
     if($mutating){if($_SERVER['REQUEST_METHOD']!=='POST')fail('POST required',405);if(!hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??'')))fail('Invalid request token',403);}
     if($api==='list'){
-        $jobs=array_values(array_filter(rows('SELECT * FROM jobs WHERE status != "archived" ORDER BY CASE status WHEN "interview" THEN 0 WHEN "applied" THEN 1 ELSE 2 END, id DESC LIMIT 3000'),static fn($j)=>!excluded_role((string)$j['title'])&&career_germany_location((string)$j['location'],(string)$j['source'])));
+        $cleanup=career_archive_unsuitable_jobs();
+        $jobs=array_values(array_filter(rows('SELECT * FROM jobs WHERE status != "archived" ORDER BY CASE status WHEN "interview" THEN 0 WHEN "applied" THEN 1 ELSE 2 END, id DESC LIMIT 3000'),static fn($j)=>career_job_eligible($j)));
         $files=rows('SELECT id,name,kind,mime,size,uploaded_at FROM files ORDER BY id DESC');
         $sent=rows('SELECT sent.id,sent.job_id,sent.recipient,sent.subject,sent.created_at,jobs.company FROM sent LEFT JOIN jobs ON jobs.id=sent.job_id ORDER BY sent.id DESC LIMIT 150');
-        $stats=rows('SELECT status,COUNT(*) AS n FROM jobs GROUP BY status');
-        jsonout(['ok'=>true,'jobs'=>$jobs,'files'=>$files,'sent'=>$sent,'stats'=>$stats,'profile'=>['name'=>setting('name','Frederick Samuel'),'address'=>setting('address',"Marienburger Straße 16\n56112 Lahnstein\nDeutschland"),'phone'=>setting('phone'),'default_language'=>setting('default_language','de')],'gmail_connected'=>setting('gmail_refresh')!=='','gmail_available'=>cfg('google_client_id')!==''&&cfg('google_client_secret')!=='','last_scan'=>setting('last_scan'),'scan_info'=>json_decode(setting('last_scan_info','{}'),true)]);
+        $counts=[];foreach($jobs as $j){$st=(string)$j['status'];$counts[$st]=($counts[$st]??0)+1;}
+        $stats=[];foreach($counts as $status=>$n)$stats[]=['status'=>$status,'n'=>$n];
+        jsonout(['ok'=>true,'jobs'=>$jobs,'files'=>$files,'sent'=>$sent,'stats'=>$stats,'profile'=>['name'=>setting('name','Frederick Samuel'),'address'=>setting('address',"Marienburger Straße 16\n56112 Lahnstein\nDeutschland"),'phone'=>setting('phone'),'default_language'=>setting('default_language','de')],'gmail_connected'=>setting('gmail_refresh')!=='','gmail_available'=>cfg('google_client_id')!==''&&cfg('google_client_secret')!=='','last_scan'=>setting('last_scan'),'scan_info'=>json_decode(setting('last_scan_info','{}'),true),'cleanup'=>$cleanup]);
     }
     if($api==='scan')jsonout(['ok'=>true,'result'=>crawl()]);
     if($api==='importjobs'){
@@ -61,7 +63,7 @@ if($api!==''){
         foreach(array_slice($data['jobs'],0,500) as $job){
             if(!is_array($job))continue;$total++;
             $title=(string)($job['title']??'');$location=(string)($job['location']??'');$source=(string)($job['source']??'Gmail');
-            if(excluded_role($title)||!relevant($title)||!career_germany_location($location,$source)){$rejected++;continue;}
+            if(!career_job_eligible(['title'=>$title,'location'=>$location,'source'=>$source,'description'=>''])){$rejected++;continue;}
             $record=['source'=>'Gmail · '.$source,'title'=>$title,'company'=>$job['company']??'','location'=>$location,'url'=>$job['url']??'','description'=>'Job alert received '.($job['mail_date']??'')];
             if(upsertjob($record))$added++;else $duplicates++;
         }
