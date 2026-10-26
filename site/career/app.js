@@ -50,10 +50,14 @@ function renderKeywords(){
  }
  const last=state.data?.last_gmail_sync;
  const info=state.data?.gmail_sync_info||{};
- $('#jobMailStatus').textContent=state.data?.gmail_connected
- ?(last?text('Gmail last checked: ','Gmail zuletzt geprüft: ')+last+' · '+(info.new||0)+text(' new matches.',' neue Stellen.'):text('Gmail connected. Import job alerts from StepStone, Indeed, JobPharm, Jobware, ZipRecruiter and LinkedIn.','Gmail verbunden. Stellenmeldungen von StepStone, Indeed, JobPharm, Jobware, ZipRecruiter und LinkedIn importieren.'))
- :text('To import your StepStone, Indeed and JobPharm folders automatically, connect Gmail under Settings.','Für den automatischen Import Ihrer StepStone-, Indeed- und JobPharm-Ordner Gmail unter Einstellungen verbinden.');
- $('#importAlertJobs').textContent=text('↻ Sync Gmail alerts','↻ Gmail-Stellen abrufen');
+ const connected=!!state.data?.gmail_connected;
+ const checked=Number(info.examined||0),added=Number(info.new||0);
+ const errors=Array.isArray(info.errors)?info.errors:[];
+ $('#jobMailStatus').textContent=connected
+   ?(last?text('Last Gmail import: ','Letzter Gmail-Import: ')+last+' · '+checked+text(' alerts checked, ',' Meldungen geprüft, ')+added+text(' suitable new vacancies saved.',' passende neue Stellen gespeichert.')+(errors.length?' · '+errors.join(' · '):''):text('Gmail is connected. Start the import to load job alerts.','Gmail ist verbunden. Bitte den Import starten, um Stellenmeldungen einzulesen.'))
+   :text('Gmail is not connected to this website. The source totals show saved vacancies, not the number of messages in Gmail.','Gmail ist mit dieser Website nicht verbunden. Die Quellzahlen zeigen gespeicherte Stellen, nicht die Anzahl Ihrer Gmail-Nachrichten.');
+ $('#jobMailConnect').hidden=connected;
+ $('#importAlertJobs').textContent=connected?text('↻ Sync Gmail alerts','↻ Gmail-Stellen abrufen'):text('Connect Gmail to import','Gmail für Import verbinden');
  const board=state.data?.board_scan_info||{};
  const checks=Object.entries(board.sources||{});
  const boardStatus=checks.length?checks.map(([source,report])=>{
@@ -82,6 +86,7 @@ async function syncJobAlerts(btn,quiet=false){
  catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old;}
 }
 $('#importAlertJobs').onclick=e=>syncJobAlerts(e.currentTarget);
+$('#jobMailConnect').onclick=()=>go('settings');
 $('#importAlertFileButton').onclick=()=>$('#importAlertFile').click();
 $('#importAlertFile').onchange=async e=>{
  const f=e.target.files[0];if(!f)return;
