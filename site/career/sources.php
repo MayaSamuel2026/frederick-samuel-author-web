@@ -1,0 +1,161 @@
+<?php
+declare(strict_types=1);
+/**
+ * Additional job sources for the private career workspace.
+ * Gmail alerts are read through the owner's EXISTING server-side Gmail OAuth connection.
+ * No message bodies, credentials or alert URLs are published to the source repository.
+ */
+function career_alert_sources(): array {
+    return ['StepStone'=>'Stepstone','Indeed'=>'Indeed','JobPharm'=>'JobPharm','Jobware'=>'Jobware','ZipRecruiter'=>'ZipRecruiter'];
+}
+function career_alert_body_decode(array $payload): string {
+    $mime=strtolower((string)($payload['mimeType']??''));
+    if(str_starts_with($mime,'text/plain') || str_starts_with($mime,'text/html')) {
+        $raw=(string)($payload['body']['data']??'');
+        if($raw!=='')return (string)base64_decode(strtr($raw,'-_','+/'));
+    }
+    $parts=$payload['parts']??[];
+    // Prefer the HTML portion: alerts expose individual application links there.
+    foreach(['text/html','text/plain'] as $preferred) {
+        foreach($parts as $part) {
+            if(str_starts_with(strtolower((string)($part['mimeType']??'')),$preferred)) {
+                $body=career_alert_body_decode($part);
+                if($body!=='')return $body;
+            }
+        }
+    }
+    foreach($parts as $part){$body=career_alert_body_decode($part);if($body!=='')return $body;}
+    return '';
+}
+function career_alert_text(string $raw): string {
+    if(!preg_match('/<\s*(?:html|table|div|a)\b/i',$raw))return $raw;
+    $raw=preg_replace_callback('~<a\b[^>]*\bhref\s*=\s*(["\x27])(.*?)\1[^>]*>(.*?)</a>~si',static function($m){
+        $title=trim(html_entity_decode(strip_tags($m[3]),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+        $url=html_entity_decode($m[2],ENT_QUOTES|ENT_HTML5,'UTF-8');
+        return $title!==''?"\n[".$title."](".$url.")\n":'';
+    },$raw);
+    $raw=preg_replace('~</(?:p|div|tr|td|li|h[1-6]|table|section)>|<br\s*/?>~i',"\n",$raw);
+    return html_entity_decode(strip_tags($raw),ENT_QUOTES|ENT_HTML5,'UTF-8');
+}
+/** Normalize redirect-heavy links only when the underlying job id is explicit. */
+function career_alert_url(string $source,string $url): string {
+    $url=html_entity_decode($url,ENT_QUOTES|ENT_HTML5,'UTF-8');
+    if($source==='Indeed' && preg_match('~(?:[?&])jk=([a-z0-9]+)~i',$url,$m))
+        return 'https://de.indeed.com/viewjob?jk='.$m[1];
+    if($source==='JobPharm' && preg_match('~[?&]id=(\d+)~',$url,$m))
+        return 'https://www.jobpharm.de/job?id='.$m[1];
+    if($source==='LinkedIn' && preg_match('~/jobs/(?:view/|view/[^/]*-)(\d{7,})~',$url,$m))
+        return 'https://www.linkedin.com/jobs/view/'.$m[1].'/';
+    return $url;
+}
+function career_alert_link_ok(string $source,string $url): bool {
+    $host=strtolower((string)parse_url($url,PHP_URL_HOST));
+    return match($source){
+        'StepStone' => $host==='click.stepstone.de'||$host==='www.stepstone.de'||$host==='stepstone.de',
+        'Indeed' => $host==='de.indeed.com'||$host==='www.indeed.com'||$host==='indeed.com',
+        'JobPharm' => ($host==='jobpharm.de'||$host==='www.jobpharm.de')&&str_contains($url,'/job?'),
+        'Jobware' => str_contains($host,'jobware.de')||str_contains($host,'jobware.com'),
+        'ZipRecruiter' => str_contains($host,'ziprecruiter.'),
+        'LinkedIn' => $host==='www.linkedin.com'||$host==='linkedin.com',
+        default => false,
+    };
+}
+function career_alert_candidates(string $source,string $body): array {
+    $plain=career_alert_text($body);
+    $matches=[];
+    preg_match_all('~\[([^\]]{4,220})\]\((https?://[^\s)]+)\)~u',$plain,$matches,PREG_OFFSET_CAPTURE);
+    $jobs=[];$seen=[];
+    foreach($matches[0]??[] as $i=>$hit) {
+        $title=trim(preg_replace('/\s+/u',' ',$matches[1][$i][0]));
+        $url=$matches[2][$i][0];
+        if(!career_alert_link_ok($source,$url))continue;
+        // Only consider clickable vacancies, not unsubscribe, logo, company, or search links.
+        if(!career_user_matches(['title'=>$title,'description'=>'']) || excluded_role($title))continue;
+        $after=substr($plain,$hit[1]+strlen($hit[0]),600);
+        $after=preg_replace('/\r/u','',$after);
+        $lines=array_values(array_filter(array_map('trim',preg_split('/\n+/u',$after)),static fn($x)=>$x!=='' && !str_starts_with($x,'[') && $x!=='|'));
+        $company='';$location='';
+        if($source==='Jobware') {
+            $pieces=preg_split('/\s{2,}/u',trim($matches[1][$i][0]));
+            // Jobware's linked title commonly ends in a second line containing the employer.
+            $rawLines=array_values(array_filter(array_map('trim',preg_split('/\R/u',$matches[1][$i][0]))));
+            if(count($rawLines)>1){$title=$rawLines[0];$company=end($rawLines);}
+            foreach($lines as $line){if(career_germany_location($line,$source)){$location=$line;break;}}
+        } else {
+            $company=$lines[0]??'';
+            $location=$lines[1]??'';
+            if($source==='ZipRecruiter' && str_starts_with(strtolower($location),'in '))$location=substr($location,3);
+            if($source==='LinkedIn' && $location==='')$location='Deutschland';
+        }
+        if($source==='StepStone') {
+            // StepStone titles are followed by the employer, then a city/region line.
+            $location='';
+            foreach(array_slice($lines,1,6) as $line) {
+                if(career_germany_location($line,'StepStone')){$location=$line;break;}
+            }
+        }
+        if($company==='' || !career_germany_location($location,$source))continue;
+        $url=career_alert_url($source,$url);
+        if(!filter_var($url,FILTER_VALIDATE_URL))continue;
+        $key=$title.'|'.$company.'|'.$location;
+        if(isset($seen[$key]))continue;
+        $seen[$key]=true;
+        $jobs[]=['source'=>'Gmail · '.$source,'title'=>$title,'company'=>$company,'location'=>$location,'url'=>$url,'description'=>''];
+    }
+    return $jobs;
+}
+/** Pull only individually authorised Gmail labels and the user's LinkedIn vacancy alerts. */
+function career_import_gmail_alerts(int $perLabel=6): array {
+    if(setting('gmail_refresh')==='')return ['connected'=>false,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>['Gmail is not connected in website settings.']];
+    $db=db();
+    $db->exec('CREATE TABLE IF NOT EXISTS career_imported_alerts(message_id TEXT PRIMARY KEY,source TEXT NOT NULL,processed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,added INTEGER NOT NULL DEFAULT 0)');
+    $labels=gmailcall('GET','labels');
+    $available=[];foreach(($labels['labels']??[]) as $label)$available[strtolower((string)($label['name']??''))]=(string)$label['id'];
+    $result=['connected'=>true,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>[]];
+    $channels=career_alert_sources();
+    $channels['LinkedIn']=null; // LinkedIn job-alert emails need no extra mailbox label.
+    foreach($channels as $source=>$label) {
+        $params=['maxResults'=>200];
+        if($label!==null) {
+            $labelId=$available[strtolower($label)]??null;
+            if($labelId===null){$result['by_source'][$source]=['new'=>0,'checked'=>0,'message'=>'No Gmail label'];continue;}
+            $params['labelIds']=$labelId;
+        }else $params['q']='from:(jobalerts-noreply@linkedin.com) newer_than:90d';
+        $channel=['new'=>0,'checked'=>0,'seen'=>0];
+        try {
+            $list=gmailcall('GET','messages?'.http_build_query($params));
+            foreach(($list['messages']??[]) as $item) {
+                $id=(string)($item['id']??'');
+                if($id==='')continue;
+                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=?');
+                $exists->execute([$id]);if($exists->fetchColumn())continue;
+                if($channel['checked'] >= $perLabel)break;
+                $message=gmailcall('GET','messages/'.rawurlencode($id).'?format=full');
+                $body=career_alert_body_decode($message['payload']??[]);
+                $channel['checked']++;$added=0;
+                foreach(career_alert_candidates($source,$body) as $job) {
+                    if(upsertjob($job)){$added++;$result['new']++;}
+                    else $result['duplicates']++;
+                }
+                $channel['new']+=$added;
+                $db->prepare('INSERT OR IGNORE INTO career_imported_alerts(message_id,source,added) VALUES (?,?,?)')->execute([$id,$source,$added]);
+            }
+            $channel['seen']=count($list['messages']??[]);
+        }catch(Throwable $e){$result['errors'][]=$source.': '.$e->getMessage();}
+        $result['examined']+=$channel['checked'];
+        $result['by_source'][$source]=$channel;
+    }
+    setsetting('last_gmail_sync',gmdate('Y-m-d H:i:s').' UTC');
+    setsetting('last_gmail_sync_info',json_encode($result,JSON_UNESCAPED_UNICODE));
+    return $result;
+}
+function career_scan_all(): array {
+    $public=crawl();
+    $mail=career_import_gmail_alerts(6);
+    $public['new']+=$mail['new'];
+    $public['examined']+=$mail['examined'];
+    $public['errors']=array_merge($public['errors'],$mail['errors']);
+    $public['gmail']=$mail;
+    setsetting('last_scan_info',json_encode($public,JSON_UNESCAPED_UNICODE));
+    return $public;
+}
