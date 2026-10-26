@@ -216,7 +216,8 @@ jobs:
               echo "HOSTINGER_READBACK_PASS: footer, private login and DE/EN language module"
               exit 0
             fi
-            echo "Hostinger readback attempt $attempt/6: not yet confirmed"
+            echo "Hostinger readback attempt $attempt/6: footer_bytes=${#homepage} gate_bytes=${#login} js_bytes=${#app_js}"
+            if [ "$attempt" = 1 ]; then printf "Live app.js sample: %.140s\\n" "$app_js"; fi
             sleep 8
           done
-          echo "::warning::HOSTINGER_READBACK_UNVERIFIED: production branch published, but live site did not return both markers"
+          echo "::error::HOSTINGER_READBACK_UNVERIFIED: new app.js not confirmed on live Hostinger"\n          exit 1
