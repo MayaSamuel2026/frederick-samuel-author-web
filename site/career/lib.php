@@ -26,7 +26,7 @@ function setting(string $k,string $fallback=''): string {$q=db()->prepare('SELEC
 function setsetting(string $k,string $v): void {db()->prepare('INSERT INTO settings(k,v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v')->execute([$k,$v]);}
 function rows(string $sql,array $bind=[]): array {$q=db()->prepare($sql);$q->execute($bind);return $q->fetchAll();}
 function onejob(int $id): array {$q=db()->prepare('SELECT * FROM jobs WHERE id=?');$q->execute([$id]);$r=$q->fetch();if(!$r)throw new RuntimeException('Job not found');return $r;}
-function clean(string $s,int $length=4000): string {return mb_substr(trim($s),0,$length);}
+function clean(string $s,int $length=4000): string { $s=trim($s);return function_exists('mb_substr')?mb_substr($s,0,$length):substr($s,0,$length); }
 function jsonout(array $arr,int $code=200): never {http_response_code($code);header('Content-Type: application/json; charset=UTF-8');header('Cache-Control: no-store');echo json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);exit;}
 function fail(string $s,int $code=400): never {jsonout(['ok'=>false,'error'=>$s],$code);}
 function httpget(string $url,array $headers=[]): array {
@@ -50,8 +50,8 @@ function excluded_role(string $title): bool {
 }
 function relevant(string $title,string $description=''): bool {
     if(excluded_role($title))return false;
-    $x=mb_strtolower($title);$focus=['sales manager','sales director','head of sales','regionalleiter','regional sales','vertriebsleiter','vertriebsdirektor','commercial effectiveness','commercial excellence','sales excellence','commercial director','leiter vertrieb','key account director','business unit director','country manager','head of commercial','pharma vertrieb','leiter außendienst','leiter aussendienst','national sales manager','sales lead'];
-    foreach($focus as $p)if(mb_strpos($x,$p)!==false)return true;
+    $x=function_exists('mb_strtolower')?mb_strtolower($title):strtolower($title);$focus=['sales manager','sales director','head of sales','regionalleiter','regional sales','vertriebsleiter','vertriebsdirektor','commercial effectiveness','commercial excellence','sales excellence','commercial director','leiter vertrieb','key account director','business unit director','country manager','head of commercial','pharma vertrieb','leiter außendienst','leiter aussendienst','national sales manager','sales lead'];
+    foreach($focus as $p)if((function_exists('mb_strpos')?mb_strpos($x,$p):strpos($x,$p))!==false)return true;
     return (bool)preg_match('/(pharma|life.science|healthcare|medical|klinisch|hospital|krankenhaus|biotech)/iu',$description.' '.$title) && (bool)preg_match('/(sales|vertrieb|commercial|geschäftsbereich|business.development)/iu',$title);
 }
 function crawl(): array {
