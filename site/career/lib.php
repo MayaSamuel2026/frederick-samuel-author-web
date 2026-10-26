@@ -167,7 +167,10 @@ function career_job_eligible(array $j): bool {
 function career_archive_unsuitable_jobs(): array {
     $archive=[];$historical=0;
     foreach(rows('SELECT id,source,title,description,location,status FROM jobs WHERE status != "archived"') as $j){
-        if(career_existing_visible($j))continue;
+        // Archive only permanently forbidden titles and confirmed foreign locations.
+        // Editable personal keyword preferences filter the results without deleting
+        // or archiving them; changing a keyword immediately makes the role visible again.
+        if(!excluded_role((string)$j['title']) && !career_foreign_location((string)$j['location']))continue;
         if(in_array($j['status'],['applied','interview','rejected','offer'],true)){$historical++;continue;}
         $archive[]=(int)$j['id'];
     }
