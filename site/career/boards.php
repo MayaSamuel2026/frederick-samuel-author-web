@@ -96,7 +96,7 @@ function career_board_parse(string $board,string $html): array {
         $title=career_board_xpath_text($xp,$card,'.//h2|.//h3[contains(@class,"title")]|.//span[contains(@class,"jobTitle")]');
         if($title==='')$title=trim(preg_replace('/\s+/u',' ',$anchor->textContent));
         $company=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"company") or contains(@class,"company-name") or contains(@class,"companyName") or contains(@class,"base-search-card__subtitle") or contains(@class,"job-search-card__subtitle")]');
-        $location=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"location") or contains(@class,"job-item-location") or contains(@class,"companyLocation") or contains(@class,"text-location") or contains(@class,"job-search-card__location")]');
+        $location=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"location") or contains(@class,"job-item-location") or contains(@class,"companyLocation") or contains(@class,"text-location") or contains(@class,"job-search-card__location") or contains(@class,"location") or contains(@class,"city")]');
         // Prefer structured, clearly attributable vacancies; never invent company/city.
         if($company==='' || $location==='')continue;
         $job=['source'=>$board,'title'=>$title,'company'=>$company,'location'=>$location,'url'=>career_alert_url($board,$href),'description'=>''];
