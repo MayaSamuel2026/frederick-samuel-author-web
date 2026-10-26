@@ -10,6 +10,7 @@ function career_board_http(string $url): string {
     $c=curl_init($url);
     curl_setopt_array($c,[
         CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>4,CURLOPT_TIMEOUT=>7,
+        CURLOPT_HTTP_VERSION=>CURL_HTTP_VERSION_1_1, // StepStone's HTTP/2 endpoint intermittently closes streams with cURL 92.
         CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>2,
         CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_REDIR_PROTOCOLS=>CURLPROTO_HTTPS,
         CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; FrederickCareerPublicJobs/1.0; +https://fredericksamuel.com)',
