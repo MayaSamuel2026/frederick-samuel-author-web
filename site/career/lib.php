@@ -37,11 +37,47 @@ function httpget(string $url,array $headers=[]): array {
     if(!is_string($s)||$code<200||$code>=300)throw new RuntimeException('Source HTTP '.$code);
     $v=json_decode($s,true);return is_array($v)?$v:[];
 }
+/** Accept only clearly Germany-based vacancies. Ambiguous and international-only locations stay out. */
+function career_germany_location(string $location,string $source=''): bool {
+    $loc=trim($location);
+    if($loc==='')return false;
+    if(preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|milan|lisbon|lissabon|stockholm|warszawa|copenhagen|kopenhagen|new york|boston|uk|united kingdom|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|worldwide|weltweit)\b/iu',$loc))return false;
+    // Country explicitly stated, nationwide Germany or a named German city / region.
+    if(preg_match('/\b(deutschland|germany|deutschlandweit|bundesweit|norddeutschland|süddeutschland|westdeutschland|ostdeutschland|deutschlandweit|baden.württemberg|rheinland.pfalz|nordrhein.westfalen|niedersachsen|schleswig.holstein|thüringen|brandenburg|mecklenburg.vorpommern|bayern|bavaria|sachsen.anhalt|saarland|hessen|westfalen)\b/iu',$loc))return true;
+    if(preg_match('/\b(berlin|hamburg|münchen|munich|frankfurt|köln|cologne|stuttgart|düsseldorf|dresden|leipzig|dortmund|essen|bremen|hannover|nürnberg|nuremberg|bonn|duisburg|bochum|wuppertal|bielefeld|mannheim|karlsruhe|münster|augsburg|wiesbaden|aachen|mönchengladbach|gelsenkirchen|braunschweig|chemnitz|kiel|halle|magdeburg|freiburg|krefeld|mainz|lübeck|erfurt|rostock|kassel|potsdam|heidelberg|darmstadt|offenbach|oldenburg|osnabrück|regensburg|ingolstadt|würzburg|ulm|heilbronn|pforzheim|reutlingen|fürth|jena|trier|koblenz|gießen|giessen|neuss|solingen|leverkusen|bensheim|frechen|bad homburg|ansbach|suhl|gotha|bamberg|minden|bremerhaven|wetzlar|ravensburg|walsrode|remscheid|schweinfurt|wolfsburg|saarbrücken|hildesheim|sigmaringen|lüneburg|ludwigshafen|tübingen|bayreuth|fulda|montabaur|lahnstein|neuwied|weiden|rüsselsheim|rottenburg|falkensee|cottbus|aalen|düren|greifswald|kaufbeuren|fürstenfeldbruck|leer|iserlohn|gütersloh|verden|dinslaken|schwerin|falkensee|göttingen|delmenhorst|ländlich)\b/iu',$loc))return true;
+    // The national employment agency's source is restricted to German listings here.
+    if(strcasecmp($source,'Arbeitsagentur')===0)return true;
+    return false;
+}
+function career_norm(string $x): string {
+    $x=function_exists('mb_strtolower')?mb_strtolower($x,'UTF-8'):strtolower($x);
+    $x=preg_replace('/\b(m\/w\/d|w\/m\/d|all genders|gmbh|co|kg|ag|mbh|deutschland)\b/iu','',$x);
+    return trim(preg_replace('/[^\pL\pN]+/u',' ',$x));
+}
+function career_same_job(array $a,array $b): bool {
+    $co1=career_norm((string)($a['company']??''));$co2=career_norm((string)($b['company']??''));
+    $t1=career_norm((string)($a['title']??''));$t2=career_norm((string)($b['title']??''));
+    $l1=career_norm((string)($a['location']??''));$l2=career_norm((string)($b['location']??''));
+    if($l1!==$l2||!$co1||!$co2||!$t1||!$t2)return false;
+    $co=($co1===$co2)||(strlen($co1)>12&&strlen($co2)>12&&str_starts_with($co1,$co2))||(strlen($co1)>12&&strlen($co2)>12&&str_starts_with($co2,$co1));
+    if(!$co)return false;
+    if($t1===$t2)return true;
+    // StepStone truncates some alerts at 40 characters. Require a substantial identical prefix.
+    return (strlen($t1)>28&&str_starts_with($t2,substr($t1,0,28)))||(strlen($t2)>28&&str_starts_with($t1,substr($t2,0,28)));
+}
 function upsertjob(array $r): int {
     $url=trim((string)($r['url']??''));
     if(!filter_var($url,FILTER_VALIDATE_URL)||!in_array(parse_url($url,PHP_URL_SCHEME),['https','http'],true))return 0;
+    $r['title']=clean((string)($r['title']??''),200);
+    $r['location']=clean((string)($r['location']??''),140);
+    $r['company']=clean((string)($r['company']??''),160);
+    if(excluded_role($r['title'])||!relevant($r['title'],(string)($r['description']??''))||!career_germany_location($r['location'],(string)($r['source']??'')))return 0;
+    // URL uniqueness + semantic de-duplication across crawler and Gmail alert sources.
+    foreach(rows('SELECT id,company,title,location,url FROM jobs WHERE status != "archived"') as $existing){
+        if((string)$existing['url']===$url||career_same_job($r,$existing))return 0;
+    }
     $s=db()->prepare('INSERT OR IGNORE INTO jobs(source,company,title,location,url,description) VALUES (?,?,?,?,?,?)');
-    $s->execute([clean((string)($r['source']??'Manual'),80),clean((string)($r['company']??''),160),clean((string)($r['title']??''),200),clean((string)($r['location']??''),140),$url,clean(strip_tags((string)($r['description']??'')),2400)]);
+    $s->execute([clean((string)($r['source']??'Manual'),80),$r['company'],$r['title'],$r['location'],$url,clean(strip_tags((string)($r['description']??'')),2400)]);
     return $s->rowCount();
 }
 function excluded_role(string $title): bool {
