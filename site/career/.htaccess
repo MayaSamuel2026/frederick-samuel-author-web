@@ -1,5 +1,5 @@
 Options -Indexes
-<FilesMatch "^(lib\.php|cron\.php)$">
+<FilesMatch "^(lib\.php|language\.php|cron\.php)$">
   Require all denied
 </FilesMatch>
 Header always set X-Robots-Tag "noindex, nofollow, noarchive"

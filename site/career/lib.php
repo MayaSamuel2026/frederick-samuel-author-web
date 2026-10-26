@@ -44,7 +44,12 @@ function upsertjob(array $r): int {
     $s->execute([clean((string)($r['source']??'Manual'),80),clean((string)($r['company']??''),160),clean((string)($r['title']??''),200),clean((string)($r['location']??''),140),$url,clean(strip_tags((string)($r['description']??'')),2400)]);
     return $s->rowCount();
 }
+function excluded_role(string $title): bool {
+    // Apply exclusions to the role title, never to the job description (which may mention sales reps).
+    return (bool)preg_match('/\b(junior|jr\.?|trainee|intern(ship)?|graduate|representative|sales\s*rep|legal|jurist(in)?|rechtsanw(a|ä)lt(in)?|rechtsabteilung)\b/iu', $title);
+}
 function relevant(string $title,string $description=''): bool {
+    if(excluded_role($title))return false;
     $x=mb_strtolower($title);$focus=['sales manager','sales director','head of sales','regionalleiter','regional sales','vertriebsleiter','vertriebsdirektor','commercial effectiveness','commercial excellence','sales excellence','commercial director','leiter vertrieb','key account director','business unit director','country manager','head of commercial','pharma vertrieb','leiter außendienst','leiter aussendienst','national sales manager','sales lead'];
     foreach($focus as $p)if(mb_strpos($x,$p)!==false)return true;
     return (bool)preg_match('/(pharma|life.science|healthcare|medical|klinisch|hospital|krankenhaus|biotech)/iu',$description.' '.$title) && (bool)preg_match('/(sales|vertrieb|commercial|geschäftsbereich|business.development)/iu',$title);
