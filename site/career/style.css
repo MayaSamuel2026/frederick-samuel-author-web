@@ -4,16 +4,34 @@
 /* DE/EN offline style refinement */
 .language-polish{display:flex;align-items:end;flex-wrap:wrap;gap:11px;margin:7px 0 5px}.language-polish label{display:flex;flex-direction:column;gap:6px;min-width:155px}.language-polish label span{font-size:10px;letter-spacing:.1em;color:var(--muted);font-weight:700}.language-polish select{padding:12px;min-height:44px}.language-polish .text-button{align-self:center}.refine-note{margin:0 0 18px}
 
-/* Personal search controls — subtle, bilingual, responsive. */
-.keyword-panel{margin:12px 0 18px;padding:20px 24px}
-.keyword-panel .panel-head{margin-bottom:14px}
-.keyword-panel .panel-head h3{margin-bottom:5px}
-.keyword-panel .panel-head p{max-width:790px;line-height:1.65}
-.keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.keyword-grid label{display:flex;flex-direction:column;gap:9px;min-width:0}
-.keyword-grid label span{font-size:10px;letter-spacing:.11em;font-weight:700;color:var(--muted)}
-.keyword-grid textarea{width:100%;resize:vertical;min-height:90px;line-height:1.55}
-.keyword-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px}
-.keyword-actions p{margin:0;max-width:590px;line-height:1.55}
-.keyword-mail-note{margin:14px 0 0;line-height:1.6}
-@media(max-width:760px){.keyword-grid{grid-template-columns:1fr}.keyword-actions{align-items:stretch;flex-direction:column}.keyword-actions .button{width:100%}.keyword-panel{padding:18px}}
+/* Personal, editable search preferences */
+.keyword-panel{margin:14px 0 22px;padding:26px 28px}
+.keyword-heading{margin:0 0 22px}
+.keyword-heading .eyebrow{margin:0 0 8px}
+.keyword-heading h3{font:400 24px/1.2 var(--serif);margin:0 0 9px}
+.keyword-heading p{max-width:760px;line-height:1.65;margin:0}
+.keyword-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:stretch}
+.keyword-box{border:1px solid #dfe5e4;border-radius:11px;padding:21px;background:#fafbf9;min-width:0;display:flex;flex-direction:column}
+.keyword-box.keyword-exclude{background:#fdfaf8;border-color:#ebe2dd}
+.keyword-box-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:17px}
+.keyword-box-title h4{font-size:15px;color:var(--navy);font-weight:650;margin:0 0 5px}
+.keyword-box-title p{font-size:11px;line-height:1.5;color:var(--muted);margin:0}
+.keyword-count{background:#e6eded;color:#455c63;border-radius:99px;min-width:28px;height:26px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.keyword-exclude .keyword-count{background:#f6eae5;color:#996953}
+.keyword-chip-list{display:flex;flex-wrap:wrap;align-content:flex-start;gap:8px;min-height:114px;padding:0 0 20px}
+.keyword-chip{max-width:100%;display:inline-flex;align-items:center;gap:5px;border-radius:7px;padding:4px 5px 4px 11px;font-size:12px;line-height:1.3;border:1px solid #cfdcda;background:#edf3f1;color:#28434a}
+.keyword-chip-exclude{background:#fcf0ea;color:#8b533e;border-color:#ead4c7}
+.keyword-chip span{overflow-wrap:anywhere}
+.keyword-chip button{border:0;background:transparent;border-radius:5px;color:inherit;min-width:25px;height:25px;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:.8;padding:0}
+.keyword-chip button:hover,.keyword-chip button:focus-visible{background:#d8e5e1;opacity:1;outline:none}
+.keyword-chip-exclude button:hover,.keyword-chip-exclude button:focus-visible{background:#efd9cd}
+.keyword-empty{color:var(--muted);font-size:12px;font-style:italic;padding:4px 0}
+.keyword-entry{display:flex;align-items:stretch;gap:10px;margin-top:auto}
+.keyword-entry input{width:100%;min-width:0;flex:1;border:1px solid #dce3e1;border-radius:7px;background:#fff;color:var(--ink);font-size:12px;min-height:43px;padding:10px 12px}
+.keyword-entry input:focus{border-color:#73989b;outline:2px solid rgba(115,152,155,.15);outline-offset:1px}
+.keyword-entry button{flex-shrink:0;min-height:43px;white-space:nowrap}
+.keyword-hint,.keyword-mail-note{line-height:1.65;margin:16px 0 0}
+.keyword-mail-note{margin-top:9px}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:950px){.keyword-grid{grid-template-columns:1fr}.keyword-chip-list{min-height:70px}}
+@media(max-width:650px){.keyword-panel{padding:19px 16px}.keyword-box{padding:17px}.keyword-heading h3{font-size:22px}.keyword-entry{gap:6px}.keyword-entry button{font-size:11px;padding:9px 11px}}
