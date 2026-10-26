@@ -85,7 +85,6 @@ function career_alert_candidates(string $source,string $body): array {
             $company=$lines[0]??'';
             $location=$lines[1]??'';
             if($source==='ZipRecruiter' && str_starts_with(strtolower($location),'in '))$location=substr($location,3);
-            if($source==='LinkedIn' && $location==='')$location='Deutschland';
         }
         if($source==='StepStone') {
             // StepStone titles are followed by the employer, then a city/region line.
@@ -151,7 +150,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
 }
 function career_scan_all(): array {
     $public=crawl();
-    $mail=career_import_gmail_alerts(6);
+    $mail=career_import_gmail_alerts(4);
     $public['new']+=$mail['new'];
     $public['examined']+=$mail['examined'];
     $public['errors']=array_merge($public['errors'],$mail['errors']);
