@@ -67,4 +67,20 @@ foreach($reviewCases as $test) {
   $actual=career_existing_visible(['title'=>$title,'location'=>$location,'description'=>'']);
   if($actual!==$expected){fwrite(STDERR,"FAIL existing review $title @ $location\\n");exit(1);}
 }
-echo "PASS: ".(count($cases)*3+count($germanAgency)+count($reviewCases))." role, Germany-location and archive recovery checks\\n";
+$ownerKeywordCases=[
+ ['Sales Manager Immobilien','Berlin','Pharma GmbH',false],
+ ['Regionalleiter Maklersoftware','München','Recruiting GmbH',false],
+ ['Sales Director Pharma','Frankfurt am Main','Software GmbH',false],
+ ['Vertriebsleiter Immobilienverwaltung','Köln','Real Estate AG',false],
+ ['Regionalleiter Pharma','Düsseldorf','Healthcare GmbH',true],
+ ['Head of Sales Pharma','Mannheim','Medical GmbH',true],
+ ['Sales Director','Berlin','Life Sciences GmbH',true],
+];
+foreach($ownerKeywordCases as $row){
+  [$title,$location,$company,$expected]=$row;
+  $j=['title'=>$title,'location'=>$location,'company'=>$company,'description'=>'Works with CRM software systems','source'=>'Gmail · StepStone'];
+  if(career_job_eligible($j)!==$expected || career_existing_visible($j)!==$expected){
+    fwrite(STDERR,"FAIL owner keywords $title / $company\\n");exit(1);
+  }
+}
+echo "PASS: ".(count($cases)*3+count($germanAgency)+count($reviewCases)+count($ownerKeywordCases)*2)." role, location, recovery and owner-keyword checks\\n";
