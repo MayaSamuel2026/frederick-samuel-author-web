@@ -24,10 +24,17 @@ function career_board_http(string $url): string {
     return $html;
 }
 function career_board_terms(): array {
-    $a=career_keyword_terms('career_include_keywords');
-    // Include saved owner terms, not merely hard-coded queries.
-    $all=array_values(array_unique(array_merge($a,['sales director pharma','regionalleiter pharma','commercial effectiveness','head of sales'])));
+    // High-intent pharma/commercial leadership searches run first; saved owner
+    // keywords remain part of the rotating query pool.
+    $focus=['sales director pharma','regionalleiter pharma','head of sales pharma','commercial excellence pharma','vertriebsleiter pharma','head of field force','commercial effectiveness'];
+    $all=array_values(array_unique(array_merge($focus,career_keyword_terms('career_include_keywords'))));
     return array_values(array_filter($all,static fn($s)=>mb_strlen($s)<80));
+}
+function career_board_scan_terms(array $terms,int $offset,int $count): array {
+    if(!$terms)return [];
+    $selected=[];$total=count($terms);
+    for($i=0;$i<min($count,$total);$i++)$selected[]=$terms[($offset+$i)%$total];
+    return $selected;
 }
 function career_board_search_url(string $board,string $term): string {
     return match($board){
@@ -108,30 +115,46 @@ function career_board_parse(string $board,string $html): array {
     }
     return $jobs;
 }
-function career_public_board_scan(): array {
+function career_public_board_scan(int $priorityDepth=1): array {
+    // The three largest discovery sources are first-class; specialist
+    // JobPharm remains complementary rather than consuming their query budget.
     $sources=['StepStone','Indeed','LinkedIn','JobPharm'];
     $terms=career_board_terms();$result=['new'=>0,'examined'=>0,'sources'=>[],'errors'=>[]];
     if(!$terms)return $result;
-    // Rotate through all saved terms over successive days, avoiding excessive requests.
     $offset=((int)setting('career_board_cursor',(string)(((int)gmdate('z')) % count($terms)))) % count($terms);
     if($offset<0)$offset=0;
+    $priorityDepth=max(1,min(4,$priorityDepth));
     foreach($sources as $i=>$source) {
-        $word=$terms[($offset+$i)%count($terms)];
-        $report=['query'=>$word,'new'=>0,'found'=>0,'status'=>'','searched_url'=>career_board_search_url($source,$word)];
-        try {
-            $html=career_board_http($report['searched_url']);
-            $vacancies=career_board_parse($source,$html);
-            $report['found']=count($vacancies);$result['examined']+=count($vacancies);
-            foreach($vacancies as $vacancy){$n=upsertjob($vacancy);$result['new']+=$n;$report['new']+=$n;}
-            $report['status']=$vacancies?'ok':'no_structured_vacancies';
-        }catch(Throwable $e){
-            $report['status']='unavailable';$report['error']=$e->getMessage();
-            $result['errors'][]=$source.': '.$e->getMessage();
+        $depth=in_array($source,['StepStone','Indeed','LinkedIn'],true)?$priorityDepth:1;
+        $queries=career_board_scan_terms($terms,$offset+$i,$depth);
+        $report=['query'=>implode(', ',$queries),'queries'=>[],'new'=>0,'found'=>0,'status'=>'','searched_url'=>career_board_search_url($source,$queries[0])];
+        $successful=0;$restricted=0;
+        foreach($queries as $word) {
+            $url=career_board_search_url($source,$word);
+            $check=['query'=>$word,'url'=>$url,'found'=>0,'new'=>0,'status'=>''];
+            try {
+                $html=career_board_http($url);
+                $vacancies=career_board_parse($source,$html);
+                $check['found']=count($vacancies);$result['examined']+=count($vacancies);
+                foreach($vacancies as $vacancy) {
+                    $n=upsertjob($vacancy);
+                    $result['new']+=$n;$report['new']+=$n;$check['new']+=$n;
+                }
+                $report['found']+=count($vacancies);
+                $check['status']=$vacancies?'ok':'no_structured_vacancies';
+                if($vacancies)$successful++;
+            } catch(Throwable $e) {
+                $check['status']='unavailable';$check['error']=$e->getMessage();$restricted++;
+                $result['errors'][]=$source.' ('.$word.'): '.$e->getMessage();
+            }
+            $report['queries'][]=$check;
         }
+        $report['status']=$successful>0?'ok':($restricted===count($queries)?'unavailable':'no_structured_vacancies');
+        if($restricted && !$successful)$report['error']=$restricted.' of '.count($queries).' queries unavailable';
         $result['sources'][$source]=$report;
     }
-    // Each refresh advances the per-board query to the next saved term.
-    setsetting('career_board_cursor',(string)(($offset+1)%count($terms)));
+    // Advance by the number of terms processed during the unattended scan.
+    setsetting('career_board_cursor',(string)(($offset+$priorityDepth)%count($terms)));
     setsetting('last_board_scan',gmdate('Y-m-d H:i:s').' UTC');
     setsetting('last_board_scan_info',json_encode($result,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
     return $result;
