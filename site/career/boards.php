@@ -16,8 +16,10 @@ function career_board_http(string $url): string {
         CURLOPT_HTTPHEADER=>['Accept: text/html,application/xhtml+xml','Accept-Language: de-DE,de;q=0.9,en;q=0.7'],
         CURLOPT_ENCODING=>''
     ]);
-    $html=curl_exec($c);$code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);curl_close($c);
-    if(!is_string($html)||$code<200||$code>=300)throw new RuntimeException('HTTP '.$code);
+    $html=curl_exec($c);$code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);
+    $errno=(int)curl_errno($c);$curlError=(string)curl_error($c);curl_close($c);
+    if(!is_string($html))throw new RuntimeException('cURL '.$errno.': '.clean($curlError,180));
+    if($code<200||$code>=300)throw new RuntimeException('HTTP '.$code);
     if(strlen($html)<150)throw new RuntimeException('Empty public search page');
     if(preg_match('~captcha|verify you are human|unusual traffic|access denied|bot protection~i',substr($html,0,10000)))
         throw new RuntimeException('Public search access restricted');
