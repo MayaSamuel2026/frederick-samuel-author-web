@@ -10,7 +10,7 @@ if(!flock($lock,LOCK_EX|LOCK_NB))exit(0);
 try {
     // Same source coverage as the signed-in "Refresh sources" action.
     $result=crawl();
-    $boards=career_public_board_scan();
+    $boards=career_public_board_scan(3); // Three rotating queries per priority portal in unattended runs
     $result['new']+=$boards['new'];
     $result['examined']+=$boards['examined'];
     $result['errors']=array_merge($result['errors'],$boards['errors']);
