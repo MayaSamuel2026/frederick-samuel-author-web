@@ -91,6 +91,14 @@ jobs:
 
           printf '%s\n' "Frederick Samuel Author Website — automated production release V6.4" > "$DEPLOY/VERSION.txt"
 
+      - name: Validate career exclusions
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l site/career/lib.php
+          php -l site/career/index.php
+          php tests/career-filter-test.php
+
       - name: Qualify static site
         shell: bash
         run: |
