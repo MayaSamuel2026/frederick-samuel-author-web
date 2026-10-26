@@ -10,7 +10,6 @@ function career_board_http(string $url): string {
     $c=curl_init($url);
     curl_setopt_array($c,[
         CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>4,CURLOPT_TIMEOUT=>7,
-        CURLOPT_HTTP_VERSION=>CURL_HTTP_VERSION_1_1, // StepStone's HTTP/2 endpoint intermittently closes streams with cURL 92.
         CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>2,
         CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_REDIR_PROTOCOLS=>CURLPROTO_HTTPS,
         CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; FrederickCareerPublicJobs/1.0; +https://fredericksamuel.com)',
@@ -18,7 +17,16 @@ function career_board_http(string $url): string {
         CURLOPT_ENCODING=>''
     ]);
     $html=curl_exec($c);$code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);
-    $errno=(int)curl_errno($c);$curlError=(string)curl_error($c);curl_close($c);
+    $errno=(int)curl_errno($c);$curlError=(string)curl_error($c);
+    // One ordinary HTTP/1.1 retry for StepStone's intermittent HTTP/2 stream reset.
+    // No CAPTCHA bypass, rotating proxy, synthetic identities or repeated retries.
+    if(!is_string($html) && $errno===92 && str_contains($url,'stepstone.de')) {
+        curl_setopt($c,CURLOPT_HTTP_VERSION,CURL_HTTP_VERSION_1_1);
+        curl_setopt($c,CURLOPT_TIMEOUT,10);
+        $html=curl_exec($c);$code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);
+        $errno=(int)curl_errno($c);$curlError=(string)curl_error($c);
+    }
+    curl_close($c);
     if(!is_string($html))throw new RuntimeException('cURL '.$errno.': '.clean($curlError,180));
     if($code<200||$code>=300)throw new RuntimeException('HTTP '.$code);
     if(strlen($html)<150)throw new RuntimeException('Empty public search page');
@@ -151,8 +159,11 @@ function career_public_board_scan(int $priorityDepth=1): array {
                 $result['errors'][]=$source.' ('.$word.'): '.$e->getMessage();
             }
             $report['queries'][]=$check;
+            // Respect providers that explicitly reject or rate-limit automated access.
+            if($check['status']==='unavailable' &&
+               preg_match('/HTTP (403|429)\\b/',(string)($check['error']??'')))break;
         }
-        $report['status']=$successful>0?'ok':($restricted===count($queries)?'unavailable':'no_structured_vacancies');
+        $report['status']=$successful>0?'ok':($restricted===count($report['queries'])?'unavailable':'no_structured_vacancies');
         if($restricted && !$successful)$report['error']=$restricted.' of '.count($queries).' queries unavailable';
         $result['sources'][$source]=$report;
     }
