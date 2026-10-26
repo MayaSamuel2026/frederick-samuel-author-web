@@ -211,8 +211,9 @@ jobs:
           for attempt in 1 2 3 4 5 6; do
             homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
             login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
-            if [[ "$homepage" == *'class="career-private-link"'* && "$login" == *'PRIVATE CAREER WORKSPACE'* ]]; then
-              echo "HOSTINGER_READBACK_PASS: footer and gated career application"
+            app_js="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/app.js?v=$GITHUB_RUN_ID" || true)"
+            if [[ "$homepage" == *'class="career-private-link"'* && "$login" == *'PRIVATE CAREER WORKSPACE'* && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* ]]; then
+              echo "HOSTINGER_READBACK_PASS: footer, private login and DE/EN language module"
               exit 0
             fi
             echo "Hostinger readback attempt $attempt/6: not yet confirmed"
