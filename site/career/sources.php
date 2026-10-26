@@ -92,6 +92,15 @@ function career_alert_candidates(string $source,string $body): array {
             foreach(array_slice($lines,1,6) as $line) {
                 if(career_germany_location($line,'StepStone')){$location=$line;break;}
             }
+        } elseif($source==='JobPharm') {
+            // Real JobPharm mails put a standalone "|" between the company and city.
+            // Never accept that separator (or email boilerplate) as a German location.
+            $company='';$location='';
+            foreach(array_slice($lines,0,8) as $line) {
+                if($line==='|' || preg_match('/^(?:Job-Alarm|Wir wünschen|Mit besten|Ihr Team)/iu',$line))continue;
+                if($company===''){$company=$line;continue;}
+                if(career_germany_location($line,'JobPharm') && preg_match('/[\\p{L}]/u',$line)){$location=$line;break;}
+            }
         }
         if($company==='' || !career_germany_location($location,$source))continue;
         $url=career_alert_url($source,$url);
@@ -116,7 +125,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
     $channels=career_alert_sources();
     $channels['LinkedIn']=null; // LinkedIn job-alert emails need no extra mailbox label.
     foreach($channels as $source=>$label) {
-        $params=['maxResults'=>200];
+        $params=['maxResults'=>500];
         if($label!==null) {
             $labelId=$available[strtolower($label)]??null;
             if($labelId===null){$result['by_source'][$source]=['new'=>0,'checked'=>0,'message'=>'No Gmail label'];continue;}
@@ -128,7 +137,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
             foreach(($list['messages']??[]) as $item) {
                 $id=(string)($item['id']??'');
                 if($id==='')continue;
-                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=? AND parser_version>=2');
+                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=? AND parser_version>=3');
                 $exists->execute([$id]);if($exists->fetchColumn())continue;
                 if($channel['checked'] >= $perLabel)break;
                 $message=gmailcall('GET','messages/'.rawurlencode($id).'?format=full');
@@ -139,7 +148,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
                     else $result['duplicates']++;
                 }
                 $channel['new']+=$added;
-                $db->prepare('INSERT INTO career_imported_alerts(message_id,source,added,parser_version) VALUES (?,?,?,2) ON CONFLICT(message_id) DO UPDATE SET added=career_imported_alerts.added+excluded.added,parser_version=2,processed_at=CURRENT_TIMESTAMP')->execute([$id,$source,$added]);
+                $db->prepare('INSERT INTO career_imported_alerts(message_id,source,added,parser_version) VALUES (?,?,?,3) ON CONFLICT(message_id) DO UPDATE SET added=career_imported_alerts.added+excluded.added,parser_version=3,processed_at=CURRENT_TIMESTAMP')->execute([$id,$source,$added]);
             }
             $channel['seen']=count($list['messages']??[]);
         }catch(Throwable $e){$result['errors'][]=$source.': '.$e->getMessage();}
