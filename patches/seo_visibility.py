@@ -360,7 +360,7 @@ print(f"SEO V6.3: enhanced {len(pages)} indexable pages, generated robots.txt an
 # This is intentionally outside the sitemap and inserted only in the homepage footer.
 home = root / "index.html"
 home_html = home.read_text(encoding="utf-8")
-private_link = '<p class="career-private-link"><a href="/career/" rel="nofollow" style="font-size:9px;opacity:.54;text-decoration:none;letter-spacing:.1em">Private login</a></p>'
+private_link = '<p class="career-private-link"><a href="career/index.php" rel="nofollow" style="font-size:9px;opacity:.54;text-decoration:none;letter-spacing:.1em">Private login</a></p>'
 if 'class="career-private-link"' not in home_html:
     footer_anchor = '<p><a href="imprint.html" style="text-decoration:underline;text-underline-offset:4px">Imprint</a></p>'
     if footer_anchor not in home_html:
