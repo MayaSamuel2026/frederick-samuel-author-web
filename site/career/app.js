@@ -23,7 +23,7 @@ function tr(){const dict=langText[state.lang];$$('[data-i]').forEach(el=>{const 
 function go(page){state.page=page;$$('.page').forEach(el=>el.classList.toggle('shown',el.id==='page-'+page));$$('.nav').forEach(el=>el.classList.toggle('active',el.dataset.page===page));window.scrollTo({top:0,behavior:'smooth'});tr();if(page==='inbox'&&state.data?.gmail_connected)inbox();}
 function jobline(j,compact=false){return `<div class="job-mini"><div class="job-monogram">${esc((j.company||'?').slice(0,1).toUpperCase())}</div><div><strong>${esc(j.title)}</strong><span>${esc(j.company)} · ${esc(j.location||'—')}</span></div><span class="status status-${esc(j.status)}">${statusName(j.status)}</span></div>`;}
 function renderOverview(){const jobs=state.data.jobs;$('#statJobs').textContent=jobs.length;$('#statShort').textContent=jobs.filter(x=>x.status==='shortlisted').length;$('#statApplied').textContent=jobs.filter(x=>['applied','interview','rejected','offer'].includes(x.status)).length;$('#statInterviews').textContent=jobs.filter(x=>x.status==='interview').length;$('#jobCount').textContent=jobs.length;$('#latestJobs').innerHTML=jobs.slice(0,5).map(j=>`<button class="latest-entry" data-openjob="${j.id}">${jobline(j,true)}<span>↗</span></button>`).join('')||`<p class="muted">${text('No positions saved yet.','Noch keine Stellen erfasst.')}</p>`;$('#lastRun').textContent=state.data.last_scan?text('Last scan: ','Letzte Suche: ')+state.data.last_scan:text('No scan performed yet.','Noch kein Suchlauf durchgeführt.');}
-function renderJobs(){const jobs=state.data.jobs;const source=$('#sourceFilter').value;const status=$('#jobFilter').value;const search=$('#jobSearch').value.toLocaleLowerCase();const sources=[...new Set(jobs.map(j=>j.source))];$('#sourceFilter').innerHTML=`<option value="">${text('All sources','Alle Quellen')}</option>`+sources.map(s=>`<option value="${esc(s)}" ${source===s?'selected':''}>${esc(s)}</option>`).join('');$('#jobFilter').innerHTML=`<option value="">${text('All statuses','Alle Status')}</option>`+Object.keys(statusLabels).map(s=>`<option value="${s}" ${status===s?'selected':''}>${esc(statusName(s))}</option>`).join('');
+function renderJobs(){const jobs=state.data.jobs;const source=$('#sourceFilter').value;const status=$('#jobFilter').value;const search=$('#jobSearch').value.toLocaleLowerCase();const preferred=['Arbeitsagentur','Arbeitnow','Gmail · StepStone','Gmail · Indeed','Gmail · JobPharm','Gmail · Jobware','Gmail · ZipRecruiter','Gmail · LinkedIn'];const sources=[...new Set([...preferred,...jobs.map(j=>j.source)])];const sourceCounts=Object.fromEntries(sources.map(s=>[s,jobs.filter(j=>j.source===s).length]));$('#sourceFilter').innerHTML=`<option value="">${text('All sources','Alle Quellen')} (${jobs.length})</option>`+sources.map(s=>`<option value="${esc(s)}" ${source===s?'selected':''}>${esc(s)} (${sourceCounts[s]})</option>`).join('');$('#jobFilter').innerHTML=`<option value="">${text('All statuses','Alle Status')}</option>`+Object.keys(statusLabels).map(s=>`<option value="${s}" ${status===s?'selected':''}>${esc(statusName(s))}</option>`).join('');
  const matching=jobs.filter(j=>(!source||j.source===source)&&(!status||j.status===status)&&(!search||(j.title+' '+j.company+' '+j.location+' '+j.description).toLocaleLowerCase().includes(search)));
  $('#jobsTable').innerHTML=matching.map(j=>`<tr><td><input class="job-select" data-id="${j.id}" type="checkbox" aria-label="${esc(j.title)}" ${state.selected.has(j.id)?'checked':''}></td><td><b>${esc(j.title)}</b><span>${esc(j.company)}</span></td><td>${esc(j.location||'—')}${j.location_verified===false?`<span class="muted small">${text('Verify German location','Standort in Deutschland prüfen')}</span>`:''}</td><td><span class="source-tag">${esc(j.source)}</span></td><td><span class="status status-${esc(j.status)}">${esc(statusName(j.status))}</span></td><td class="row-actions"><a href="${esc(j.url)}" target="_blank" rel="noopener noreferrer" title="Original advertisement">↗</a><button data-openjob="${j.id}" title="Application">✉</button></td></tr>`).join('');$('#jobsEmpty').style.display=matching.length?'none':'block';$('#selectedCount').textContent=state.selected.size+text(' selected',' ausgewählt');}
 function renderPipeline(){let jobs=state.data.jobs.filter(j=>j.status!=='new'&&j.status!=='archived');$('#pipelineTable').innerHTML=jobs.map(j=>`<tr><td><b>${esc(j.company)}</b></td><td><button class="inline-link" data-openjob="${j.id}">${esc(j.title)}</button></td><td>${fmt(j.found_at)}</td><td>${fmt(j.applied_at)}</td><td><select class="status-select" data-status-id="${j.id}">${optStatuses(j.status)}</select></td><td><input class="note-input" data-note-id="${j.id}" value="${esc(j.note)}" placeholder="${text('Note...','Notiz...')}"></td></tr>`).join('')||`<tr><td colspan="6" class="empty">${text('Shortlist or apply to positions to see them here.','Merken Sie Stellen vor oder bewerben Sie sich, um sie hier zu verfolgen.')}</td></tr>`;}
@@ -48,10 +48,12 @@ function renderKeywords(){
   list.innerHTML=terms.length?terms.map((term,i)=>`<span class="keyword-chip ${type==='exclude'?'keyword-chip-exclude':'keyword-chip-include'}"><span>${esc(term)}</span><button type="button" data-remove-keyword="${type}" data-keyword-index="${i}" title="${esc(text('Remove','Entfernen'))}: ${esc(term)}" aria-label="${esc(text('Remove','Entfernen'))}: ${esc(term)}">×</button></span>`).join('')
     :`<span class="keyword-empty">${esc(text('No keywords saved yet','Noch keine Begriffe gespeichert'))}</span>`;
  }
- const last=state.data?.last_mail_import;
- $('#jobMailStatus').textContent=last
- ?text('Gmail alert file last imported: ','Gmail-Stellen zuletzt als Datei importiert: ')+last+text('. Automatic Gmail inbox synchronization is not active.','. Eine automatische Gmail-Synchronisierung ist noch nicht aktiv.')
- :text('StepStone, Indeed, JobPharm and Michael Page alerts: use “Import Gmail alerts” above to import the previously prepared file. Automatic inbox synchronization is not yet active.','StepStone, Indeed, JobPharm und Michael Page: Über „Gmail-Stellen importieren“ kann die vorbereitete Datei eingelesen werden. Eine automatische Gmail-Synchronisierung ist noch nicht aktiv.');
+ const last=state.data?.last_gmail_sync;
+ const info=state.data?.gmail_sync_info||{};
+ $('#jobMailStatus').textContent=state.data?.gmail_connected
+ ?(last?text('Gmail last checked: ','Gmail zuletzt geprüft: ')+last+' · '+(info.new||0)+text(' new matches.',' neue Stellen.'):text('Gmail connected. Import job alerts from StepStone, Indeed, JobPharm, Jobware, ZipRecruiter and LinkedIn.','Gmail verbunden. Stellenmeldungen von StepStone, Indeed, JobPharm, Jobware, ZipRecruiter und LinkedIn importieren.'))
+ :text('To import your StepStone, Indeed and JobPharm folders automatically, connect Gmail under Settings.','Für den automatischen Import Ihrer StepStone-, Indeed- und JobPharm-Ordner Gmail unter Einstellungen verbinden.');
+ $('#importAlertJobs').textContent=text('↻ Sync Gmail alerts','↻ Gmail-Stellen abrufen');
 }
 function renderAll(){tr();renderOverview();renderJobs();renderPipeline();renderMail();renderFiles();renderSent();renderSettings();renderKeywords();$('#today').textContent=new Date().toLocaleDateString(state.lang==='de'?'de-DE':'en-GB',{day:'numeric',month:'long',year:'numeric'});}
 function selectJob(id){state.composeId=Number(id);let j=state.data.jobs.find(x=>x.id===state.composeId);if(!j)return;go('mail');$('#composeJob').value=state.composeId;$('#composeLang').value=j.lang||state.data.profile.default_language||'de';$('#composeTo').value=j.email||'';$('#composeBody').value=j.letter||'';if(!j.letter)generate();}
@@ -66,7 +68,14 @@ $('#jobSearch').addEventListener('input',renderJobs);$('#sourceFilter').addEvent
 $('#jobsTable').addEventListener('change',e=>{if(e.target.classList.contains('job-select')){const id=Number(e.target.dataset.id);e.target.checked?state.selected.add(id):state.selected.delete(id);$('#selectedCount').textContent=state.selected.size+text(' selected',' ausgewählt');}});
 $('#applySelected').onclick=()=>{const id=state.selected.values().next().value;if(!id)return toast(text('Select a vacancy.','Bitte Stelle auswählen.'),true);if(state.selected.size>1)toast(text('Opening the first selected vacancy; applications are individual.','Die erste Stelle wird geöffnet; jede Bewerbung wird individuell erstellt.'));selectJob(id);};
 $('#scanJobs').onclick=e=>scan(e.currentTarget);$('#scanOverview').onclick=e=>scan(e.currentTarget);
-$('#importAlertJobs').onclick=()=>$('#importAlertFile').click();
+async function syncJobAlerts(btn,quiet=false){
+ if(!state.data?.gmail_connected){go('settings');if(!quiet)toast(text('Connect Gmail in Settings first.','Bitte zuerst Gmail unter Einstellungen verbinden.'),true);return;}
+ const old=btn.textContent;btn.disabled=true;btn.textContent=text('Importing Gmail alerts...','Gmail-Stellen werden eingelesen...');
+ try{const r=await api('syncmail');await reload();if(!quiet)toast(text('Gmail: ','Gmail: ')+r.result.new+text(' new matching jobs saved.',' neue passende Stellen gespeichert.'));if(r.result.errors?.length)toast(r.result.errors.join(' · '),true);}
+ catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old;}
+}
+$('#importAlertJobs').onclick=e=>syncJobAlerts(e.currentTarget);
+$('#importAlertFileButton').onclick=()=>$('#importAlertFile').click();
 $('#importAlertFile').onchange=async e=>{
  const f=e.target.files[0];if(!f)return;
  const fd=new FormData();fd.append('csrf',window.FS_CSRF);fd.append('file',f);
@@ -124,10 +133,17 @@ $('#logout').onclick=async()=>{try{await api('logout');location.reload();}catch(
 if(new URLSearchParams(location.search).has('connected')){history.replaceState({},'',location.pathname);}
 // Freshen available public feeds once per day upon an authenticated visit.
 // This does not replace an unattended Hostinger cron schedule.
-reload().then(()=>{
+reload().then(async()=>{
+ if(state.data?.gmail_connected){
+   const last=state.data.last_gmail_sync||'';
+   const parsed=Date.parse(last.replace(' UTC','Z').replace(' ','T'));
+   if(!Number.isFinite(parsed)||Date.now()-parsed>24*3600*1000){
+     const button=$('#importAlertJobs');if(button)await syncJobAlerts(button,true);
+   }
+ }
  const raw=state.data?.last_scan||'';
  const parsed=Date.parse(raw.replace(' UTC','Z').replace(' ','T'));
  if(!Number.isFinite(parsed)||Date.now()-parsed>24*3600*1000){
-   const btn=$('#scanJobs');if(btn) scan(btn);
+   const btn=$('#scanJobs');if(btn)await scan(btn);
  }
 }).catch(e=>toast(e.message,true));
