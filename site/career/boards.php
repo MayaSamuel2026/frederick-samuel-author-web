@@ -68,10 +68,10 @@ function career_board_parse(string $board,string $html): array {
     finally{libxml_clear_errors();libxml_use_internal_errors($old);}
     $xp=new DOMXPath($doc);
     $query=match($board) {
-        'StepStone'=>'//a[contains(@href,"stellenangebote--")]',
+        'StepStone'=>'//a[contains(@href,"stellenangebote--") or contains(@data-testid,"job-item-title") or contains(@data-at,"job-item-title")]',
         'Indeed'=>'//a[contains(@class,"jcs-JobTitle") or contains(@href,"jk=") or contains(@href,"viewjob")]',
         'LinkedIn'=>'//a[contains(@class,"base-card__full-link") or contains(@href,"/jobs/view/")]',
-        'JobPharm'=>'//a[contains(@href,"/job?id=")]',
+        'JobPharm'=>'//a[contains(@href,"/job?") or contains(@href,"/job/")]',
         default=>'//a[@href]'
     };
     $anchors=$xp->query($query);$jobs=[];$seen=[];
@@ -93,10 +93,10 @@ function career_board_parse(string $board,string $html): array {
         };
         if(!$safe)continue;
         $card=career_board_card($anchor,$board);
-        $title=career_board_xpath_text($xp,$card,'.//h2|.//h3[contains(@class,"title")]|.//span[contains(@class,"jobTitle")]');
+        $title=career_board_xpath_text($xp,$card,'.//h2|.//h3[contains(@class,"title")]|.//span[contains(@class,"jobTitle")]|.//*[@data-testid="job-item-title"]');
         if($title==='')$title=trim(preg_replace('/\s+/u',' ',$anchor->textContent));
-        $company=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"company") or contains(@class,"company-name") or contains(@class,"companyName") or contains(@class,"base-search-card__subtitle") or contains(@class,"job-search-card__subtitle")]');
-        $location=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"location") or contains(@class,"job-item-location") or contains(@class,"companyLocation") or contains(@class,"text-location") or contains(@class,"job-search-card__location") or contains(@class,"location") or contains(@class,"city")]');
+        $company=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"company") or contains(@data-at,"company") or contains(@class,"company-name") or contains(@class,"companyName") or contains(@class,"base-search-card__subtitle") or contains(@class,"job-search-card__subtitle")]');
+        $location=career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"location") or contains(@data-at,"location") or contains(@class,"job-item-location") or contains(@class,"companyLocation") or contains(@class,"text-location") or contains(@class,"job-search-card__location") or contains(@class,"location") or contains(@class,"city")]');
         // Prefer structured, clearly attributable vacancies; never invent company/city.
         if($company==='' || $location==='')continue;
         $job=['source'=>$board,'title'=>$title,'company'=>$company,'location'=>$location,'url'=>career_alert_url($board,$href),'description'=>''];
@@ -117,9 +117,9 @@ function career_public_board_scan(): array {
     if($offset<0)$offset=0;
     foreach($sources as $i=>$source) {
         $word=$terms[($offset+$i)%count($terms)];
-        $report=['query'=>$word,'new'=>0,'found'=>0,'status'=>''];
+        $report=['query'=>$word,'new'=>0,'found'=>0,'status'=>'','searched_url'=>career_board_search_url($source,$word)];
         try {
-            $html=career_board_http(career_board_search_url($source,$word));
+            $html=career_board_http($report['searched_url']);
             $vacancies=career_board_parse($source,$html);
             $report['found']=count($vacancies);$result['examined']+=count($vacancies);
             foreach($vacancies as $vacancy){$n=upsertjob($vacancy);$result['new']+=$n;$report['new']+=$n;}
