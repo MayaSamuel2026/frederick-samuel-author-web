@@ -41,11 +41,20 @@ function httpget(string $url,array $headers=[]): array {
 function career_germany_location(string $location,string $source=''): bool {
     $loc=trim($location);
     if($loc==='')return false;
-    if(preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|lisbon|lissabon|stockholm|copenhagen|kopenhagen|new york|boston|dublin|ireland|irland|edinburgh|manchester|birmingham|glasgow|lisboa|porto|budapest|hungary|ungarn|bratislava|slovakia|slowakei|praha|prag|prague|czechia|tschechien|czech republic|denmark|dänemark|sweden|schweden|norway|norwegen|finland|finnland|romania|rumänien|bulgaria|bulgarien|greece|griechenland|turkey|türkei|portugal|luxembourg|luxemburg|canada|kanada|usa|united states|us|u\.s\.|uk|u\.k\.|united kingdom|great britain|großbritannien|england|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|nederland|holland|worldwide|weltweit|global|international only|remote worldwide)\b/iu',$loc))return false;
-    // Country explicitly stated, nationwide Germany or a named German city / region.
-    if(preg_match('/\b(deutschland|germany|deutschlandweit|bundesweit|norddeutschland|süddeutschland|westdeutschland|ostdeutschland|deutschlandweit|baden.württemberg|rheinland.pfalz|nordrhein.westfalen|mitteldeutschland|niedersachsen|schleswig.holstein|thüringen|brandenburg|mecklenburg.vorpommern|bayern|bavaria|sachsen.anhalt|saarland|hessen|westfalen)\b/iu',$loc))return true;
-    if(preg_match('/\b(berlin|hamburg|münchen|munich|frankfurt|köln|cologne|stuttgart|düsseldorf|dresden|leipzig|dortmund|essen|bremen|hannover|nürnberg|nuremberg|bonn|duisburg|bochum|wuppertal|bielefeld|mannheim|karlsruhe|münster|augsburg|wiesbaden|aachen|mönchengladbach|gelsenkirchen|braunschweig|chemnitz|kiel|halle|magdeburg|freiburg|krefeld|mainz|lübeck|erfurt|rostock|kassel|potsdam|heidelberg|darmstadt|offenbach|oldenburg|osnabrück|regensburg|ingolstadt|würzburg|ulm|heilbronn|pforzheim|reutlingen|fürth|jena|trier|koblenz|gießen|giessen|neuss|solingen|leverkusen|bensheim|frechen|bad homburg|ansbach|suhl|gotha|bamberg|minden|bremerhaven|wetzlar|ravensburg|walsrode|remscheid|schweinfurt|wolfsburg|saarbrücken|hildesheim|sigmaringen|lüneburg|ludwigshafen|tübingen|bayreuth|fulda|montabaur|lahnstein|neuwied|weiden|rüsselsheim|rottenburg|falkensee|cottbus|aalen|düren|greifswald|kaufbeuren|fürstenfeldbruck|leer|iserlohn|gütersloh|verden|dinslaken|schwerin|falkensee|göttingen|delmenhorst|freiberg)\b/iu',$loc))return true;
-    // Reject unknown locations even from a German job board: source country is not the job location.
+    // Never accept explicitly foreign bases, even when the vacancy was carried by a German board.
+    if(preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|lisbon|lissabon|stockholm|copenhagen|kopenhagen|new york|boston|dublin|ireland|irland|edinburgh|manchester|birmingham|glasgow|lisboa|porto|budapest|hungary|ungarn|bratislava|slovakia|slowakei|czechia|tschechien|czech republic|denmark|dänemark|sweden|schweden|norway|norwegen|finland|finnland|romania|rumänien|bulgaria|bulgarien|greece|griechenland|turkey|türkei|portugal|luxembourg|luxemburg|canada|kanada|usa|united states|u\.s\.|uk|u\.k\.|united kingdom|great britain|großbritannien|england|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|nederland|holland|worldwide|weltweit|remote worldwide)\b/iu',$loc))return false;
+    // Country / nationwide and common German territory labels, including regional postings.
+    if(preg_match('/\b(deutschland|germany|deutschlandweit|bundesweit|bundesgebiet|bundesrepublik|homeoffice deutschland|remote germany|dach deutschland|norddeutschland|süddeutschland|westdeutschland|ostdeutschland|mitteldeutschland|nordwestdeutschland|südwestdeutschland|nordostdeutschland|südostdeutschland|baden.württemberg|rheinland.pfalz|nordrhein.westfalen|niedersachsen|schleswig.holstein|thüringen|brandenburg|mecklenburg.vorpommern|bayern|bavaria|sachsen.anhalt|sachsen|saarland|hessen|westfalen|rhein.main|ruhrgebiet|oberbayern|niederbayern|oberfranken|mittelfranken|unterfranken|oberpfalz|schwaben|rheinland|pfalz|rhein.neckar|bergisches land|sauerland|ostwestfalen|eifel|mosel|schwarzwald|allgäu|bodensee)\b/iu',$loc))return true;
+    // Germany-specific postal notation; a bare international 5-digit number alone is not sufficient.
+    if(preg_match('/\b(?:DE|D)[- ]?\d{5}\b/i',$loc))return true;
+    // A five-digit postal code attached to a German-source vacancy is usually a German PLZ.
+    if(preg_match('/\b\d{5}\b/',$loc) && preg_match('/Arbeitsagentur|StepStone|JobPharm|Indeed/i',$source))return true;
+    // Widely used German location names, including those in recent senior pharma alerts.
+    if(preg_match('/\b(berlin|hamburg|münchen|munich|frankfurt|köln|cologne|stuttgart|düsseldorf|dresden|leipzig|dortmund|essen|bremen|hannover|nürnberg|nuremberg|bonn|duisburg|bochum|wuppertal|bielefeld|mannheim|karlsruhe|münster|augsburg|wiesbaden|aachen|mönchengladbach|gelsenkirchen|braunschweig|chemnitz|kiel|halle|magdeburg|freiburg|krefeld|mainz|lübeck|erfurt|rostock|kassel|potsdam|heidelberg|darmstadt|offenbach|oldenburg|osnabrück|regensburg|ingolstadt|würzburg|ulm|heilbronn|pforzheim|reutlingen|fürth|jena|trier|koblenz|gießen|giessen|neuss|solingen|leverkusen|bensheim|frechen|bad homburg|ansbach|suhl|gotha|bamberg|minden|bremerhaven|wetzlar|ravensburg|walsrode|remscheid|schweinfurt|wolfsburg|saarbrücken|hildesheim|sigmaringen|lüneburg|ludwigshafen|tübingen|bayreuth|fulda|montabaur|lahnstein|neuwied|weiden|rüsselsheim|rottenburg|falkensee|cottbus|aalen|düren|greifswald|kaufbeuren|fürstenfeldbruck|leer|iserlohn|gütersloh|verden|dinslaken|schwerin|göttingen|delmenhorst|freiberg|neubrandenburg|coburg|detmold|paderborn|passau|straubing|landshut|memmingen|kempten|konstanz|friedrichshafen|singen|villingen.schwenningen|lörrach|offenburg|baden.baden|rastatt|lahr|bruchsal|ettlingen|altdorf|worms|speyer|kaiserslautern|landau|zweibrücken|bad kreuznach|idar.oberstein|bitburg|zell|cochem|andernach|mayen|siegburg|troisdorf|bergisch gladbach|leverku(s|z)en|hennef|brühl|hürth|euskirchen|mülheim|oberhausen|herne|hagen|iserlohn|ar(y|n)sberg|lippstadt|gütersloh|rheda.wiedenbrück|marl|recklinghausen|dinslaken|wesel|moers|kleve|geldern|erkrath|ratingen|hilden|velbert|mettmann|lüdenscheid|sie gen|siegen|olpe|wenden|wetzlar|marburg|limburg|fulda|hanau|offenbach|dietzenbach|neu.isenburg|bad vilbel|bad nauheim|friedberg|gießen|butzbach|grünberg|hünfeld|alsfeld|eschwege|korbach|baunatal|hann.münden|hameln|celle|hildesheim|göttingen|northeim|osterode|goslar|salzgitter|peine|wolfenbüttel|helmstedt|stade|cuxhaven|wilhelmshaven|emden|aurich|leer|lingen|meppen|nordhorn|osnabrück|melle|bramsche|lohne|vechta|cloppenburg|quakenbrück|oldenbur(g|ger)|delmenhorst|westerstede|syke|achim|verden|lüneburg|uelzen|buchholz|wins(en)?|norderstedt|elmshorn|pinneberg|itzehoe|neumünster|rendsburg|flensburg|schleswig|husum|heide|eckernförde|lübeck|bad schwartau|ahrensburg|reinbek|geesthacht|schwerin|wismar|güstrow|waren|stralsund|greifswald|neustrelitz|neubrandenburg|potsdam|cottbus|frankfurt oder|eberswalde|oranienburg|bernau|strausberg|teltow|wildau|königs wusterhausen|brandenburg an der havel|rathenow|neuruppin|luckenwalde|senftenberg|finsterwalde|forst|guben|dresden|pirna|freital|rabenau|radebeul|meißen|riesa|görlitz|zittau|bautzen|kamenz|freiberg|chemnitz|zwickau|plauen|annaberg.buchholz|glauchau|leipzig|markkleeberg|delitzsch|grimma|torgau|eilenburg|borna|halle|merseburg|weißenfels|naumburg|zeitz|bitterfeld|dessau|köthen|bernburg|magdeburg|schönebeck|halberstadt|wernigerode|quedlinburg|stendal|salzwedel|wolfsburg|osterburg|erfurt|weimar|jena|gera|eisenach|gotha|suhl|ilmenau|arnstadt|nordhausen|mühlhausen|altenburg|schmölln|rudolstadt|saalfeld|sonneberg|meiningen|schmalkalden)\b/iu',$loc))return true;
+    // German Federal Employment Agency feed is scoped to Germany; its smaller towns
+    // must not disappear just because they are missing from a handwritten city list.
+    if(strcasecmp($source,'Arbeitsagentur')===0)return true;
+    // Genuine unknown bases are not automatically treated as Germany.
     return false;
 }
 function career_norm(string $x): string {
@@ -106,13 +115,47 @@ function career_archive_unsuitable_jobs(): array {
     if($archive){
         $conn=db();$conn->beginTransaction();
         try {
+            // Record this cleanup in a dedicated table so restoration is selective.
+            $conn->exec('CREATE TABLE IF NOT EXISTS filter_archives(job_id INTEGER PRIMARY KEY, prior_status TEXT NOT NULL, archived_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+            $mark=$conn->prepare('INSERT OR IGNORE INTO filter_archives(job_id,prior_status) VALUES (?,?)');
             $update=$conn->prepare('UPDATE jobs SET status="archived" WHERE id=? AND status IN ("new","shortlisted","draft")');
-            foreach($archive as $id)$update->execute([$id]);
+            foreach($archive as $id) {
+                $job=onejob($id);
+                $mark->execute([$id,(string)$job['status']]);
+                $update->execute([$id]);
+            }
             $conn->commit();
-        } catch(Throwable $e) {$conn->rollBack();throw $e;}
+        } catch(Throwable $e){$conn->rollBack();throw $e;}
     }
     return ['archived'=>count($archive),'historical_preserved'=>$historical];
 }
+
+/** One-time recovery from the overstrict 26 October location filter.
+ *  Only crawler/alert discovery records with no application, note or draft.
+ *  An explicit manually archived record is never resurrected.
+ */
+function career_restore_relevant_archives(): array {
+    if(setting('restore_location_filter_20261026_done')==='yes')return ['restored'=>0,'already_run'=>true];
+    $restored=0;
+    $db=db();
+    $db->beginTransaction();
+    try {
+        // A prior filter archive that predates the new filter_archives ledger cannot
+        // be identified exactly. Restrict to unworked discovery jobs.
+        $jobs=rows('SELECT id,source,title,description,location,status,note,letter,applied_at FROM jobs WHERE status="archived"');
+        $q=$db->prepare('UPDATE jobs SET status="new" WHERE id=? AND status="archived"');
+        foreach($jobs as $j){
+            if(!career_job_eligible($j))continue;
+            if(!preg_match('/^(Arbeitsagentur|Arbeitnow|Gmail\s*·\s*StepStone|Gmail\s*·\s*Indeed|Gmail\s*·\s*JobPharm|StepStone|Indeed|JobPharm)$/ui',(string)$j['source']))continue;
+            if(trim((string)($j['note']??''))!==''||trim((string)($j['letter']??''))!==''||!empty($j['applied_at']))continue;
+            $q->execute([$j['id']]);$restored+=$q->rowCount();
+        }
+        $db->prepare('INSERT INTO settings(k,v) VALUES (?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v')->execute(['restore_location_filter_20261026_done','yes']);
+        $db->commit();
+    }catch(Throwable $e){$db->rollBack();throw $e;}
+    return ['restored'=>$restored,'already_run'=>false];
+}
+
 function crawl(): array {
     $cleanup=career_archive_unsuitable_jobs();
     $new=0;$seen=0;$log=[];
