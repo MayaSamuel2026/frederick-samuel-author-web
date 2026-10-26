@@ -3,3 +3,17 @@
 
 /* DE/EN offline style refinement */
 .language-polish{display:flex;align-items:end;flex-wrap:wrap;gap:11px;margin:7px 0 5px}.language-polish label{display:flex;flex-direction:column;gap:6px;min-width:155px}.language-polish label span{font-size:10px;letter-spacing:.1em;color:var(--muted);font-weight:700}.language-polish select{padding:12px;min-height:44px}.language-polish .text-button{align-self:center}.refine-note{margin:0 0 18px}
+
+/* Personal search controls — subtle, bilingual, responsive. */
+.keyword-panel{margin:12px 0 18px;padding:20px 24px}
+.keyword-panel .panel-head{margin-bottom:14px}
+.keyword-panel .panel-head h3{margin-bottom:5px}
+.keyword-panel .panel-head p{max-width:790px;line-height:1.65}
+.keyword-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.keyword-grid label{display:flex;flex-direction:column;gap:9px;min-width:0}
+.keyword-grid label span{font-size:10px;letter-spacing:.11em;font-weight:700;color:var(--muted)}
+.keyword-grid textarea{width:100%;resize:vertical;min-height:90px;line-height:1.55}
+.keyword-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px}
+.keyword-actions p{margin:0;max-width:590px;line-height:1.55}
+.keyword-mail-note{margin:14px 0 0;line-height:1.6}
+@media(max-width:760px){.keyword-grid{grid-template-columns:1fr}.keyword-actions{align-items:stretch;flex-direction:column}.keyword-actions .button{width:100%}.keyword-panel{padding:18px}}
