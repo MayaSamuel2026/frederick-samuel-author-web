@@ -9,7 +9,9 @@ on:
       - 'site/career/index.php'
       - 'site/career/lib.php'
       - 'site/career/sources.php'
+      - 'site/career/boards.php'
       - 'tests/career-sources-test.php'
+      - 'tests/career-boards-test.php'
       - '.github/workflows/publish.yml'
 
 permissions:
@@ -106,6 +108,7 @@ jobs:
           set -euo pipefail
           php -l site/career/lib.php
           php -l site/career/sources.php
+          php -l site/career/boards.php
           php -l site/career/index.php
           node --check site/career/app.js
           python3 - <<'PY'
@@ -124,6 +127,7 @@ jobs:
           grep -q 'career_default_excludes' site/career/lib.php
           php tests/career-filter-test.php
           php tests/career-sources-test.php
+          php tests/career-boards-test.php
 
       - name: Qualify static site
         shell: bash
@@ -246,7 +250,7 @@ jobs:
             homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
             login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
             app_js="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/app.js?v=$GITHUB_RUN_ID" || true)"
-            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"syncJobAlerts"* && "$app_js" == *"Gmail · StepStone"* && "$app_js" == *"Gmail · LinkedIn"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* && "$app_js" == *"\$\$('[data-language]').forEach(el=>"* && "$app_js" == *"\$\$('[data-placeholder-i]').forEach(el=>"* ]]; then
+            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"syncJobAlerts"* && "$app_js" == *"Gmail · StepStone"* && "$app_js" == *"Gmail · LinkedIn"* && "$app_js" == *"StepStone"*"Indeed"*"LinkedIn"*"JobPharm"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* && "$app_js" == *"\$\$('[data-language]').forEach(el=>"* && "$app_js" == *"\$\$('[data-placeholder-i]').forEach(el=>"* ]]; then
               echo "HOSTINGER_READBACK_PASS: private login, six Gmail source filters, active job-alert sync and editable keywords"
               exit 0
             fi
