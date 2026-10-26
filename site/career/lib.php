@@ -38,11 +38,15 @@ function httpget(string $url,array $headers=[]): array {
     $v=json_decode($s,true);return is_array($v)?$v:[];
 }
 /** Accept only clearly Germany-based vacancies. Ambiguous and international-only locations stay out. */
+/** An explicitly foreign work location is never eligible for the Job Center. */
+function career_foreign_location(string $location): bool {
+    return preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|lisbon|lissabon|stockholm|copenhagen|kopenhagen|new york|boston|dublin|ireland|irland|edinburgh|manchester|birmingham|glasgow|lisboa|porto|budapest|hungary|ungarn|bratislava|slovakia|slowakei|czechia|tschechien|czech republic|denmark|dänemark|sweden|schweden|norway|norwegen|finland|finnland|romania|rumänien|bulgaria|bulgarien|greece|griechenland|turkey|türkei|portugal|luxembourg|luxemburg|canada|kanada|usa|united states|u\.s\.|uk|u\.k\.|united kingdom|great britain|großbritannien|england|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|nederland|holland|worldwide|weltweit|remote worldwide)\b/iu',$loc);
+}
 function career_germany_location(string $location,string $source=''): bool {
     $loc=trim($location);
     if($loc==='')return false;
     // Never accept explicitly foreign bases, even when the vacancy was carried by a German board.
-    if(preg_match('/\b(london|barcelona|paris|madrid|amsterdam|brussels?|brüssel|vienna|wien|zurich|zürich|prague|praha|prag|warsaw|warszawa|roma|rome|milan|milano|lisbon|lissabon|stockholm|copenhagen|kopenhagen|new york|boston|dublin|ireland|irland|edinburgh|manchester|birmingham|glasgow|lisboa|porto|budapest|hungary|ungarn|bratislava|slovakia|slowakei|czechia|tschechien|czech republic|denmark|dänemark|sweden|schweden|norway|norwegen|finland|finnland|romania|rumänien|bulgaria|bulgarien|greece|griechenland|turkey|türkei|portugal|luxembourg|luxemburg|canada|kanada|usa|united states|u\.s\.|uk|u\.k\.|united kingdom|great britain|großbritannien|england|spain|spanien|france|frankreich|italy|italien|poland|polen|austria|österreich|schweiz|switzerland|belgium|belgien|netherlands|niederlande|nederland|holland|worldwide|weltweit|remote worldwide)\b/iu',$loc))return false;
+    if(career_foreign_location($loc))return false;
     // Country / nationwide and common German territory labels, including regional postings.
     if(preg_match('/\b(deutschland|germany|deutschlandweit|bundesweit|bundesgebiet|bundesrepublik|homeoffice deutschland|remote germany|dach deutschland|norddeutschland|süddeutschland|westdeutschland|ostdeutschland|mitteldeutschland|nordwestdeutschland|südwestdeutschland|nordostdeutschland|südostdeutschland|baden.württemberg|rheinland.pfalz|nordrhein.westfalen|niedersachsen|schleswig.holstein|thüringen|brandenburg|mecklenburg.vorpommern|bayern|bavaria|sachsen.anhalt|sachsen|saarland|hessen|westfalen|rhein.main|ruhrgebiet|oberbayern|niederbayern|oberfranken|mittelfranken|unterfranken|oberpfalz|schwaben|rheinland|pfalz|rhein.neckar|bergisches land|sauerland|ostwestfalen|eifel|mosel|schwarzwald|allgäu|bodensee)\b/iu',$loc))return true;
     // Germany-specific postal notation; a bare international 5-digit number alone is not sufficient.
@@ -98,6 +102,16 @@ function relevant(string $title,string $description=''): bool {
     foreach($focus as $p)if((function_exists('mb_strpos')?mb_strpos($x,$p):strpos($x,$p))!==false)return true;
     return (bool)preg_match('/(pharma|life.science|healthcare|medical|klinisch|hospital|krankenhaus|biotech)/iu',$description.' '.$title) && (bool)preg_match('/(sales|vertrieb|commercial|geschäftsbereich|business.development)/iu',$title);
 }
+/** Existing candidate review is deliberately less destructive than intake.
+ * New crawler imports still require a confirmed German location, while an older
+ * listing without enough location information remains visible for review.
+ */
+function career_existing_visible(array $j): bool {
+    $title=(string)($j['title']??'');
+    return !excluded_role($title)
+        && relevant($title,(string)($j['description']??''))
+        && !career_foreign_location((string)($j['location']??''));
+}
 /** One rule for every intake channel, existing results and manual additions. */
 function career_job_eligible(array $j): bool {
     return !excluded_role((string)($j['title']??''))
@@ -108,7 +122,7 @@ function career_job_eligible(array $j): bool {
 function career_archive_unsuitable_jobs(): array {
     $archive=[];$historical=0;
     foreach(rows('SELECT id,source,title,description,location,status FROM jobs WHERE status != "archived"') as $j){
-        if(career_job_eligible($j))continue;
+        if(career_existing_visible($j))continue;
         if(in_array($j['status'],['applied','interview','rejected','offer'],true)){$historical++;continue;}
         $archive[]=(int)$j['id'];
     }
@@ -145,7 +159,7 @@ function career_restore_relevant_archives(): array {
         $jobs=rows('SELECT id,source,title,description,location,status,note,letter,applied_at FROM jobs WHERE status="archived"');
         $q=$db->prepare('UPDATE jobs SET status="new" WHERE id=? AND status="archived"');
         foreach($jobs as $j){
-            if(!career_job_eligible($j))continue;
+            if(!career_existing_visible($j))continue;
             if(!preg_match('/^(Arbeitsagentur|Arbeitnow|Gmail\s*·\s*StepStone|Gmail\s*·\s*Indeed|Gmail\s*·\s*JobPharm|StepStone|Indeed|JobPharm)$/ui',(string)$j['source']))continue;
             if(trim((string)($j['note']??''))!==''||trim((string)($j['letter']??''))!==''||!empty($j['applied_at']))continue;
             $q->execute([$j['id']]);$restored+=$q->rowCount();
