@@ -92,6 +92,49 @@ function upsertjob(array $r): int {
     $s->execute([clean((string)($r['source']??'Manual'),80),$r['company'],$r['title'],$r['location'],$url,clean(strip_tags((string)($r['description']??'')),2400)]);
     return $s->rowCount();
 }
+/** The owner can maintain comma-separated discovery and exclusion terms. */
+function career_default_includes(): string {
+    return 'regionalleiter, sales manager, sales director, pharma, commercial effectiveness, commercial excellence, head of sales, vertriebsleiter, head of field force';
+}
+function career_default_excludes(): string {
+    return 'immobilien, maklersoftware, software';
+}
+function career_keyword_terms(string $key): array {
+    $fallback=$key==='career_include_keywords'?career_default_includes():career_default_excludes();
+    $value=setting($key,$fallback);
+    $parts=explode(',',$value);
+    $terms=[];
+    foreach($parts as $part){
+        $term=trim($part);
+        if($term===''||strlen($term)>90)continue;
+        $term=function_exists('mb_strtolower')?mb_strtolower($term,'UTF-8'):strtolower($term);
+        $terms[$term]=$term;
+        if(count($terms)>=30)break;
+    }
+    return array_values($terms);
+}
+function career_has_keyword(string $text,array $terms): bool {
+    if(!$terms)return false;
+    $text=function_exists('mb_strtolower')?mb_strtolower($text,'UTF-8'):strtolower($text);
+    foreach($terms as $term){
+        // Substring detection intentionally catches 'Immobilienverwaltung' and 'Maklersoftware'.
+        if($term!==''&&str_contains($text,$term))return true;
+    }
+    return false;
+}
+function career_excluded_by_owner(array $j): bool {
+    // Titles and company names only: job descriptions may mention CRM software,
+    // property addresses or representative staff even in suitable pharma leadership roles.
+    return career_has_keyword((string)($j['title']??'').' '.(string)($j['company']??''),career_keyword_terms('career_exclude_keywords'));
+}
+function career_user_matches(array $j): bool {
+    $title=(string)($j['title']??'');
+    // Search terms augment the existing senior-role logic, they do not hide
+    // otherwise eligible Regionalleiter or Sales Director roles.
+    return relevant($title,(string)($j['description']??''))
+        || (career_has_keyword($title,career_keyword_terms('career_include_keywords'))
+            && (bool)preg_match('/(manager|leiter|leitung|director|direktor|head|regional|commercial|vertrieb|sales)/iu',$title));
+}
 function excluded_role(string $title): bool {
     // Apply exclusions to the role title, never to the job description (which may mention sales reps).
     return (bool)preg_match('/\b(junior|jr\.?|trainee|intern(ship)?|graduate|representatives?|sales[\s-]*reps?|account[\s-]*executives?|account[\s-]*execs?|sales[\s-]*executives?|legal|jurist(in)?|rechtsanw(a|ä)lt(in)?|rechtsabteilung|pharmareferent(in)?|pharmaberater(in)?|außendienstmitarbeiter(in)?|aussendienstmitarbeiter(in)?)\b/iu', $title);
@@ -109,13 +152,15 @@ function relevant(string $title,string $description=''): bool {
 function career_existing_visible(array $j): bool {
     $title=(string)($j['title']??'');
     return !excluded_role($title)
-        && relevant($title,(string)($j['description']??''))
+        && !career_excluded_by_owner($j)
+        && career_user_matches($j)
         && !career_foreign_location((string)($j['location']??''));
 }
 /** One rule for every intake channel, existing results and manual additions. */
 function career_job_eligible(array $j): bool {
     return !excluded_role((string)($j['title']??''))
-        && relevant((string)($j['title']??''),(string)($j['description']??''))
+        && !career_excluded_by_owner($j)
+        && career_user_matches($j)
         && career_germany_location((string)($j['location']??''),(string)($j['source']??''));
 }
 /** Remove unsuitable discovery results from the active database without deleting mail/application history. */
@@ -174,14 +219,15 @@ function crawl(): array {
     $cleanup=career_archive_unsuitable_jobs();
     $new=0;$seen=0;$log=[];
     // Unofficial BA endpoint may change; continue independently on failures.
-    foreach(['Pharma Sales Manager','Sales Director Pharma','Regionalleiter Pharma','Commercial Excellence Manager','Commercial Effectiveness'] as $term){
+    $searchTerms=array_slice(array_unique(array_merge(['Pharma Sales Manager','Sales Director Pharma','Regionalleiter Pharma','Commercial Effectiveness'],career_keyword_terms('career_include_keywords'))),0,10);
+    foreach($searchTerms as $term){
       try {$q=httpget('https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v6/jobs?'.http_build_query(['was'=>$term,'size'=>50,'page'=>1]),['X-API-Key: jobboerse-jobsuche']);
-        foreach(($q['stellenangebote']??[]) as $p){$seen++;$r=['source'=>'Arbeitsagentur','company'=>$p['arbeitgeber']??'','title'=>$p['titel']??$p['beruf']??'','location'=>$p['arbeitsort']['ort']??'','url'=>($p['externeUrl']??'')?:'https://www.arbeitsagentur.de/jobsuche/jobdetail/'.rawurlencode((string)($p['refnr']??'')),'description'=>''];if(relevant($r['title']))$new+=upsertjob($r);}
+        foreach(($q['stellenangebote']??[]) as $p){$seen++;$r=['source'=>'Arbeitsagentur','company'=>$p['arbeitgeber']??'','title'=>$p['titel']??$p['beruf']??'','location'=>$p['arbeitsort']['ort']??'','url'=>($p['externeUrl']??'')?:'https://www.arbeitsagentur.de/jobsuche/jobdetail/'.rawurlencode((string)($p['refnr']??'')),'description'=>''];$new+=upsertjob($r);}
       }catch(Throwable $e){$log[]='Arbeitsagentur: '.$e->getMessage();break;}
     }
     try{
       for($page=1;$page<=5;$page++){$data=httpget('https://www.arbeitnow.com/api/job-board-api?page='.$page);$items=$data['data']??[];if(!$items)break;
-        foreach($items as $p){$seen++;$title=(string)($p['title']??'');$description=(string)($p['description']??'');if(!relevant($title,$description))continue;$new+=upsertjob(['source'=>'Arbeitnow','company'=>$p['company_name']??'','title'=>$title,'location'=>$p['location']??'','url'=>$p['url']??'','description'=>$description]);}
+        foreach($items as $p){$seen++;$title=(string)($p['title']??'');$description=(string)($p['description']??'');if(!career_user_matches(['title'=>$title,'description'=>$description]))continue;$new+=upsertjob(['source'=>'Arbeitnow','company'=>$p['company_name']??'','title'=>$title,'location'=>$p['location']??'','url'=>$p['url']??'','description'=>$description]);}
         if(empty($data['links']['next']))break;
       }
     }catch(Throwable $e){$log[]='Arbeitnow: '.$e->getMessage();}
