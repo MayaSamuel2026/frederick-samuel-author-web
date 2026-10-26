@@ -57,8 +57,8 @@ function renderKeywords(){
  const board=state.data?.board_scan_info||{};
  const checks=Object.entries(board.sources||{});
  const boardStatus=checks.length?checks.map(([source,report])=>{
-   const label=report.status==='ok'?text('readable','lesbar'):report.status==='unavailable'?text('unavailable','nicht erreichbar'):text('no readable jobs','keine lesbaren Stellen');
-   return source+': '+(report.new||0)+' '+text('new','neu')+' ('+label+', '+(report.query||'?')+')';
+   const label=report.status==='ok'?text('parsed','ausgelesen'):report.status==='unavailable'?(report.error||text('source unavailable','Quelle nicht erreichbar')):text('no eligible structured listings','keine auslesbaren passenden Anzeigen');
+   return source+': '+(report.new||0)+' '+text('new','neu')+' · '+(report.found||0)+' '+text('matching','passend')+' ('+label+', '+(report.query||'?')+')';
  }).join(' · '):text('Not checked yet','Noch nicht geprüft');
  $('#jobMailStatus').textContent+=' | '+text('Public job boards: ','Öffentliche Jobbörsen: ')+boardStatus;
 }

@@ -108,6 +108,8 @@ function career_import_gmail_alerts(int $perLabel=6): array {
     if(setting('gmail_refresh')==='')return ['connected'=>false,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>['Gmail is not connected in website settings.']];
     $db=db();
     $db->exec('CREATE TABLE IF NOT EXISTS career_imported_alerts(message_id TEXT PRIMARY KEY,source TEXT NOT NULL,processed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,added INTEGER NOT NULL DEFAULT 0)');
+    $cols=$db->query('PRAGMA table_info(career_imported_alerts)')->fetchAll();
+    if(!in_array('parser_version',array_column($cols,'name'),true))$db->exec('ALTER TABLE career_imported_alerts ADD COLUMN parser_version INTEGER NOT NULL DEFAULT 1');
     $labels=gmailcall('GET','labels');
     $available=[];foreach(($labels['labels']??[]) as $label)$available[strtolower((string)($label['name']??''))]=(string)$label['id'];
     $result=['connected'=>true,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>[]];
@@ -126,7 +128,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
             foreach(($list['messages']??[]) as $item) {
                 $id=(string)($item['id']??'');
                 if($id==='')continue;
-                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=?');
+                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=? AND parser_version>=2');
                 $exists->execute([$id]);if($exists->fetchColumn())continue;
                 if($channel['checked'] >= $perLabel)break;
                 $message=gmailcall('GET','messages/'.rawurlencode($id).'?format=full');
@@ -137,7 +139,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
                     else $result['duplicates']++;
                 }
                 $channel['new']+=$added;
-                $db->prepare('INSERT OR IGNORE INTO career_imported_alerts(message_id,source,added) VALUES (?,?,?)')->execute([$id,$source,$added]);
+                $db->prepare('INSERT INTO career_imported_alerts(message_id,source,added,parser_version) VALUES (?,?,?,2) ON CONFLICT(message_id) DO UPDATE SET added=career_imported_alerts.added+excluded.added,parser_version=2,processed_at=CURRENT_TIMESTAMP')->execute([$id,$source,$added]);
             }
             $channel['seen']=count($list['messages']??[]);
         }catch(Throwable $e){$result['errors'][]=$source.': '.$e->getMessage();}

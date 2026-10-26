@@ -10,6 +10,8 @@ on:
       - 'site/career/lib.php'
       - 'site/career/sources.php'
       - 'site/career/boards.php'
+      - 'site/career/cron.php'
+      - 'tests/career-live-probe.php'
       - 'tests/career-sources-test.php'
       - 'tests/career-boards-test.php'
       - '.github/workflows/publish.yml'
@@ -109,6 +111,7 @@ jobs:
           php -l site/career/lib.php
           php -l site/career/sources.php
           php -l site/career/boards.php
+          php -l site/career/cron.php
           php -l site/career/index.php
           node --check site/career/app.js
           python3 - <<'PY'
@@ -128,6 +131,11 @@ jobs:
           php tests/career-filter-test.php
           php tests/career-sources-test.php
           php tests/career-boards-test.php
+
+      - name: Probe real public vacancy sources (diagnostic; boards may block automated requests)
+        continue-on-error: true
+        shell: bash
+        run: php tests/career-live-probe.php
 
       - name: Qualify static site
         shell: bash
