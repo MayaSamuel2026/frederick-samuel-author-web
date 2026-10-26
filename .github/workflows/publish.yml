@@ -2,6 +2,12 @@ name: Qualify and publish
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/career/app.js'
+      - 'site/career/index.php'
+      - '.github/workflows/publish.yml'
 
 permissions:
   contents: write
@@ -98,6 +104,14 @@ jobs:
           php -l site/career/lib.php
           php -l site/career/index.php
           node --check site/career/app.js
+          python3 - <<'PY'
+          from pathlib import Path
+          js = Path('site/career/app.js').read_text(encoding='utf-8')
+          for selector in ["$$('[data-language]').forEach(el=>", "$$('[data-placeholder-i]').forEach(el=>"]:
+              if selector not in js:
+                  raise SystemExit('Career UI initialization regression: '+selector)
+          print('PASS: language switch and placeholder collection selectors')
+          PY
           grep -q 'id="keywordIncludeList"' site/career/index.php
           grep -q 'id="keywordExcludeList"' site/career/index.php
           grep -q 'id="keywordIncludeForm"' site/career/index.php
@@ -227,7 +241,7 @@ jobs:
             homepage="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/?fs_career_release=$GITHUB_RUN_ID" || true)"
             login="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/index.php?fs_career_release=$GITHUB_RUN_ID" || true)"
             app_js="$(curl --silent --show-error --location --max-time 12 "https://fredericksamuel.com/career/app.js?v=$GITHUB_RUN_ID" || true)"
-            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* ]]; then
+            if [[ "$homepage" == *'class="career-private-link"'* && ( "$login" == *'PRIVATE CAREER WORKSPACE'* || "$login" == *'id="loginForm"'* ) && "$app_js" == *"undoRefinement"* && "$app_js" == *"toneNatural"* && "$app_js" == *"importAlertJobs"* && "$app_js" == *"persistKeywordChange"* && "$app_js" == *"keywordInclude"* && "$app_js" == *"\$\$('[data-language]').forEach(el=>"* && "$app_js" == *"\$\$('[data-placeholder-i]').forEach(el=>"* ]]; then
               echo "HOSTINGER_READBACK_PASS: footer, private login, language tools and editable career keyword filters"
               exit 0
             fi
