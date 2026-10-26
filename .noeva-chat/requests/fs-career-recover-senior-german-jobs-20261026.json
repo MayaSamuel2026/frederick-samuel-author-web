@@ -1,0 +1,9 @@
+{
+  "schema": "noeva-chat-github-gateway/1.0",
+  "request_id": "fs-career-recover-senior-german-jobs-20261026",
+  "repository": "MayaSamuel2026/frederick-samuel-author-web",
+  "action": "dispatch",
+  "route": "author-release",
+  "source_sha": "8814c2d81080d58a9de7dff2a9d01844174ad383",
+  "authorize_release": true
+}
