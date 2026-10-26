@@ -12,8 +12,8 @@ concurrency:
 
 jobs:
   qualify-publish:
-    # Routine qualification runs on NOEVA-owned compute to avoid GitHub-hosted runner charges.
-    runs-on: self-hosted
+    # This public repository uses GitHub-hosted runners so releases are not blocked by an offline VPS runner.
+    runs-on: ubuntu-latest
     env:
       GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
       GA4_MEASUREMENT_ID: ${{ secrets.GA4_MEASUREMENT_ID }}
