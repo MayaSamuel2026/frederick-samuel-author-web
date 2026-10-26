@@ -9,7 +9,7 @@ $cases=[
 ];
 foreach($cases as [$source,$text,$url,$company]) {
     $parsed=career_alert_candidates($source,$text);
-    if(count($parsed)!==1 || $parsed[0]['url']!==$url || $parsed[0]['company']!==$company) {
+    if(count($parsed)!==1 || $parsed[0]['url']!==$url || $parsed[0]['company']!==$company || ($source==='JobPharm' && $parsed[0]['location']!=='Bensheim bei Mannheim')) {
         fwrite(STDERR,"FAILED $source mail extraction: ".json_encode($parsed,JSON_UNESCAPED_UNICODE)."\n");exit(1);
     }
 }
