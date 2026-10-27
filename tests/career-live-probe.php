@@ -3,7 +3,7 @@ declare(strict_types=1);
 require __DIR__.'/../site/career/lib.php';
 require __DIR__.'/../site/career/sources.php';
 require __DIR__.'/../site/career/boards.php';
-$terms=['StepStone'=>'regionalleiter pharma','Indeed'=>'sales director pharma','LinkedIn'=>'commercial excellence','JobPharm'=>'vertriebsleiter'];
+$terms=['StepStone'=>'sales director pharma','Indeed'=>'sales director pharma','LinkedIn'=>'commercial excellence','JobPharm'=>'vertriebsleiter'];
 foreach($terms as $source=>$term){
     $url=career_board_search_url($source,$term);
     try{
@@ -28,6 +28,18 @@ foreach($terms as $source=>$term){
                         .'['.mb_substr($node->getAttribute('data-at'),0,38).']';
                 }
                 echo '  ancestor_chain='.implode(' > ',$parents).PHP_EOL;
+                $childNodes=$xp->query('.//*[@data-at or @data-testid or @data-qa]', $card);
+                $attributes=[];
+                if($childNodes){
+                    foreach($childNodes as $child){
+                        if(!$child instanceof DOMElement)continue;
+                        $attributes[]=$child->tagName.' data-at='.mb_substr($child->getAttribute('data-at'),0,45)
+                          .' testid='.mb_substr($child->getAttribute('data-testid'),0,45)
+                          .' text='.mb_substr(trim(preg_replace('/\\s+/u',' ',$child->textContent)),0,65);
+                        if(count($attributes)>=8)break;
+                    }
+                }
+                echo '  card_elements='.implode(' | ',$attributes).PHP_EOL;
                 echo '  first_anchor='.mb_substr(trim($anchor->textContent),0,90)
                      .' ; ancestor='.($card instanceof DOMElement?$card->tagName.' '.mb_substr($card->getAttribute('class'),0,110):'n/a')
                      .' ; company='.career_board_xpath_text($xp,$card,'.//*[contains(@data-testid,"company") or contains(@class,"company-name")]')
