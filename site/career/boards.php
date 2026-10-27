@@ -70,6 +70,9 @@ function career_board_card(DOMNode $anchor,string $board): DOMNode {
     for($depth=0;$depth<12 && $n!==null;$depth++,$n=$n->parentNode) {
         if(!$n instanceof DOMElement)continue;
         $class=strtolower($n->getAttribute('class').' '.$n->getAttribute('data-testid').' '.$n->getAttribute('data-at').' '.$n->getAttribute('data-qa'));
+        // StepStone labels the title ANCHOR as "job-item-title". It is not
+        // the containing card: employer and location are sibling elements.
+        if(strtolower($n->tagName)==='a')continue;
         if(preg_match('/job[-_ ]?(?:card|item|listing|seen|result)|base-search-card|job-search-card/i',$class))return $n;
         if(in_array(strtolower($n->tagName),['article','li'],true))return $n;
         $length=mb_strlen(trim(preg_replace('/\s+/u',' ',$n->textContent??'')));
