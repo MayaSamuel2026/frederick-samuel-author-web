@@ -18,10 +18,12 @@ foreach($cases as [$source,$html,$title,$company,$city]){
 }
 $blocked=career_board_parse('StepStone','<html><body><h2>Sign in to view listings</h2></body></html>');
 if(count($blocked)!==0){fwrite(STDERR,"FAIL empty document must not create a job\n");exit(1);}
-$stepstoneModern='<div data-at="job-item"><a class="res-xaz43y" href="/stellenangebote--Head-of-Sales-Pharma-Berlin--99887-inline.html"><style>.res-xrpel9{min-width:0;display:flex}</style><h2>Head of Sales Pharma</h2></a><span data-at="job-item-company">BioPharma GmbH</span><span data-at="job-item-location">Berlin</span></div>';
+// This mirrors StepStone's October 2026 page: the link itself has
+// data-testid="job-item-title", while employer and city are siblings.
+$stepstoneModern='<article class="res-rqk6ol" data-at="job-item" data-testid="job-item"><div data-testid="job-card-content"><h2><a class="res-xaz43y" data-at="job-item-title" data-testid="job-item-title" href="https://www.stepstone.de/stellenangebote--Head-of-Sales-Pharma-Berlin--99887-inline.html"><div><style>.res-xrpel9{display:flex}</style><div>Head of Sales Pharma</div></div></a></h2><span data-at="job-item-company-name"><span>BioPharma GmbH</span></span><span data-at="job-item-location"><span>Berlin</span></span></div></article>';
 $modern=career_board_parse('StepStone','<html><body>'.$stepstoneModern.'</body></html>');
-if(count($modern)!==1||$modern[0]['title']!=='Head of Sales Pharma'||$modern[0]['company']!=='BioPharma GmbH'){
-    fwrite(STDERR,"FAIL modern StepStone embedded-style card parsing\n");exit(1);
+if(count($modern)!==1||$modern[0]['title']!=='Head of Sales Pharma'||$modern[0]['company']!=='BioPharma GmbH'||$modern[0]['location']!=='Berlin'){
+    fwrite(STDERR,"FAIL modern StepStone title-anchor/sibling metadata parsing ".json_encode($modern,JSON_UNESCAPED_UNICODE)."\n");exit(1);
 }
 foreach(['StepStone','Indeed','LinkedIn','JobPharm'] as $board){
  $url=career_board_search_url($board,'Sales Director Pharma');
