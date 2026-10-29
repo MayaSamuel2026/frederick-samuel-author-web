@@ -162,6 +162,25 @@ function career_indexed_indeed_job(array $item): ?array {
     if($record['title']==='' || $record['company']==='' || !career_job_eligible($record))return null;
     return $record;
 }
+/** Validate curated LinkedIn job-alert records exported from the owner's
+ * connected Hostinger mailbox. Never store email bodies, tokens, or tracking URLs.
+ */
+function career_hostinger_linkedin_job(array $item): ?array {
+    if(($item['source']??'')!=='LinkedIn')return null;
+    $url=trim((string)($item['url']??''));
+    if(!preg_match('~^https://(?:www\\.)?linkedin\\.com/jobs/view/(\\d{7,})/?$~i',$url,$m))return null;
+    $title=trim((string)($item['title']??''));
+    $company=trim((string)($item['company']??''));
+    $location=trim((string)($item['location']??''));
+    if($title===''||$company===''||$location===''||strlen($company)>160)return null;
+    if(!career_job_eligible(['title'=>$title,'company'=>$company,'location'=>$location,'source'=>'LinkedIn']))return null;
+    return [
+       'source'=>'Hostinger · LinkedIn',
+       'title'=>$title,'company'=>$company,'location'=>$location,
+       'url'=>'https://www.linkedin.com/jobs/view/'.$m[1].'/',
+       'description'=>'LinkedIn job alert received '.trim((string)($item['mail_date']??'')).'. Confirm position remains available.'
+    ];
+}
 /** Prefer configured Gmail labels. If an alert label is absent, search only
  * the provider's sender domain; the vacancy URL is still independently checked.
  * This uses the website's existing authorized Gmail connection, never public scraping.
