@@ -12,7 +12,6 @@ on:
       - 'site/career/boards.php'
       - 'site/career/cron.php'
       - 'tests/career-live-probe.php'
-      - 'tests/career-indeed-index-probe.php'
       - 'tests/career-sources-test.php'
       - 'tests/career-boards-test.php'
       - '.github/workflows/publish.yml'
@@ -138,9 +137,6 @@ jobs:
         shell: bash
         run: php tests/career-live-probe.php
 
-      - name: Probe public search index for Indeed job links (diagnostic only)
-        continue-on-error: true
-        run: php tests/career-indeed-index-probe.php
 
       - name: Qualify static site
         shell: bash
