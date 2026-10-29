@@ -103,12 +103,13 @@ if($api!==''){
     }
 
     if($api==='importjobs'){
-        if(!isset($_FILES['file'])||$_FILES['file']['error']!==UPLOAD_ERR_OK)fail('Select the private Gmail job export JSON');
+        if(!isset($_FILES['file'])||$_FILES['file']['error']!==UPLOAD_ERR_OK)fail('Select the private job export JSON');
         $file=$_FILES['file'];if($file['size']>3*1024*1024)fail('Import file exceeds 3 MB');
         $body=file_get_contents($file['tmp_name']);$data=json_decode((string)$body,true);
         $schema=is_array($data)?($data['schema']??''):'';
         $indexed=$schema==='frederick-career-index-import/1.0';
-        if(!is_array($data)||!in_array($schema,['frederick-career-mail-import/1.0','frederick-career-index-import/1.0'],true)||!is_array($data['jobs']??null))fail('Invalid job import file');
+        $hostinger=$schema==='frederick-career-hostinger-linkedin-import/1.0';
+        if(!is_array($data)||!in_array($schema,['frederick-career-mail-import/1.0','frederick-career-index-import/1.0','frederick-career-hostinger-linkedin-import/1.0'],true)||!is_array($data['jobs']??null))fail('Invalid job import file');
         $added=0;$duplicates=0;$rejected=0;$total=0;
         foreach(array_slice($data['jobs'],0,500) as $job){
             if(!is_array($job))continue;$total++;
@@ -116,6 +117,9 @@ if($api!==''){
                 // Public search-index imports are manually curated and limited
                 // to canonical Indeed vacancy IDs with an explicit company/city.
                 $record=career_indexed_indeed_job($job);
+                if($record===null){$rejected++;continue;}
+            }elseif($hostinger){
+                $record=career_hostinger_linkedin_job($job);
                 if($record===null){$rejected++;continue;}
             }else{
                 $title=(string)($job['title']??'');$location=(string)($job['location']??'');$source=(string)($job['source']??'Gmail');
