@@ -52,7 +52,7 @@ function career_alert_link_ok(string $source,string $url): bool {
     $host=strtolower((string)parse_url($url,PHP_URL_HOST));
     return match($source){
         'StepStone' => $host==='click.stepstone.de'||$host==='www.stepstone.de'||$host==='stepstone.de',
-        'Indeed' => $host==='de.indeed.com'||$host==='www.indeed.com'||$host==='indeed.com',
+        'Indeed' => in_array($host,['de.indeed.com','www.indeed.com','indeed.com'],true) && preg_match('~[?&]jk=[a-z0-9]+~i',$url)===1,
         'JobPharm' => ($host==='jobpharm.de'||$host==='www.jobpharm.de')&&str_contains($url,'/job?'),
         'Jobware' => str_contains($host,'jobware.de')||str_contains($host,'jobware.com'),
         'ZipRecruiter' => str_contains($host,'ziprecruiter.'),
@@ -112,7 +112,24 @@ function career_alert_candidates(string $source,string $body): array {
     }
     return $jobs;
 }
-/** Pull only individually authorised Gmail labels and the user's LinkedIn vacancy alerts. */
+/** Prefer configured Gmail labels. If an alert label is absent, search only
+ * the provider's sender domain; the vacancy URL is still independently checked.
+ * This uses the website's existing authorized Gmail connection, never public scraping.
+ */
+function career_alert_search_params(string $source,?string $labelId): ?array {
+    $params=['maxResults'=>500];
+    if($labelId!==null){$params['labelIds']=$labelId;return $params;}
+    $query=match($source){
+        'StepStone'=>'from:(stepstone.de) newer_than:120d',
+        'Indeed'=>'from:(indeed.com) newer_than:120d',
+        'LinkedIn'=>'from:(jobalerts-noreply@linkedin.com) newer_than:90d',
+        default=>null
+    };
+    if($query===null)return null;
+    $params['q']=$query;
+    return $params;
+}
+/** Pull individually authorized Gmail job alerts into the private database. */
 function career_import_gmail_alerts(int $perLabel=6): array {
     if(setting('gmail_refresh')==='')return ['connected'=>false,'new'=>0,'examined'=>0,'duplicates'=>0,'rejected'=>0,'by_source'=>[],'errors'=>['Gmail is not connected in website settings.']];
     $db=db();
@@ -125,13 +142,10 @@ function career_import_gmail_alerts(int $perLabel=6): array {
     $channels=career_alert_sources();
     $channels['LinkedIn']=null; // LinkedIn job-alert emails need no extra mailbox label.
     foreach($channels as $source=>$label) {
-        $params=['maxResults'=>500];
-        if($label!==null) {
-            $labelId=$available[strtolower($label)]??null;
-            if($labelId===null){$result['by_source'][$source]=['new'=>0,'checked'=>0,'message'=>'No Gmail label'];continue;}
-            $params['labelIds']=$labelId;
-        }else $params['q']='from:(jobalerts-noreply@linkedin.com) newer_than:90d';
-        $channel=['new'=>0,'checked'=>0,'seen'=>0];
+        $labelId=$label===null?null:($available[strtolower($label)]??null);
+        $params=career_alert_search_params($source,$labelId);
+        if($params===null){$result['by_source'][$source]=['new'=>0,'checked'=>0,'parsed'=>0,'message'=>'No Gmail label or sender search'];continue;}
+        $channel=['new'=>0,'checked'=>0,'seen'=>0,'parsed'=>0,'mode'=>$labelId!==null?'label':'sender'];
         try {
             $list=gmailcall('GET','messages?'.http_build_query($params));
             foreach(($list['messages']??[]) as $item) {
@@ -143,7 +157,9 @@ function career_import_gmail_alerts(int $perLabel=6): array {
                 $message=gmailcall('GET','messages/'.rawurlencode($id).'?format=full');
                 $body=career_alert_body_decode($message['payload']??[]);
                 $channel['checked']++;$added=0;
-                foreach(career_alert_candidates($source,$body) as $job) {
+                $candidates=career_alert_candidates($source,$body);
+                $channel['parsed']+=count($candidates);
+                foreach($candidates as $job) {
                     if(upsertjob($job)){$added++;$result['new']++;}
                     else $result['duplicates']++;
                 }
