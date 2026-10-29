@@ -106,13 +106,22 @@ if($api!==''){
         if(!isset($_FILES['file'])||$_FILES['file']['error']!==UPLOAD_ERR_OK)fail('Select the private Gmail job export JSON');
         $file=$_FILES['file'];if($file['size']>3*1024*1024)fail('Import file exceeds 3 MB');
         $body=file_get_contents($file['tmp_name']);$data=json_decode((string)$body,true);
-        if(!is_array($data)||($data['schema']??'')!=='frederick-career-mail-import/1.0'||!is_array($data['jobs']??null))fail('Invalid Gmail job import file');
+        $schema=is_array($data)?($data['schema']??''):'';
+        $indexed=$schema==='frederick-career-index-import/1.0';
+        if(!is_array($data)||!in_array($schema,['frederick-career-mail-import/1.0','frederick-career-index-import/1.0'],true)||!is_array($data['jobs']??null))fail('Invalid job import file');
         $added=0;$duplicates=0;$rejected=0;$total=0;
         foreach(array_slice($data['jobs'],0,500) as $job){
             if(!is_array($job))continue;$total++;
-            $title=(string)($job['title']??'');$location=(string)($job['location']??'');$source=(string)($job['source']??'Gmail');
-            if(!career_job_eligible(['title'=>$title,'location'=>$location,'source'=>$source,'description'=>''])){$rejected++;continue;}
-            $record=['source'=>'Gmail · '.$source,'title'=>$title,'company'=>$job['company']??'','location'=>$location,'url'=>$job['url']??'','description'=>'Job alert received '.($job['mail_date']??'')];
+            if($indexed){
+                // Public search-index imports are manually curated and limited
+                // to canonical Indeed vacancy IDs with an explicit company/city.
+                $record=career_indexed_indeed_job($job);
+                if($record===null){$rejected++;continue;}
+            }else{
+                $title=(string)($job['title']??'');$location=(string)($job['location']??'');$source=(string)($job['source']??'Gmail');
+                if(!career_job_eligible(['title'=>$title,'location'=>$location,'source'=>$source,'description'=>''])){$rejected++;continue;}
+                $record=['source'=>'Gmail · '.$source,'title'=>$title,'company'=>$job['company']??'','location'=>$location,'url'=>$job['url']??'','description'=>'Job alert received '.($job['mail_date']??'')];
+            }
             if(upsertjob($record))$added++;else $duplicates++;
         }
         setsetting('last_mail_import',gmdate('Y-m-d H:i:s').' UTC');
