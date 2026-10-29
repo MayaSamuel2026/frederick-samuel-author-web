@@ -64,6 +64,21 @@ if($api!==''){
         $base['new']+=$boards['new'];$base['examined']+=$boards['examined'];
         $base['errors']=array_merge($base['errors'],$boards['errors']);
         $base['boards']=$boards['sources'];
+        // Refresh is a complete discovery action: include StepStone and Indeed
+        // Gmail alerts whenever this private workspace has Google authorization.
+        $base['gmail_connected']=setting('gmail_refresh')!=='';
+        if($base['gmail_connected']){
+            try {
+                $mail=career_import_gmail_alerts(8);
+                $base['new']+=$mail['new'];
+                $base['examined']+=$mail['examined'];
+                $base['errors']=array_merge($base['errors'],$mail['errors']);
+                $base['gmail']=$mail;
+            }catch(Throwable $e){
+                $base['errors'][]='Gmail job alerts: '.$e->getMessage();
+                $base['gmail']=['connected'=>true,'errors'=>[$e->getMessage()],'new'=>0];
+            }
+        }
         setsetting('last_scan_info',json_encode($base,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
         jsonout(['ok'=>true,'result'=>$base]);
     }
