@@ -61,4 +61,34 @@ foreach([
         fwrite(STDERR,"FAILED unsafe Indeed index import rejection\n");exit(1);
     }
 }
+// Real LinkedIn hiring digests encode job, employer and location inside the same link.
+$linkedinMail="[LinkedIn](https://www.linkedin.com/comm/feed/)\n"
+    ."[Abbott](https://www.linkedin.com/comm/jobs/view/4420290693/?trk=company)\n"
+    ."[National Sales Manager Germany Cardiometabolic (m/f/d)\nAbbott · Wiesbaden\nActively recruiting](https://www.linkedin.com/comm/jobs/view/4420290693/?trk=alert)\n"
+    ."[View job](https://www.linkedin.com/comm/jobs/view/4420290693/?trk=view)\n"
+    ."[Molecular Devices](https://www.linkedin.com/comm/jobs/view/4396747191/?trk=company)\n"
+    ."[Senior Director, European Sales (m/f/d)\nMolecular Devices · Dresden (Remote)](https://www.linkedin.com/comm/jobs/view/4396747191/?trk=mail)\n"
+    ."[Head of Sales Germany (m/w/d)\nAirbus\nBerlin (Hybrid)](https://www.linkedin.com/comm/jobs/view/4420154552/?trackingId=test)\n"
+    ."[Regionalleiter Sales\nExample Ltd · London](https://www.linkedin.com/comm/jobs/view/4420154553/)\n"
+    ."[Sales Director\nFake · Berlin](https://www.linkedin.com/jobs/search/?keywords=sales)\n";
+$linkedinJobs=career_alert_candidates('LinkedIn',$linkedinMail);
+if(count($linkedinJobs)!==3
+    || $linkedinJobs[0]['company']!=='Abbott'
+    || $linkedinJobs[0]['location']!=='Wiesbaden'
+    || $linkedinJobs[0]['url']!=='https://www.linkedin.com/jobs/view/4420290693/'
+    || $linkedinJobs[1]['company']!=='Molecular Devices'
+    || $linkedinJobs[1]['location']!=='Dresden (Remote)'
+    || $linkedinJobs[2]['company']!=='Airbus'
+    || $linkedinJobs[2]['title']!=='Head of Sales Germany (m/w/d)'){
+    fwrite(STDERR,"FAILED LinkedIn notification job-card extraction: ".json_encode($linkedinJobs,JSON_UNESCAPED_UNICODE)."\n");exit(1);
+}
+$linkedinQuery=career_alert_search_params('LinkedIn',null);
+if(!str_contains($linkedinQuery['q']??'','from:(linkedin.com)')||!str_contains($linkedinQuery['q']??'','newer_than:45d')){
+    fwrite(STDERR,"FAILED LinkedIn sender search coverage/freshness guard\n");exit(1);
+}
+if(career_alert_link_ok('LinkedIn','https://www.linkedin.com/jobs/search/?keywords=sales')
+    ||career_alert_link_ok('LinkedIn','https://linkedin.example.com/jobs/view/4420290693/')
+    ||career_linkedin_label_parts("Regionalleiter\nExample Ltd · London")!==null){
+    fwrite(STDERR,"FAILED LinkedIn invalid/foreign link guard\n");exit(1);
+}
 echo "PASS: Gmail alert parsers extract application links and associated employer/location\n";
