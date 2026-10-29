@@ -71,7 +71,10 @@ function renderKeywords(){
    const done=(report.queries||[]).length||1;
    const blocked=report.status==='unavailable';
    const stateLabel=blocked?text('access unavailable','Zugriff nicht möglich'):report.status==='ok'?text('available','erreichbar'):text('no structured matches','keine auslesbaren Treffer');
-   return name+': '+(report.found||0)+' '+text('matching','passend')+' / '+(report.new||0)+' '+text('newly saved','neu gespeichert')+' · '+done+' '+text('queries','Suchen')+' · '+stateLabel;
+   const stored=(state.data?.jobs||[]).filter(j=>j.source===name||j.source==='Gmail · '+name).length;
+   const mail=info.by_source?.[name];
+   const fallback=mail?(' · '+text('Gmail alerts','Gmail-Meldungen')+': '+(mail.parsed||0)+' '+text('vacancies extracted','Stellen ausgelesen')):'';
+   return name+': '+(report.found||0)+' '+text('matching','passend')+' / '+(report.new||0)+' '+text('newly saved','neu gespeichert')+' · '+done+' '+text('queries','Suchen')+' · '+stateLabel+' · '+stored+' '+text('saved total','insgesamt gespeichert')+fallback;
  }).join('   |   ');
  $('#prioritySourceHealth').textContent=text('Priority job boards · Last scan: ','Wichtigste Stellenbörsen · Letzter Suchlauf: ')+(state.data?.last_board_scan||text('not yet','noch keiner'))+' · '+priorityStatus;
  // Other sources remain visible in the existing source filter.
