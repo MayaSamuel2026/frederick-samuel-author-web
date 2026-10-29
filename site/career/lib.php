@@ -60,7 +60,7 @@ function career_germany_location(string $location,string $source=''): bool {
     if(strcasecmp($source,'Arbeitsagentur')===0)return true;
     // Public result searches explicitly restricted to Germany contain many smaller towns.
     // Reject any explicitly foreign base above, then allow their German result-page cities.
-    if(in_array($source,['StepStone','Indeed','LinkedIn','JobPharm'],true))return true;
+    if(in_array($source,['StepStone','Indeed','LinkedIn','JobPharm'],true)||in_array($source,['Gmail · LinkedIn','Hostinger · LinkedIn'],true))return true;
     // Genuine unknown bases are not automatically treated as Germany.
     return false;
 }
@@ -146,6 +146,9 @@ function relevant(string $title,string $description=''): bool {
     if(excluded_role($title))return false;
     $x=function_exists('mb_strtolower')?mb_strtolower($title):strtolower($title);$focus=['sales manager','sales director','head of sales','regionalleiter','regional sales','vertriebsleiter','vertriebsdirektor','commercial effectiveness','commercial excellence','sales excellence','commercial director','leiter vertrieb','key account director','business unit director','country manager','head of commercial','pharma vertrieb','leiter außendienst','leiter aussendienst','national sales manager','sales lead','head of field force','head of field','sales operations','vertriebsleitung','leitung vertrieb','gebietsverkaufsleiter','gebietsleiter','bezirksverkaufsleiter','bezirksleiter apotheke','niederlassungsleiter vertrieb','head of sales dach','teamleitung sales','abteilungsleitung sales','vertriebs- und projektleitung','vertriebs und projektleitung','leitung vertrieb und marketing','leiter vertriebspartner','leitung außen','leiter aussendienst','leiter außendienst','director sales','regionalverkaufsleiter','regionalverkaufsleitung','regionalleitung therapie','mvz-regionalgeschäftsführer','verkaufsleitung'];
     foreach($focus as $p)if((function_exists('mb_strpos')?mb_strpos($x,$p):strpos($x,$p))!==false)return true;
+    // Senior healthcare roles often use commercial, market or field leadership titles
+    // without the literal word Sales. Include these explicit leadership patterns.
+    if(preg_match('/\\b(?:head of (?:biopharma|strategic market excellence|commercial|field force)|head launch & field excellence|national sales director|regional business head|commercial leader|senior director,? commercial|director international commercialization|director business development|associate director.{0,18}sales force effectiveness|commercial operations associate director)\\b/iu',$title))return true;
     // International employers often put geography between Director and Sales.
     if(preg_match('/\\b(?:senior\\s+|associate\\s+)?director\\b.{0,55}\\bsales\\b/iu',$title))return true;
     return (bool)preg_match('/(pharma|life.science|healthcare|medical|klinisch|hospital|krankenhaus|biotech)/iu',$description.' '.$title) && (bool)preg_match('/(sales|vertrieb|commercial|geschäftsbereich|business.development)/iu',$title);
