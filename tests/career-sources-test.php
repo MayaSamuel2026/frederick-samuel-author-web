@@ -91,4 +91,31 @@ if(career_alert_link_ok('LinkedIn','https://www.linkedin.com/jobs/search/?keywor
     ||career_linkedin_label_parts("Regionalleiter\nExample Ltd · London")!==null){
     fwrite(STDERR,"FAILED LinkedIn invalid/foreign link guard\n");exit(1);
 }
+// Hostinger mailbox: official LinkedIn alert cards with canonical job IDs.
+$hostingerCase=['source'=>'LinkedIn','title'=>'Head of Sales DACH',
+    'company'=>'CILIATECH - Glaucoma Innovators','location'=>'Germany',
+    'url'=>'https://www.linkedin.com/jobs/view/4483650847/','mail_date'=>'2026-10-29'];
+$h=career_hostinger_linkedin_job($hostingerCase);
+if(!$h||$h['source']!=='Hostinger · LinkedIn'||$h['url']!=='https://www.linkedin.com/jobs/view/4483650847/') {
+    fwrite(STDERR,"FAILED Hostinger LinkedIn valid vacancy export\n");exit(1);
+}
+$h2=career_hostinger_linkedin_job([
+    'source'=>'LinkedIn','title'=>'Head of Biopharma Germany & Switzerland (m/f/d)',
+    'company'=>'Fresenius Kabi','location'=>'Bad Homburg',
+    'url'=>'https://www.linkedin.com/jobs/view/4483648918/','mail_date'=>'2026-10-29']);
+if(!$h2){fwrite(STDERR,"FAILED specialized healthcare leadership job intake\n");exit(1);}
+$h3=career_hostinger_linkedin_job([
+    'source'=>'LinkedIn','title'=>'Head of Commercial (m/f/d)',
+    'company'=>'Tentamus Pharma & Med Deutschland GmbH','location'=>'Bad Kissingen',
+    'url'=>'https://www.linkedin.com/jobs/view/4481066334/']);
+if(!$h3 || !career_job_eligible($h3)){fwrite(STDERR,"FAILED trusted German small-town LinkedIn location\n");exit(1);}
+foreach([
+    array_merge($hostingerCase,['url'=>'https://example.com/jobs/view/4483650847/']),
+    array_merge($hostingerCase,['url'=>'https://www.linkedin.com/jobs/search/?keywords=sales']),
+    array_merge($hostingerCase,['location'=>'London']),
+    array_merge($hostingerCase,['title'=>'Junior Sales Representative']),
+    array_merge($hostingerCase,['company'=>'']),
+] as $bad){
+    if(career_hostinger_linkedin_job($bad)!==null){fwrite(STDERR,"FAILED Hostinger LinkedIn unsafe import rejection\n");exit(1);}
+}
 echo "PASS: Gmail alert parsers extract application links and associated employer/location\n";
