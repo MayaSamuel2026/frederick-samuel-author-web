@@ -4,6 +4,8 @@ declare(strict_types=1);
 $queries=[
   'site:de.indeed.com/viewjob "Regionalleiter" "Pharma"',
   'site:de.indeed.com/viewjob "Sales Director" pharma',
+  'site:de.indeed.com "Regionalleiter" "Pharma"',
+  'site:de.indeed.com/viewjob?jk= "Regionalleiter"',
 ];
 foreach($queries as $query){
   $url='https://www.bing.com/search?'.http_build_query(['q'=>$query,'format'=>'rss','cc'=>'de','setlang'=>'de-DE']);
@@ -23,6 +25,7 @@ foreach($queries as $query){
     $title=trim($item->getElementsByTagName('title')->item(0)?->textContent??'');
     $link=trim($item->getElementsByTagName('link')->item(0)?->textContent??'');
     $host=strtolower((string)parse_url($link,PHP_URL_HOST));
+    if($verified===0)echo 'RSS example: '.mb_substr($title,0,85).' | host='.$host.' | '.mb_substr($link,0,110)."\n";
     if(!in_array($host,['de.indeed.com','www.indeed.com','indeed.com'],true))continue;
     if(!preg_match('~[?&](?:jk|vjk)=([a-z0-9]{8,})~i',$link))continue;
     $verified++;
