@@ -39,4 +39,26 @@ if(!str_contains($stepstoneParams['q']??'','stepstone.de')
     || career_alert_search_params('Jobware',null)!==null){
     fwrite(STDERR,"FAILED source alert label/sender fallback\n");exit(1);
 }
+// Independent, manually reviewed search-index route for Indeed.
+// Ensure invalid hosts, job identifiers, and non-German bases never import.
+$indexed=[
+    'source'=>'Indeed','title'=>'Head of Sales Germany (m/w/d)',
+    'company'=>'Merz Therapeutics','location'=>'Frankfurt am Main',
+    'url'=>'https://de.indeed.com/viewjob?jk=4f804ddccab860e4'
+];
+$accepted=career_indexed_indeed_job($indexed);
+if(!$accepted || $accepted['source']!=='Indeed · Search index' || $accepted['company']!=='Merz Therapeutics') {
+    fwrite(STDERR,"FAILED Indeed index import validation\n");exit(1);
+}
+foreach([
+    array_merge($indexed,['url'=>'https://example.com/viewjob?jk=4f804ddccab860e4']),
+    array_merge($indexed,['url'=>'https://de.indeed.com/jobs?q=sales']),
+    array_merge($indexed,['company'=>'']),
+    array_merge($indexed,['location'=>'London']),
+    array_merge($indexed,['source'=>'Unknown'])
+] as $invalid) {
+    if(career_indexed_indeed_job($invalid)!==null){
+        fwrite(STDERR,"FAILED unsafe Indeed index import rejection\n");exit(1);
+    }
+}
 echo "PASS: Gmail alert parsers extract application links and associated employer/location\n";
