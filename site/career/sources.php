@@ -30,7 +30,9 @@ function career_alert_body_decode(array $payload): string {
 function career_alert_text(string $raw): string {
     if(!preg_match('/<\s*(?:html|table|div|a)\b/i',$raw))return $raw;
     $raw=preg_replace_callback('~<a\b[^>]*\bhref\s*=\s*(["\x27])(.*?)\1[^>]*>(.*?)</a>~si',static function($m){
-        $title=trim(html_entity_decode(strip_tags($m[3]),ENT_QUOTES|ENT_HTML5,'UTF-8'));
+        // Preserve embedded line breaks in LinkedIn job cards.
+        $inner=preg_replace('~<br\\s*/?>|</(?:p|div)>~i',"\n",$m[3]);
+        $title=trim(html_entity_decode(strip_tags($inner),ENT_QUOTES|ENT_HTML5,'UTF-8'));
         $url=html_entity_decode($m[2],ENT_QUOTES|ENT_HTML5,'UTF-8');
         return $title!==''?"\n[".$title."](".$url.")\n":'';
     },$raw);
@@ -44,7 +46,7 @@ function career_alert_url(string $source,string $url): string {
         return 'https://de.indeed.com/viewjob?jk='.$m[1];
     if($source==='JobPharm' && preg_match('~[?&]id=(\d+)~',$url,$m))
         return 'https://www.jobpharm.de/job?id='.$m[1];
-    if($source==='LinkedIn' && preg_match('~/jobs/(?:view/|view/[^/]*-)(\d{7,})~',$url,$m))
+    if($source==='LinkedIn' && preg_match('~/(?:comm/)?jobs/view/(?:[^/?]*-)?(\d{7,})(?:[/?]|$)~',$url,$m))
         return 'https://www.linkedin.com/jobs/view/'.$m[1].'/';
     return $url;
 }
@@ -56,9 +58,27 @@ function career_alert_link_ok(string $source,string $url): bool {
         'JobPharm' => ($host==='jobpharm.de'||$host==='www.jobpharm.de')&&str_contains($url,'/job?'),
         'Jobware' => str_contains($host,'jobware.de')||str_contains($host,'jobware.com'),
         'ZipRecruiter' => str_contains($host,'ziprecruiter.'),
-        'LinkedIn' => $host==='www.linkedin.com'||$host==='linkedin.com',
+        'LinkedIn' => in_array($host,['www.linkedin.com','linkedin.com','de.linkedin.com'],true)
+            && preg_match('~^/(?:comm/)?jobs/view/(?:[^/?]*-)?\\d{7,}(?:/|$)~', (string)parse_url($url,PHP_URL_PATH))===1,
         default => false,
     };
+}
+/** LinkedIn job digest cards contain position, employer and location inside one
+ * multiline link label. Infer none of these fields from neighboring links.
+ */
+function career_linkedin_label_parts(string $label): ?array {
+    $lines=array_values(array_filter(array_map('trim',preg_split('/\\R/u',$label)?:[]),static fn($x)=>$x!==''));
+    if(count($lines)<2)return null;
+    $title=$lines[0];$company='';$location='';
+    if(preg_match('/^(.+?)\\s+·\\s+(.+)$/u',$lines[1],$m)){
+        $company=trim($m[1]);$location=trim($m[2]);
+    }elseif(count($lines)>=3){
+        $company=$lines[1];$location=$lines[2];
+    }
+    $location=trim((string)preg_replace('/\\s+(?:Easy Apply|Actively recruiting|gray clock icon|Be first of \\d+ to apply).*$/iu','',$location));
+    if($company===''||$location===''||!career_user_matches(['title'=>$title,'description'=>''])
+        ||excluded_role($title)||!career_germany_location($location,'LinkedIn'))return null;
+    return ['title'=>$title,'company'=>$company,'location'=>$location];
 }
 function career_alert_candidates(string $source,string $body): array {
     $plain=career_alert_text($body);
@@ -66,9 +86,20 @@ function career_alert_candidates(string $source,string $body): array {
     preg_match_all('~\[([^\]]{4,220})\]\((https?://[^\s)]+)\)~u',$plain,$matches,PREG_OFFSET_CAPTURE);
     $jobs=[];$seen=[];
     foreach($matches[0]??[] as $i=>$hit) {
-        $title=trim(preg_replace('/\s+/u',' ',$matches[1][$i][0]));
+        $rawTitle=$matches[1][$i][0];
+        $title=trim(preg_replace('/\\s+/u',' ',$rawTitle));
         $url=$matches[2][$i][0];
         if(!career_alert_link_ok($source,$url))continue;
+        if($source==='LinkedIn'){
+            $parts=career_linkedin_label_parts($rawTitle);
+            if($parts===null)continue;
+            $url=career_alert_url($source,$url);
+            if(isset($seen[$url]))continue;
+            $seen[$url]=true;
+            $jobs[]=['source'=>'Gmail · LinkedIn','title'=>$parts['title'],'company'=>$parts['company'],
+                'location'=>$parts['location'],'url'=>$url,'description'=>''];
+            continue;
+        }
         // Only consider clickable vacancies, not unsubscribe, logo, company, or search links.
         if(!career_user_matches(['title'=>$title,'description'=>'']) || excluded_role($title))continue;
         $after=substr($plain,$hit[1]+strlen($hit[0]),600);
@@ -141,7 +172,8 @@ function career_alert_search_params(string $source,?string $labelId): ?array {
     $query=match($source){
         'StepStone'=>'from:(stepstone.de) newer_than:120d',
         'Indeed'=>'from:(indeed.com) newer_than:120d',
-        'LinkedIn'=>'from:(jobalerts-noreply@linkedin.com) newer_than:90d',
+        // All authorized LinkedIn senders, but only recent alerts.
+        'LinkedIn'=>'from:(linkedin.com) newer_than:45d',
         default=>null
     };
     if($query===null)return null;
@@ -170,7 +202,8 @@ function career_import_gmail_alerts(int $perLabel=6): array {
             foreach(($list['messages']??[]) as $item) {
                 $id=(string)($item['id']??'');
                 if($id==='')continue;
-                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=? AND parser_version>=3');
+                $minimumVersion=$source==='LinkedIn'?4:3;
+                $exists=$db->prepare('SELECT 1 FROM career_imported_alerts WHERE message_id=? AND parser_version>='.$minimumVersion);
                 $exists->execute([$id]);if($exists->fetchColumn())continue;
                 if($channel['checked'] >= $perLabel)break;
                 $message=gmailcall('GET','messages/'.rawurlencode($id).'?format=full');
@@ -183,7 +216,7 @@ function career_import_gmail_alerts(int $perLabel=6): array {
                     else $result['duplicates']++;
                 }
                 $channel['new']+=$added;
-                $db->prepare('INSERT INTO career_imported_alerts(message_id,source,added,parser_version) VALUES (?,?,?,3) ON CONFLICT(message_id) DO UPDATE SET added=career_imported_alerts.added+excluded.added,parser_version=3,processed_at=CURRENT_TIMESTAMP')->execute([$id,$source,$added]);
+                $db->prepare('INSERT INTO career_imported_alerts(message_id,source,added,parser_version) VALUES (?,?,?,?) ON CONFLICT(message_id) DO UPDATE SET added=career_imported_alerts.added+excluded.added,parser_version=excluded.parser_version,processed_at=CURRENT_TIMESTAMP')->execute([$id,$source,$added,$minimumVersion]);
             }
             $channel['seen']=count($list['messages']??[]);
         }catch(Throwable $e){$result['errors'][]=$source.': '.$e->getMessage();}
