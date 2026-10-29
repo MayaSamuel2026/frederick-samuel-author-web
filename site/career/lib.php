@@ -149,6 +149,7 @@ function relevant(string $title,string $description=''): bool {
     // Senior healthcare roles often use commercial, market or field leadership titles
     // without the literal word Sales. Include these explicit leadership patterns.
     if(preg_match('/\\b(?:head of (?:biopharma|strategic market excellence|commercial|field force)|head launch & field excellence|national sales director|regional business head|commercial leader|senior director,? commercial|director international commercialization|director business development|associate director.{0,18}sales force effectiveness|commercial operations associate director)\\b/iu',$title))return true;
+    if(preg_match('/\\bregional\\s+verkaufsleiter\\b|\\bdirector\\s*\\/\\s*senior director.{0,12}business development\\b|\\b(?:senior manager|associate director).{0,35}commercial operations\\b|\\bsales force excellence manager\\b/iu',$title))return true;
     // International employers often put geography between Director and Sales.
     if(preg_match('/\\b(?:senior\\s+|associate\\s+)?director\\b.{0,55}\\bsales\\b/iu',$title))return true;
     return (bool)preg_match('/(pharma|life.science|healthcare|medical|klinisch|hospital|krankenhaus|biotech)/iu',$description.' '.$title) && (bool)preg_match('/(sales|vertrieb|commercial|geschäftsbereich|business.development)/iu',$title);
