@@ -112,6 +112,25 @@ function career_alert_candidates(string $source,string $body): array {
     }
     return $jobs;
 }
+/** Normalize a manually reviewed public search-index hit.
+ * Requires a specific Indeed vacancy ID. Do not assume search result snippets
+ * establish posting freshness; the original listing remains the source of truth.
+ */
+function career_indexed_indeed_job(array $item): ?array {
+    if(($item['source']??null)!=='Indeed')return null;
+    $url=trim((string)($item['url']??''));
+    if(!preg_match('~^https://de\\.indeed\\.com/viewjob\\?jk=([a-z0-9]{8,})$~i',$url,$m))return null;
+    $record=[
+        'source'=>'Indeed · Search index',
+        'title'=>trim((string)($item['title']??'')),
+        'company'=>trim((string)($item['company']??'')),
+        'location'=>trim((string)($item['location']??'')),
+        'url'=>'https://de.indeed.com/viewjob?jk='.$m[1],
+        'description'=>'Public search-index discovery. Confirm vacancy remains open before applying.'
+    ];
+    if($record['title']==='' || $record['company']==='' || !career_job_eligible($record))return null;
+    return $record;
+}
 /** Prefer configured Gmail labels. If an alert label is absent, search only
  * the provider's sender domain; the vacancy URL is still independently checked.
  * This uses the website's existing authorized Gmail connection, never public scraping.
