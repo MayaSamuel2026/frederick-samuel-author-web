@@ -199,7 +199,7 @@ function career_research_job(int $id,?string $manual=null): array {
     $job['description']=$description;
     $analysis=['de'=>career_match_cv($job,'de'),'en'=>career_match_cv($job,'en')];
     career_prepare_save($id,['source_status'=>$status,'source_note'=>$note,'checked_at'=>gmdate('Y-m-d H:i:s'),
-        'analysis'=>json_encode($analysis,JSON_UNESCAPED_UNICODE),'pdf_path'=>'','pdf_filename'=>'','pdf_created_at'=>null]);
+        'analysis'=>json_encode($analysis,JSON_UNESCAPED_UNICODE)]);
     return ['description'=>$description,'source_status'=>$status,'source_note'=>$note,'analysis'=>$analysis];
 }
 function career_create_pdf(int $id,string $letter,string $lang): array {
