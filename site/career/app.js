@@ -36,8 +36,11 @@ function renderResearch(){
  $('#advertDescription').value=j?.description||'';
  const label={retrieved:text('Retrieved from original advert','Original-Stellenangebot eingelesen'),
               saved:text('Existing description retained; original link could not be read','Gespeicherte Beschreibung – Originalseite nicht lesbar'),
+              official:text('Official employer advert retrieved','Offizielle Arbeitgeber-Stellenanzeige eingelesen'),
+              verified_summary:text('Verified summary of employer advert; full source linked','Verifizierte Zusammenfassung der Arbeitgeberanzeige – Original verlinkt'),
               supplied:text('Description entered and saved','Beschreibung manuell erfasst und gespeichert')};
  $('#advertStatus').textContent=j?(label[j.source_status]||text('Advert not retrieved yet','Stellenbeschreibung noch nicht eingelesen'))+(j.source_note?' · '+j.source_note:''):'';
+ const official=$('#officialAdvertLink');const verified=!!(j?.source_url && /^https:\/\//i.test(j.source_url));official.hidden=!verified;if(verified){official.href=j.source_url;official.textContent=text('Open employer posting ↗','Arbeitgeber-Stellenanzeige öffnen ↗');}
  const matches=j?.analysis?.[$('#composeLang').value]?.matched||j?.analysis?.matched||[];
  $('#cvEvidence').innerHTML=matches.length?`<strong>${text('CV comparison · relevant experience','CV-Abgleich · passende Erfahrung')}</strong>`+
  matches.map(m=>`<div class="cv-evidence-item"><b>${esc(m.theme)}</b><span>${esc(m.cv_evidence)}</span></div>`).join(''):'';
@@ -50,9 +53,9 @@ async function loadAdvert(manual=null){
   const args={id:j.id};if(manual!==null)args.manual_description=manual;
   const r=await api('research',args);
   j.description=r.result.description;j.source_status=r.result.source_status;
-  j.source_note=r.result.source_note;j.analysis=r.result.analysis;
+  j.source_note=r.result.source_note;j.source_url=r.result.source_url;j.analysis=r.result.analysis;
   renderResearch();
-  if(j.source_note)toast(j.source_note,true);
+  if(j.source_note)toast(j.source_note,false);
   else toast(text('Job description compared with your CV.','Stellenbeschreibung mit dem Lebenslauf abgeglichen.'));
   return true;
  }catch(e){toast(e.message,true);$('#advertStatus').textContent=e.message;return false;}
@@ -110,7 +113,7 @@ function renderKeywords(){
 }
 function renderAll(){tr();renderOverview();renderJobs();renderPipeline();renderMail();renderFiles();renderSent();renderSettings();renderKeywords();$('#today').textContent=new Date().toLocaleDateString(state.lang==='de'?'de-DE':'en-GB',{day:'numeric',month:'long',year:'numeric'});}
 async function selectJob(id){state.composeId=Number(id);let j=state.data.jobs.find(x=>x.id===state.composeId);if(!j)return;go('mail');$('#composeJob').value=state.composeId;$('#composeLang').value=j.lang||state.data.profile.default_language||'de';$('#composeTo').value=j.email||'';$('#composeBody').value=j.letter||'';renderResearch();if(!j.source_status){const ok=await loadAdvert();if(!ok)return;}if(!j.letter && j.description?.length>=180)await generate();}
-async function generate(){const j=state.data.jobs.find(x=>x.id===Number($('#composeJob').value));if(!j)return toast(text('Select a vacancy.','Bitte Stelle auswählen.'),true);const locale=$('#composeLang').value;try{const r=await api('draft',{id:j.id,lang:locale,tone:$('#refineTone').value,email:$('#composeTo').value});$('#composeBody').value=r.letter;j.letter=r.letter;j.lang=locale;toast(text('Tailored letter generated. Please review it.','Anschreiben erstellt. Bitte prüfen.'));}catch(e){toast(e.message,true);}}
+async function generate(){const j=state.data.jobs.find(x=>x.id===Number($('#composeJob').value));if(!j)return toast(text('Select a vacancy.','Bitte Stelle auswählen.'),true);if(!j.description||j.description.length<180){if(!await loadAdvert())return;}const locale=$('#composeLang').value;try{const r=await api('draft',{id:j.id,lang:locale,tone:$('#refineTone').value,email:$('#composeTo').value});$('#composeBody').value=r.letter;j.letter=r.letter;j.lang=locale;toast(text('Tailored letter generated. Please review it.','Anschreiben erstellt. Bitte prüfen.'));}catch(e){toast(e.message,true);}}
 async function saveDraft(){const id=Number($('#composeJob').value);if(!id)return toast(text('Select a vacancy.','Bitte Stelle auswählen.'),true);try{const j=state.data.jobs.find(j=>j.id===id);await api('draft',{id,lang:$('#composeLang').value,email:$('#composeTo').value,letter:$('#composeBody').value});j.letter=$('#composeBody').value;j.lang=$('#composeLang').value;j.email=$('#composeTo').value;toast(text('Draft saved.','Entwurf gespeichert.'));}catch(e){toast(e.message,true);}}
 async function scan(btn){btn.disabled=true;const old=btn.textContent;btn.textContent=text('Searching job feeds...','Stellenquellen werden durchsucht...');try{const r=await api('scan');await reload();toast(`${r.result.new} ${text('new matches saved.','neue passende Stellen gespeichert.')}`);if(r.result.errors?.length)toast(text('Some sources could not be read. See detailed source status beneath your saved keywords.','Einige Quellen konnten nicht gelesen werden. Details stehen unter den Suchbegriffen.'),true);}catch(e){toast(e.message,true);}finally{btn.disabled=false;btn.textContent=old;}}
 async function inbox(){const el=$('#inboxRows');el.innerHTML=`<p class="muted">${text('Loading Gmail inbox…','Gmail-Posteingang wird geladen…')}</p>`;try{const data=await api('inbox',{},'GET');el.innerHTML=data.messages.map(m=>`<a class="email-row inbox-entry" href="https://mail.google.com/mail/u/0/#inbox/${encodeURIComponent(m.thread_id)}" target="_blank" rel="noopener"><span class="email-icon">↙</span><div><strong>${esc(m.subject||'(no subject)')}</strong><span>${esc(m.from)} · ${esc(m.snippet)}</span></div><time>${esc(m.date.slice(0,16))}</time></a>`).join('')||`<p class="empty">${text('Inbox is empty.','Posteingang ist leer.')}</p>`;}catch(e){el.innerHTML=`<p class="error">${esc(e.message)}</p>`;}}
