@@ -34,6 +34,22 @@ try {
     ok(is_file($new['pdf_path'])&&!is_file($record['pdf_path']),'Regeneration replaces prior PDF safely');
     try{career_composed_letter(['description'=>'','title'=>'Head of Sales','company'=>'Example'],'de','natural');throw new RuntimeException('Expected missing-description failure');}
     catch(RuntimeException $e){ok(str_contains($e->getMessage(),'Stellenbeschreibung'),'No cover letter generated without genuine advert details');}
+    $braun=[
+        'company'=>'B. Braun Gruppe','title'=>'Business Development Manager (f/m/d)',
+        'location'=>'Melsungen','url'=>'https://de.indeed.com/viewjob?jk=demo','description'=>'Job alert received'
+    ];
+    $official=career_known_official_adverts($braun);
+    ok(count($official)===1 && str_contains($official[0],'14588'),'B. Braun board listing resolves to exact employer requisition 14588');
+    $summary=career_bbraun_14588_summary($braun);
+    ok(is_array($summary)&&mb_strlen($summary['description'])>180&&str_contains($summary['description'],'Business Cases'),'Verified employer summary is available if official fetch is blocked');
+    ok(career_candidate_company_match($braun,$summary['description'])
+       && career_candidate_title_match($braun,$summary['description']),'Employer-backed description matches original employer and title');
+    $other=$braun;$other['location']='Tuttlingen';
+    ok(career_known_official_adverts($other)===[],'Different B. Braun role is not silently assigned to Melsungen vacancy');
+    $other['location']='Melsungen';$other['title']='Business Development Manager - Robotic Surgery';
+    ok(career_known_official_adverts($other)===[],'Robotic Surgery requisition is not confused with Health Care Services');
+    $stored=career_preparation($id);
+    ok(array_key_exists('source_url',$stored),'Source URL is persisted in preparation record');
     echo "Career cover-letter workflow: PASS\n";
 } finally {
     if(is_dir($private)){
