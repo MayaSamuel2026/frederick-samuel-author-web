@@ -50,7 +50,7 @@ async function loadAdvert(manual=null){
   const args={id:j.id};if(manual!==null)args.manual_description=manual;
   const r=await api('research',args);
   j.description=r.result.description;j.source_status=r.result.source_status;
-  j.source_note=r.result.source_note;j.analysis=r.result.analysis;j.pdf_ready=false;
+  j.source_note=r.result.source_note;j.analysis=r.result.analysis;
   renderResearch();
   if(j.source_note)toast(j.source_note,true);
   else toast(text('Job description compared with your CV.','Stellenbeschreibung mit dem Lebenslauf abgeglichen.'));
