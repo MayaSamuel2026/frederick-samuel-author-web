@@ -82,6 +82,12 @@ try {
             'access denied'=>stripos($html,'Access Denied')!==false,
         ]).PHP_EOL;
         echo '  body_sample='.mb_substr(trim(preg_replace('/\s+/u',' ',strip_tags($html))),0,650).PHP_EOL;
+        foreach(['JobPosting','Aufgaben und Verantwortlichkeiten','Tasks and Responsibilities','Professional Qualifications','<main','"description"'] as $marker) {
+            $at=stripos($html,$marker);
+            if($at===false)continue;
+            echo '  raw_marker_'.str_replace(' ','_',strtolower($marker)).'_at='.$at
+              .' sample='.mb_substr(trim(preg_replace('/\s+/u',' ',strip_tags(substr($html,max(0,$at-150),700)))),0,500).PHP_EOL;
+        }
         if(preg_match('/.{0,140}jobdescription.{0,250}/si',$html,$m))
            echo '  marker_sample='.mb_substr(preg_replace('/\s+/u',' ',$m[0]),0,450).PHP_EOL;
     }catch(Throwable $err){echo '  diagnostic failed: '.$err->getMessage().PHP_EOL;}
