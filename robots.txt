@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /contact.php
+Sitemap: https://fredericksamuel.com/sitemap.xml
