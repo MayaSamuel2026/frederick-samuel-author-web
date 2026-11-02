@@ -10,25 +10,28 @@ function career_preparation_schema(): void {
         analysis TEXT NOT NULL DEFAULT "",
         pdf_path TEXT NOT NULL DEFAULT "",
         pdf_filename TEXT NOT NULL DEFAULT "",
-        pdf_created_at TEXT
+        pdf_created_at TEXT,
+        source_url TEXT NOT NULL DEFAULT ""
     )');
+    $cols=array_column(db()->query('PRAGMA table_info(job_preparations)')->fetchAll(), 'name');
+    if(!in_array('source_url',$cols,true))db()->exec('ALTER TABLE job_preparations ADD COLUMN source_url TEXT NOT NULL DEFAULT ""');
 }
 function career_preparation(int $id): array {
     career_preparation_schema();
     $q=db()->prepare('SELECT * FROM job_preparations WHERE job_id=?');
     $q->execute([$id]);
-    return $q->fetch() ?: ['job_id'=>$id,'source_status'=>'','source_note'=>'','analysis'=>'','pdf_path'=>'','pdf_filename'=>'','pdf_created_at'=>null];
+    return $q->fetch() ?: ['job_id'=>$id,'source_status'=>'','source_note'=>'','analysis'=>'','pdf_path'=>'','pdf_filename'=>'','pdf_created_at'=>null,'source_url'=>''];
 }
 function career_prepare_save(int $id,array $changes): void {
     career_preparation_schema();
     $old=career_preparation($id);
     $v=array_merge($old,$changes);
-    db()->prepare('INSERT INTO job_preparations(job_id,source_status,source_note,checked_at,analysis,pdf_path,pdf_filename,pdf_created_at)
-        VALUES(?,?,?,?,?,?,?,?)
+    db()->prepare('INSERT INTO job_preparations(job_id,source_status,source_note,checked_at,analysis,pdf_path,pdf_filename,pdf_created_at,source_url)
+        VALUES(?,?,?,?,?,?,?,?,?)
         ON CONFLICT(job_id) DO UPDATE SET source_status=excluded.source_status, source_note=excluded.source_note,
         checked_at=excluded.checked_at, analysis=excluded.analysis, pdf_path=excluded.pdf_path,
-        pdf_filename=excluded.pdf_filename, pdf_created_at=excluded.pdf_created_at')
-      ->execute([$id,$v['source_status'],$v['source_note'],$v['checked_at']??null,$v['analysis'],$v['pdf_path'],$v['pdf_filename'],$v['pdf_created_at']]);
+        pdf_filename=excluded.pdf_filename, pdf_created_at=excluded.pdf_created_at, source_url=excluded.source_url')
+      ->execute([$id,$v['source_status'],$v['source_note'],$v['checked_at']??null,$v['analysis'],$v['pdf_path'],$v['pdf_filename'],$v['pdf_created_at'],$v['source_url']??'']);
 }
 function career_verified_cv_evidence(): array {
     // Facts checked against Frederick_Samuel_CV_DE_2026.pdf (October 2026).
