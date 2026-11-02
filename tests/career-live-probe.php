@@ -64,4 +64,25 @@ try {
 } catch(Throwable $e) {
     echo 'B. Braun official requisition 14588: DIRECT_FETCH_UNAVAILABLE '.$e->getMessage().PHP_EOL;
     echo '  verified employer-summary fallback remains available'.PHP_EOL;
+    try {
+        [$host,$ip]=career_safe_advert_url($bbraun);
+        $c=curl_init($bbraun);
+        curl_setopt_array($c,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,
+            CURLOPT_RESOLVE=>["{$host}:443:{$ip}"],CURLOPT_FOLLOWLOCATION=>false,
+            CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; FrederickCareerPrivate/1.0)',CURLOPT_TIMEOUT=>12]);
+        $html=curl_exec($c);$code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);$type=curl_getinfo($c,CURLINFO_CONTENT_TYPE);curl_close($c);
+        $html=is_string($html)?$html:'';
+        echo '  employer_raw_http='.$code.' mime='.$type.' raw_bytes='.strlen($html).PHP_EOL;
+        echo '  content_markers='.json_encode([
+            'JobPosting'=>stripos($html,'JobPosting')!==false,
+            'jobdescription'=>stripos($html,'jobdescription')!==false,
+            'business development'=>stripos($html,'Business Development')!==false,
+            'Melsungen'=>stripos($html,'Melsungen')!==false,
+            'iframe'=>stripos($html,'<iframe')!==false,
+            'access denied'=>stripos($html,'Access Denied')!==false,
+        ]).PHP_EOL;
+        echo '  body_sample='.mb_substr(trim(preg_replace('/\s+/u',' ',strip_tags($html))),0,650).PHP_EOL;
+        if(preg_match('/.{0,140}jobdescription.{0,250}/si',$html,$m))
+           echo '  marker_sample='.mb_substr(preg_replace('/\s+/u',' ',$m[0]),0,450).PHP_EOL;
+    }catch(Throwable $err){echo '  diagnostic failed: '.$err->getMessage().PHP_EOL;}
 }
