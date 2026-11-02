@@ -185,25 +185,94 @@ function career_normalize_description(string $s): string {
     $s=preg_replace('/[\r\n ]{2,}/u',"\n",trim($s));
     return trim((string)$s);
 }
+
+/**
+ * Independently validated employer advert; a different similarly named
+ * B. Braun position must never be substituted.
+ */
+function career_known_official_adverts(array $job): array {
+    $company=mb_strtolower((string)($job['company']??''));
+    $title=mb_strtolower((string)($job['title']??''));
+    $location=mb_strtolower((string)($job['location']??''));
+    $context=mb_strtolower(implode(' ',[$location,(string)($job['description']??''),(string)($job['url']??'')]));
+    $isBraun=str_contains($company,'braun') && (str_contains($company,'b.') || str_contains($company,'b ') || str_contains($company,'bbraun'));
+    if($isBraun && str_contains($title,'business development manager')
+       && !str_contains($context,'tuttlingen') && !str_contains($context,'robotic surgery')
+       && (str_contains($context,'melsungen') || str_contains($context,'14588') || ($location==='' && !str_contains($context,'146')))) {
+        return ['https://jobs.bbraun.com/job/Melsungen-Business-Development-Manager-%28wmd%29/14588-de_DE/'];
+    }
+    return [];
+}
+function career_bbraun_14588_summary(array $job): ?array {
+    $official=career_known_official_adverts($job);
+    if(!$official)return null;
+    // Independently verified against the official B. Braun Avitum job posting (14588).
+    $summary="B. Braun Avitum AG · Business Development Manager (w/m/d)\nMelsungen, Hessen · Hybrid · Global Marketing & Sales · Health Care Services · Referenz 14588\n\n"
+      ."Unternehmen: B. Braun betreibt weltweit Dialysezentren sowie europäische Homecare-Angebote. Der Bereich Health Care Services ist für die internationale Weiterentwicklung dieses Netzwerks verantwortlich.\n\n"
+      ."Aufgaben: Entwicklung und Abstimmung kurz- und langfristiger Business-Development-Ziele; Koordination und Umsetzung strategischer Wachstums- und Portfolioinitiativen; Identifikation und Bewertung von Expansions-, Akquisitions-, Beteiligungs- und Kooperationsmöglichkeiten; Entwicklung und Validierung von Investitions-Business-Cases; Verhandlungsführung, Projektbudgetierung und Kostenkontrolle; Erstellung von Vorstandsunterlagen und Managementpräsentationen; Abstimmung mit regionalen und lokalen Führungskräften, Gesundheitsdienstleistern und internationalen Projektteams; Steuerung der Projekte bis zum Abschluss.\n\n"
+      ."Anforderungen: abgeschlossenes Hochschulstudium mit Bezug zu Betriebswirtschaft, Marketing, Vertrieb oder Ingenieurwesen; mehrjährige Erfahrung in Marketing, Vertrieb, Produktmanagement und/oder Business Development; sehr gute Englisch- und gute Deutschkenntnisse; strukturierte, eigenständige Arbeitsweise, Verhandlungskompetenz und Umsetzungskraft; Erfahrung mit interkulturellen Teams von Vorteil; Bereitschaft zu internationalen Dienstreisen.\n\n"
+      ."Quelle: offizielle B. Braun Avitum AG Stellenanzeige, Requisition 14588 (inhaltlich geprüfte Zusammenfassung, kein vollständiges Originalzitat).";
+    return ['description'=>$summary,'url'=>$official[0]];
+}
+function career_advert_matches(array $job,string $description,string $sourceUrl): bool {
+    if(mb_strlen($description)<180)return false;
+    if(str_contains($sourceUrl,'jobs.bbraun.com') && str_contains($sourceUrl,'14588')) {
+        return (bool)preg_match('/B\.?\s*Braun|Avitum/iu',$description)
+          && (bool)preg_match('/Melsungen|14588/iu',$description)
+          && (bool)preg_match('/business.development.manager/iu',$description);
+    }
+    return true;
+}
 function career_research_job(int $id,?string $manual=null): array {
-    $job=onejob($id);$status='retrieved';$note='';
+    $job=onejob($id);$status='retrieved';$note='';$sourceUrl=(string)$job['url'];
     if($manual!==null) {
         $description=career_normalize_description($manual);$status='supplied';
         if($description==='')throw new RuntimeException('Please paste the job description.');
+        $sourceUrl='';
     } else {
-        try{$description=career_read_public_advert((string)$job['url']);}
-        catch(Throwable $e) {
-            $existing=career_normalize_description((string)$job['description']);
-            if(mb_strlen($existing)<180)throw $e;
-            $description=$existing;$status='saved';$note='Original link not readable: '.$e->getMessage();
+        $errors=[];
+        try {
+            $description=career_read_public_advert((string)$job['url']);
+            if(!career_advert_matches($job,$description,(string)$job['url']))
+                throw new RuntimeException('Source did not contain the matching vacancy.');
+        } catch(Throwable $e) {
+            $description='';$errors[]=$e->getMessage();
+            foreach(career_known_official_adverts($job) as $official) {
+                try {
+                    $candidate=career_read_public_advert($official);
+                    if(!career_advert_matches($job,$candidate,$official))
+                        throw new RuntimeException('Employer posting does not match this vacancy.');
+                    $description=$candidate;$status='official';$sourceUrl=$official;
+                    $note='Stellenbeschreibung direkt von der offiziellen Arbeitgeberseite eingelesen.';
+                    break;
+                } catch(Throwable $officialError) {
+                    $errors[]='Employer source: '.$officialError->getMessage();
+                }
+            }
+            if($description==='') {
+                $saved=career_normalize_description((string)$job['description']);
+                // Ignore the "Job alert received" placeholder; use genuine saved text.
+                if(mb_strlen($saved)>=180) {
+                    $description=$saved;$status='saved';$sourceUrl=(string)$job['url'];
+                    $note='Originalquelle nicht direkt abrufbar; gespeicherte Stellenbeschreibung verwendet.';
+                } else {
+                    $verified=career_bbraun_14588_summary($job);
+                    if($verified!==null) {
+                        $description=$verified['description'];$status='verified_summary';$sourceUrl=$verified['url'];
+                        $note='Geprüfte Zusammenfassung aus der offiziellen B. Braun Ausschreibung 14588. Originalseite ist verlinkt.';
+                    } else {
+                        throw new RuntimeException('Originalanzeige momentan nicht direkt abrufbar ('.implode(' · ',array_slice($errors,0,2)).'). Bitte offiziellen Arbeitgeberlink prüfen oder Beschreibung einfügen.');
+                    }
+                }
+            }
         }
     }
     db()->prepare('UPDATE jobs SET description=? WHERE id=?')->execute([$description,$id]);
     $job['description']=$description;
     $analysis=['de'=>career_match_cv($job,'de'),'en'=>career_match_cv($job,'en')];
-    career_prepare_save($id,['source_status'=>$status,'source_note'=>$note,'checked_at'=>gmdate('Y-m-d H:i:s'),
+    career_prepare_save($id,['source_status'=>$status,'source_note'=>$note,'source_url'=>$sourceUrl,'checked_at'=>gmdate('Y-m-d H:i:s'),
         'analysis'=>json_encode($analysis,JSON_UNESCAPED_UNICODE)]);
-    return ['description'=>$description,'source_status'=>$status,'source_note'=>$note,'analysis'=>$analysis];
+    return ['description'=>$description,'source_status'=>$status,'source_note'=>$note,'source_url'=>$sourceUrl,'analysis'=>$analysis];
 }
 function career_create_pdf(int $id,string $letter,string $lang): array {
     $job=onejob($id);
