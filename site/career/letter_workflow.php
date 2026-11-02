@@ -125,7 +125,7 @@ function career_read_public_advert(string $url): string {
             CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_TIMEOUT=>14,CURLOPT_CONNECTTIMEOUT=>5,
             CURLOPT_RESOLVE=>["{$host}:443:{$ip}"],CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; FrederickCareerPrivate/1.0)',
             CURLOPT_HTTPHEADER=>['Accept: text/html,application/xhtml+xml','Accept-Language: de-DE,de;q=0.9,en;q=0.6'],
-            CURLOPT_ENCODING=>'',CURLOPT_MAXFILESIZE=>1600000,
+            CURLOPT_ENCODING=>'',CURLOPT_MAXFILESIZE=>8000000,
             CURLOPT_HEADER=>true
         ]);
         $result=curl_exec($c);$status=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);
@@ -141,7 +141,7 @@ function career_read_public_advert(string $url): string {
         }
         if($status<200||$status>=300)throw new RuntimeException('Job site returned HTTP '.$status);
         if(!str_contains($type,'html'))throw new RuntimeException('Original advert is not an HTML page.');
-        $html=substr($result,$headerSize,1600000);
+        $html=substr($result,$headerSize,8000000);
         if(preg_match('/captcha|verify you are human|enable javascript to continue|access denied|unusual traffic/i',substr($html,0,25000)))
             throw new RuntimeException('Advert requires a browser session; paste the description below.');
         return career_extract_job_description($html);
@@ -171,7 +171,7 @@ function career_extract_job_description(string $html): string {
     foreach($queries as $query) {
         foreach($xp->query($query) ?: [] as $node) {
             $s=career_normalize_description($node->textContent??'');
-            if(mb_strlen($s)>=180 && mb_strlen($s)<35000)return mb_substr($s,0,15000);
+            if(mb_strlen($s)>=180)return $s;
         }
     }
     throw new RuntimeException('Full description not readable on this page. Paste the advert text below.');
@@ -180,13 +180,13 @@ function career_normalize_description(string $s): string {
     $s=html_entity_decode(strip_tags($s),ENT_QUOTES|ENT_HTML5,'UTF-8');
     $s=preg_replace('/[\x{00A0}\t ]+/u',' ',$s);
     $s=preg_replace('/[\r\n ]{2,}/u',"\n",trim($s));
-    return clean((string)$s,15000);
+    return trim((string)$s);
 }
 function career_research_job(int $id,?string $manual=null): array {
     $job=onejob($id);$status='retrieved';$note='';
     if($manual!==null) {
         $description=career_normalize_description($manual);$status='supplied';
-        if(mb_strlen($description)<180)throw new RuntimeException('Please include the full vacancy requirements (at least 180 characters).');
+        if($description==='')throw new RuntimeException('Please paste the job description.');
     } else {
         try{$description=career_read_public_advert((string)$job['url']);}
         catch(Throwable $e) {
