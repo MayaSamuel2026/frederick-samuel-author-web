@@ -282,7 +282,8 @@ function mailraw(string $to,string $subject,string $html,string $text,array $doc
 }
 function pdftext(array $j,string $letter): string {
     $address=setting('address',"Marienburger Straße 16\n56112 Lahnstein\nDeutschland");$email='fredericksamuel1965@gmail.com';
-    $lines=array_merge(['Frederick Samuel'],preg_split('/\R/u',$address),[$email,'',date('d.m.Y'),'',$j['company'],$j['title'],''],preg_split('/\R/u',$letter));
+    $phone=setting('phone','+49 176 471 777 51');
+    $lines=array_merge(preg_split('/\R/u',$address),array_values(array_filter([$phone,$email])),['',date('d.m.Y'),'',$j['company'],$j['title'],''],preg_split('/\R/u',$letter));
     $chunks=[];$page=[];
     foreach($lines as $line){
         $line=trim((string)$line);
