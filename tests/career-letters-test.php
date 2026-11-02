@@ -41,7 +41,7 @@ try {
     $official=career_known_official_adverts($braun);
     ok(count($official)===1 && str_contains($official[0],'14588'),'B. Braun board listing resolves to exact employer requisition 14588');
     $summary=career_bbraun_14588_summary($braun);
-    ok(is_array($summary)&&mb_strlen($summary['description'])>180&&str_contains($summary['description'],'Business Cases'),'Verified employer summary is available if official fetch is blocked');
+    ok(is_array($summary)&&mb_strlen($summary['description'])>180&&str_contains($summary['description'],'Business-Cases'),'Verified employer summary is available if official fetch is blocked');
     ok(career_candidate_company_match($braun,$summary['description'])
        && career_candidate_title_match($braun,$summary['description']),'Employer-backed description matches original employer and title');
     $other=$braun;$other['location']='Tuttlingen';
