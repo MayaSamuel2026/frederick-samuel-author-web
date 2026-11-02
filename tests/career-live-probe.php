@@ -52,3 +52,16 @@ foreach($terms as $source=>$term){
         echo $source.': UNAVAILABLE '.$e->getMessage() . PHP_EOL;
     }
 }
+
+
+require __DIR__.'/../site/career/letter_workflow.php';
+$bbraun='https://jobs.bbraun.com/job/Melsungen-Business-Development-Manager-%28wmd%29/14588-de_DE/';
+try {
+    $posting=career_read_public_advert($bbraun);
+    $matches=career_advert_matches(['company'=>'B. Braun Gruppe','title'=>'Business Development Manager (f/m/d)'],$posting,$bbraun);
+    echo 'B. Braun official requisition 14588: '.($matches?'VERIFIED_FULL_ADVERT':'UNVERIFIED_CONTENT')
+         .', chars='.mb_strlen($posting).PHP_EOL;
+} catch(Throwable $e) {
+    echo 'B. Braun official requisition 14588: DIRECT_FETCH_UNAVAILABLE '.$e->getMessage().PHP_EOL;
+    echo '  verified employer-summary fallback remains available'.PHP_EOL;
+}
