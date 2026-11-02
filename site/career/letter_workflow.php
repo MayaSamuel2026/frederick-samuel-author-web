@@ -223,6 +223,70 @@ function career_advert_matches(array $job,string $description,string $sourceUrl)
     }
     return true;
 }
+
+/** Search indexed public employer postings when an intermediary job board blocks access. */
+function career_indexed_employer_candidates(array $job): array {
+    $title=trim((string)($job['title']??''));
+    $company=trim((string)($job['company']??''));
+    if($title==='' || $company==='')return [];
+    $query=$title.' '.$company.' '.trim((string)($job['location']??'')).' careers job';
+    $url='https://www.bing.com/search?'.http_build_query(['q'=>$query,'format'=>'rss']);
+    try {
+        [$host,$ip]=career_safe_advert_url($url);
+        $c=curl_init($url);
+        curl_setopt_array($c,[
+            CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,
+            CURLOPT_PROTOCOLS=>CURLPROTO_HTTPS,CURLOPT_RESOLVE=>["{$host}:443:{$ip}"],
+            CURLOPT_CONNECTTIMEOUT=>4,CURLOPT_TIMEOUT=>9,CURLOPT_MAXFILESIZE=>600000,
+            CURLOPT_USERAGENT=>'Mozilla/5.0 (compatible; FrederickCareerPrivate/1.0)',
+            CURLOPT_HTTPHEADER=>['Accept: application/rss+xml,application/xml,text/xml']
+        ]);
+        $rss=curl_exec($c);$code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE);curl_close($c);
+        if(!is_string($rss)||$code!==200)return [];
+        $doc=new DOMDocument();$prev=libxml_use_internal_errors(true);
+        $valid=$doc->loadXML($rss,LIBXML_NONET|LIBXML_NOWARNING|LIBXML_NOERROR);
+        libxml_clear_errors();libxml_use_internal_errors($prev);
+        if(!$valid)return [];
+        $candidates=[];$xpath=new DOMXPath($doc);
+        foreach($xpath->query('//item') ?: [] as $item) {
+            $link=trim((string)$xpath->evaluate('string(link)',$item));
+            $label=trim((string)$xpath->evaluate('string(title)',$item)).' '.trim(strip_tags((string)$xpath->evaluate('string(description)',$item)));
+            if(!career_looks_like_employer_link($link))continue;
+            if(!career_candidate_title_match($job,$label.' '.$link))continue;
+            $candidates[$link]=$link;
+        }
+        return array_values($candidates);
+    }catch(Throwable $e) {
+        error_log('Career public employer lookup: '.$e->getMessage());
+        return [];
+    }
+}
+function career_looks_like_employer_link(string $url): bool {
+    $p=parse_url($url);
+    if(!is_array($p)||($p['scheme']??'')!=='https'||empty($p['host']))return false;
+    $host=mb_strtolower((string)$p['host']);$path=mb_strtolower((string)($p['path']??''));
+    foreach(['indeed.','stepstone.','linkedin.','xing.','glassdoor.','jobijoba.','stellenanzeigen.','adzuna.','jobteaser.','monster.'] as $aggregator)
+        if(str_contains($host,$aggregator))return false;
+    return (bool)preg_match('/jobs?\.|career|workdayjobs|personio|greenhouse|lever\.co|smartrecruiters|successfactors|ashbyhq|recruitee/u',$host)
+        || (bool)preg_match('~/(jobs|careers|karriere|stellenangebote|jobdetail)/~u',$path);
+}
+function career_candidate_title_match(array $job,string $evidence): bool {
+    $title=mb_strtolower((string)($job['title']??''));$evidence=mb_strtolower($evidence);
+    $terms=preg_split('/[^\p{L}\p{N}]+/u',$title,-1,PREG_SPLIT_NO_EMPTY);
+    $terms=array_values(array_unique(array_filter($terms,static fn($w)=>mb_strlen($w)>=4&&!in_array($w,['oder','andere','senior','junior'],true))));
+    if(!$terms)return false;
+    $hits=0;
+    foreach($terms as $term)if(str_contains($evidence,$term))$hits++;
+    $required=min(2,count($terms));
+    return $hits>=$required;
+}
+function career_candidate_company_match(array $job,string $description): bool {
+    $company=mb_strtolower((string)($job['company']??''));$description=mb_strtolower($description);
+    $words=preg_split('/[^\p{L}\p{N}]+/u',$company,-1,PREG_SPLIT_NO_EMPTY);
+    $words=array_values(array_filter($words,static fn($w)=>mb_strlen($w)>=4&&!in_array($w,['group','gruppe','gmbh','holding','international','company','aktiengesellschaft'],true)));
+    foreach($words as $word)if(str_contains($description,$word))return true;
+    return false;
+}
 function career_research_job(int $id,?string $manual=null): array {
     $job=onejob($id);$status='retrieved';$note='';$sourceUrl=(string)$job['url'];
     if($manual!==null) {
