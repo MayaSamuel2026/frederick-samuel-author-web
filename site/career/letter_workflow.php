@@ -197,7 +197,7 @@ function career_research_job(int $id,?string $manual=null): array {
     }
     db()->prepare('UPDATE jobs SET description=? WHERE id=?')->execute([$description,$id]);
     $job['description']=$description;
-    $analysis=career_match_cv($job,'de');
+    $analysis=['de'=>career_match_cv($job,'de'),'en'=>career_match_cv($job,'en')];
     career_prepare_save($id,['source_status'=>$status,'source_note'=>$note,'checked_at'=>gmdate('Y-m-d H:i:s'),
         'analysis'=>json_encode($analysis,JSON_UNESCAPED_UNICODE),'pdf_path'=>'','pdf_filename'=>'','pdf_created_at'=>null]);
     return ['description'=>$description,'source_status'=>$status,'source_note'=>$note,'analysis'=>$analysis];
