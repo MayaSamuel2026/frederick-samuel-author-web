@@ -166,6 +166,10 @@ function career_extract_job_description(string $html): string {
     }
     foreach($xp->query('//script|//style|//nav|//footer|//header|//noscript|//form') ?: [] as $node)$node->parentNode?->removeChild($node);
     $queries=[
+        '//*[@itemtype and contains(translate(@itemtype,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"jobposting")]',
+        '//*[@itemprop="description"]',
+        '//*[contains(translate(@class,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"job-content")]',
+        '//*[@id="jobDetails" or @id="job-details" or @id="job-content"]',
         '//*[contains(translate(@class,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"job-description")]',
         '//*[@id="jobDescriptionText" or @id="job-description" or @id="jobDescription"]',
         '//*[contains(translate(@class,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"jobdescription")]',
