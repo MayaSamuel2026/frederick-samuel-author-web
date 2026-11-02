@@ -198,7 +198,7 @@ function career_known_official_adverts(array $job): array {
     $isBraun=str_contains($company,'braun') && (str_contains($company,'b.') || str_contains($company,'b ') || str_contains($company,'bbraun'));
     if($isBraun && str_contains($title,'business development manager')
        && !str_contains($context,'tuttlingen') && !str_contains($context,'robotic surgery') && !str_contains($title,'robotic surgery')
-       && (str_contains($context,'melsungen') || str_contains($context,'14588') || ($location==='' && !str_contains($context,'146')))) {
+       && (str_contains($context,'melsungen') || str_contains($context,'14588') || in_array(trim($location),['','deutschland','germany','hessen','germany (remote)','bundesweit'],true))) {
         return ['https://jobs.bbraun.com/job/Melsungen-Business-Development-Manager-%28wmd%29/14588-de_DE/'];
     }
     return [];
