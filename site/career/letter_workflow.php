@@ -314,6 +314,21 @@ function career_research_job(int $id,?string $manual=null): array {
                 }
             }
             if($description==='') {
+                foreach(career_indexed_employer_candidates($job) as $candidateUrl) {
+                    try {
+                        $candidateText=career_read_public_advert($candidateUrl);
+                        if(!career_candidate_title_match($job,$candidateText)
+                           || !career_candidate_company_match($job,$candidateText))
+                            continue;
+                        $description=$candidateText;$status='official';$sourceUrl=$candidateUrl;
+                        $note='Stellenbeschreibung aus öffentlich auffindbarer Arbeitgeberanzeige eingelesen.';
+                        break;
+                    }catch(Throwable $indexedError) {
+                        $errors[]='Indexed employer: '.$indexedError->getMessage();
+                    }
+                }
+            }
+            if($description==='') {
                 $saved=career_normalize_description((string)$job['description']);
                 // Ignore the "Job alert received" placeholder; use genuine saved text.
                 if(mb_strlen($saved)>=180) {
